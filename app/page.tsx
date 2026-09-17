@@ -185,7 +185,7 @@ function ApoplexLesson({ onProgressChange, completed, onToggleComplete }: { onPr
 
     <section className="lesson-section vfa-chapter"><ChapterHeading number="10" kicker="Originalalgorithmus" title="VFA Thüringen 2026/2027" /><div className="lesson-prose"><p>Verfahrensanweisung 44 „Schlaganfall Erwachsene“. Die Abbildung stammt direkt aus der von dir bereitgestellten Thüringer VFA.</p><figure className="vfa-page"><img src="/lessons/apoplexie/vfa-schlaganfall-thueringen-2026-2027.png" alt="Verfahrensanweisung 44 Schlaganfall Erwachsene aus Thüringen 2026/2027" /><figcaption>VFA 44 · Schlaganfall Erwachsene · Version 2026/27</figcaption></figure></div></section>
 
-    <TrueFalseQuiz onProgressChange={onProgressChange} />
+    <StudyFinale onProgressChange={onProgressChange} />
     <section className={`chapter-completion ${completed ? "completed" : ""}`}><div><span>{completed ? "✓" : "○"}</span><div><b>{completed ? "Kapitel absolviert" : "Kapitel noch offen"}</b><p>Markiere das mündliche Thema nach deiner Bearbeitung. Der Status erscheint anschließend direkt in der Themenübersicht.</p></div></div><button onClick={onToggleComplete}>{completed ? "Als offen markieren" : "Als absolviert markieren"}</button></section>
     <p className="lesson-source">Lerninhalt: „Apoplexie (Schlaganfall) 2.pdf“ · VFA-Abbildung: Thüringer Verfahrensanweisungen 2026/2027. Die Darstellung dient der Prüfungsvorbereitung und ersetzt keine lokalen Vorgaben oder medizinische Rücksprache.</p>
   </article>;
@@ -207,10 +207,55 @@ const flashcardSets: Record<FlashcardSection, Flashcard[]> = {
 };
 
 function FlashcardDeck({ section }: { section: FlashcardSection }) {
-  const [created, setCreated] = useState(false);
-  const [revealed, setRevealed] = useState<number[]>([]);
-  const cards = flashcardSets[section];
-  return <div className="flashcard-deck"><div><span>Karteikarten · Staatsexamensniveau</span><button onClick={() => setCreated((current) => !current)}>{created ? "Karten schließen" : "Karteikarten erstellen"}</button></div>{created && <div className="flashcard-grid">{cards.map((card, index) => { const isRevealed = revealed.includes(index); return <button key={card.question} className={isRevealed ? "revealed" : ""} onClick={() => setRevealed((current) => current.includes(index) ? current.filter((item) => item !== index) : [...current, index])}><small>{isRevealed ? "Antwort" : "Prüfungsfrage"}</small><b>{isRevealed ? card.answer : card.question}</b><span>{isRevealed ? "Frage anzeigen" : "Antwort aufdecken"}</span></button>; })}</div>}</div>;
+  void section;
+  return null;
+}
+
+type TrainingFlashcard = Flashcard & { id: string; area: string };
+
+const collectedFlashcards: TrainingFlashcard[] = Object.entries(flashcardSets).flatMap(([area, cards]) => cards.map((card, index) => ({ ...card, id: `apoplex-card-${area}-${index + 1}`, area })));
+
+function shuffledFlashcards(previous: TrainingFlashcard[] = []) {
+  const next = [...collectedFlashcards];
+  for (let index = next.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+  }
+  if (previous.length === next.length && previous.every((card, index) => card.id === next[index].id)) next.push(next.shift()!);
+  return next;
+}
+
+function StudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
+  const [mode, setMode] = useState<"quiz" | "flashcards" | null>(null);
+  return <section className="study-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Wie möchtest du dich prüfen?</h2><p>Beide Trainingsformen verwenden ausschließlich dein Schlaganfall-Skript und speichern die Ergebnisse in derselben Lernstatistik.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>R/F</span><div><small>18 Aussagen</small><h3>Richtig/Falsch-Training</h3><p>Vom Grundlagenwissen bis zu anspruchsvollen Verknüpfungsfragen auf Staatsexamensniveau.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>12</span><div><small>Gesammelte Gebiete</small><h3>Karteikarten-Prüfung</h3><p>Freie Antworten zu Anatomie, Pathophysiologie, Diagnostik, Maßnahmen und Gefahren.</p><b>Karteikarten auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <TrueFalseQuiz onProgressChange={onProgressChange} /> : <FlashcardTraining onProgressChange={onProgressChange} />}</>}</section>;
+}
+
+function FlashcardTraining({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
+  const [cards, setCards] = useState<TrainingFlashcard[]>(() => shuffledFlashcards());
+  const [index, setIndex] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const [known, setKnown] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const card = cards[index];
+
+  const assess = (isKnown: boolean) => {
+    onProgressChange(recordQuestionAnswer(card.id, isKnown));
+    if (isKnown) setKnown((current) => current + 1);
+    if (index === cards.length - 1) setFinished(true);
+    else { setIndex((current) => current + 1); setRevealed(false); }
+  };
+
+  const restart = () => {
+    setCards((current) => shuffledFlashcards(current));
+    setIndex(0);
+    setRevealed(false);
+    setKnown(0);
+    setFinished(false);
+  };
+
+  if (finished) return <section className="flashcard-training flashcard-result"><span className="eyebrow">Karteikarten abgeschlossen</span><h2>{known} von {cards.length} gewusst</h2><p>Deine Selbsteinschätzung wurde in der Lernstatistik gespeichert. „Noch üben“ setzt die betreffende Karte auf 0 % zurück.</p><button className="primary-button" onClick={restart}>Neu starten und mischen</button></section>;
+
+  return <section className="flashcard-training"><div className="flashcard-training-head"><span>Karte {index + 1} von {cards.length}</span><small>Notfallsanitäter-Staatsexamen · Thüringen</small></div><div className={`exam-flashcard ${revealed ? "revealed" : ""}`}><small>{revealed ? "Musterantwort aus dem Skript" : "Mündliche Prüfungsaufgabe"}</small><h2>{revealed ? card.answer : card.question}</h2>{!revealed && <p>Formuliere deine Antwort zunächst vollständig, bevor du die Musterantwort aufdeckst.</p>}</div>{!revealed ? <button className="primary-button reveal-card" onClick={() => setRevealed(true)}>Musterantwort aufdecken</button> : <div className="flashcard-assessment"><button className="known" onClick={() => assess(true)}>✓ Gewusst</button><button className="practice" onClick={() => assess(false)}>↺ Noch üben</button></div>}</section>;
 }
 
 type TrueFalseQuestion = { id: string; statement: string; correct: boolean; source: string; difficulty: 1 | 2 | 3 };
