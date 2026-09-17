@@ -10,6 +10,15 @@
 
 Die Quelldatei bleibt unverändert und wird nicht direkt öffentlich ausgeliefert. Wenn der Nutzer für ein mündliches Thema eine VFA-Nummer oder PDF-Seite nennt, wird ausschließlich die passende Seite als Bild gerendert, fachlich zugeordnet und am Ende des betreffenden Kapitels eingebunden.
 
+## Quellenregel für das Thema Schlaganfall
+
+- Primäre Lernunterlage: `Apoplexie_Schlaganfall.pdf`
+- Ergänzende Quelle: [Rettungsdienst FactSheets – Schlaganfall](https://rd-factsheets.de/fs/schlaganfall-2/), zuletzt auf der Website ausgewiesen als aktualisiert am 20.12.2024
+- Fachliche Gegenprüfung: einschlägige AWMF-Leitlinien zum Schlaganfall
+- Verbindliche Therapiequelle: `Verfahrensanweisungen_2026_2027.pdf`
+
+Aus dem Rettungsdienst-Factsheet dürfen nützliche Ergänzungen zu Ursachen, Pathophysiologie, Symptomen, Diagnostik und Differenzialdiagnosen übernommen werden. Angaben zu Behandlungen, Medikamenten, Sauerstoffgabe, Glukosegabe, Volumentherapie und Blutdrucksenkung werden daraus **nicht** übernommen. Für Therapie, Medikamente, Dosierungen, Grenzwerte und Blutdruckziele gilt ausschließlich die passende Thüringer VFA 2026/2027. Bestehende Inhalte werden nur gezielt ergänzt und nicht pauschal durch das Factsheet ersetzt.
+
 ## Aufbau jedes mündlichen Themas
 
 1. Definition
