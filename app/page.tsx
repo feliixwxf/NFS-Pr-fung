@@ -145,10 +145,17 @@ function OralPlaceholder() {
 
       <div className="reading-blueprint">
         <div className="blueprint-visual" aria-hidden="true"><span>◫</span><i /><i /><i /><div>Bild</div><i /><i /></div>
-        <div className="blueprint-copy"><span className="eyebrow">So wird ein Kapitel aufgebaut</span><h2>Lesen, verstehen, abfragen</h2><p>Jeder mündliche Abschnitt wird wie ein kompaktes digitales Lernkapitel gestaltet – mit gut lesbaren Textblöcken, hervorgehobenen Merksätzen und kleinen unterstützenden Bildern.</p><ol><li><b>01</b><span><strong>Übersichtlicher Lerntext</strong>Aus deinen bereitgestellten Dateien, sinnvoll gegliedert.</span></li><li><b>02</b><span><strong>Kleine Bilder & Merkhilfen</strong>Nur dort, wo sie das Verständnis wirklich verbessern.</span></li><li><b>03</b><span><strong>Fragen aus dem Abschnitt</strong>Am Ende kann die KI passende mündliche Fragen direkt aus dem gelesenen Kapitel erstellen.</span></li></ol></div>
+        <div className="blueprint-copy"><span className="eyebrow">So wird ein Kapitel aufgebaut</span><h2>Lesen, verstehen, abfragen</h2><p>Jeder mündliche Abschnitt wird wie ein kompaktes digitales Lernkapitel gestaltet – mit gut lesbaren Textblöcken, hervorgehobenen Merksätzen und kleinen unterstützenden Bildern.</p><ol><li><b>01</b><span><strong>Übersichtlicher Lerntext</strong>Aus deinen bereitgestellten Dateien, nach einer festen Prüfungsstruktur gegliedert.</span></li><li><b>02</b><span><strong>Kleine Bilder & Merkhilfen</strong>Nur dort, wo sie das Verständnis wirklich verbessern.</span></li><li><b>03</b><span><strong>Passende VFA-Seite</strong>Das von dir benannte Bild aus der Thüringer VFA steht am Kapitelende.</span></li><li><b>04</b><span><strong>Fragen aus dem Abschnitt</strong>Danach kann die KI passende mündliche Fragen direkt aus dem gelesenen Kapitel erstellen.</span></li></ol></div>
       </div>
 
-      <div className="empty-library"><span className="empty-icon">＋</span><div><span className="eyebrow">Noch keine Inhalte</span><h2>Warte auf deine Dateien</h2><p>Sobald du die Unterlagen sendest, werden die Kapitel hier eingepflegt und fachlich mit den Vorgaben für Thüringen 2026/2027 abgeglichen.</p></div><button className="primary-button" disabled>KI-Fragen nach dem Lesen erstellen</button></div>
+      <div className="chapter-structure">
+        <div className="chapter-structure-head"><div><span className="eyebrow">Verbindliche Vorlage</span><h2>Aufbau jedes mündlichen Themas</h2></div><span className="vfa-badge">VFA Thüringen · 2026/2027</span></div>
+        <div className="chapter-steps">
+          {["Definition", "Anatomie & Physiologie", "Pathophysiologie / Ursachen", "Symptome, die die Arbeitsdiagnose stützen", "Komplikationen & Gefahren des Notfallbildes", "Benötigte Einsatzmaterialien", "Erstmaßnahmen", "Differenzialdiagnosen & Entscheidungsfindung", "Weitere Maßnahmen", "Passendes VFA-Bild am Kapitelende"].map((step, index) => <div key={step}><b>{String(index + 1).padStart(2, "0")}</b><span>{step}</span>{index === 9 && <i>PDF</i>}</div>)}
+        </div>
+      </div>
+
+      <div className="empty-library"><span className="empty-icon">＋</span><div><span className="eyebrow">Noch keine Themen</span><h2>Die VFA-Grundlage ist hinterlegt</h2><p>Nenne beim jeweiligen Thema einfach die zugehörige VFA-Nummer. Die passende Seite wird dann als Bild am Kapitelende eingebunden.</p></div><button className="primary-button" disabled>KI-Fragen nach dem Lesen erstellen</button></div>
     </section>
   );
 }
