@@ -94,7 +94,7 @@ export default function Home() {
         <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="status-pill preparing"><span /> Struktur angelegt</div><div className="avatar">FS</div></header>
         {view === "start" && <Dashboard setView={changeView} progress={summarizeQuestionProgress(questionProgress).average} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={setSelectedTopic} onProgressChange={setQuestionProgress} />}
-        {view === "quiz" && <QuizPlaceholder setView={changeView} />}
+        {view === "quiz" && <QuizTraining onProgressChange={setQuestionProgress} />}
         {view === "progress" && <ProgressView progress={questionProgress} />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
@@ -195,7 +195,7 @@ function shuffledQuestions(previous: TrueFalseQuestion[] = []) {
   return next;
 }
 
-function TrueFalseQuiz({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
+function TrueFalseQuiz({ onProgressChange, standalone = false }: { onProgressChange: (progress: QuestionProgress) => void; standalone?: boolean }) {
   const [questions, setQuestions] = useState<TrueFalseQuestion[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<boolean | null>(null);
@@ -227,21 +227,21 @@ function TrueFalseQuiz({ onProgressChange }: { onProgressChange: (progress: Ques
     }
   };
 
-  if (!questions.length) return <div className="ai-question-panel quiz-launch"><div><span className="eyebrow">Nach dem Lesen</span><h2>Richtig/Falsch-Fragen aus dem Skript</h2><p>Alle Aussagen werden ausschließlich aus deinem hinterlegten Schlaganfall-Material erstellt. Die Reihenfolge wird bei jedem Neustart neu gemischt.</p></div><button className="primary-button" onClick={start}>KI-Fragen erstellen</button></div>;
+  if (!questions.length) return <div className={`ai-question-panel quiz-launch ${standalone ? "standalone" : ""}`}><div><span className="eyebrow">{standalone ? "MC-Training" : "Nach dem Lesen"}</span><h2>Richtig/Falsch-Fragen aus dem Skript</h2><p>Alle Aussagen werden ausschließlich aus deinem hinterlegten Schlaganfall-Material erstellt. Die Reihenfolge wird bei jedem Neustart neu gemischt.</p></div><button className="primary-button" onClick={start}>{standalone ? "Training starten" : "KI-Fragen erstellen"}</button></div>;
 
-  if (finished) return <section className="chapter-quiz quiz-result"><span className="eyebrow">Training abgeschlossen</span><h2>{correctAnswers} von {questions.length} richtig</h2><p>Jede Antwort wurde in deiner Fortschrittsstatistik gespeichert. Falsche Antworten setzen die jeweilige Frage wieder auf 0 %.</p><button className="primary-button" onClick={start}>Neu starten und mischen</button></section>;
+  if (finished) return <section className={`chapter-quiz quiz-result ${standalone ? "standalone" : ""}`}><span className="eyebrow">Training abgeschlossen</span><h2>{correctAnswers} von {questions.length} richtig</h2><p>Jede Antwort wurde in deiner Fortschrittsstatistik gespeichert. Falsche Antworten setzen die jeweilige Frage wieder auf 0 %.</p><button className="primary-button" onClick={start}>Neu starten und mischen</button></section>;
 
   const question = questions[questionIndex];
   const wasCorrect = selected !== null && selected === question.correct;
-  return <section className="chapter-quiz"><div className="chapter-quiz-head"><div><span className="eyebrow">Richtig oder falsch?</span><small>Frage {questionIndex + 1} von {questions.length}</small></div><div className="quiz-mini-progress"><span style={{ width: `${((questionIndex + (selected === null ? 0 : 1)) / questions.length) * 100}%` }} /></div></div><h2>{question.statement}</h2><div className="true-false-actions"><button className={selected === true ? (question.correct ? "correct" : "wrong") : ""} onClick={() => answer(true)} disabled={selected !== null}>Richtig</button><button className={selected === false ? (!question.correct ? "correct" : "wrong") : ""} onClick={() => answer(false)} disabled={selected !== null}>Falsch</button></div>{selected !== null && <div className={`quiz-source-answer ${wasCorrect ? "correct" : "wrong"}`}><b>{wasCorrect ? "Richtig beantwortet" : "Falsch beantwortet"}</b><p>{question.source}</p><button onClick={next}>{questionIndex === questions.length - 1 ? "Ergebnis anzeigen" : "Nächste Frage"} →</button></div>}</section>;
+  return <section className={`chapter-quiz ${standalone ? "standalone" : ""}`}><div className="chapter-quiz-head"><div><span className="eyebrow">Richtig oder falsch?</span><small>Frage {questionIndex + 1} von {questions.length}</small></div><div className="quiz-mini-progress"><span style={{ width: `${((questionIndex + (selected === null ? 0 : 1)) / questions.length) * 100}%` }} /></div></div><h2>{question.statement}</h2><div className="true-false-actions"><button className={selected === true ? (question.correct ? "correct" : "wrong") : ""} onClick={() => answer(true)} disabled={selected !== null}>Richtig</button><button className={selected === false ? (!question.correct ? "correct" : "wrong") : ""} onClick={() => answer(false)} disabled={selected !== null}>Falsch</button></div>{selected !== null && <div className={`quiz-source-answer ${wasCorrect ? "correct" : "wrong"}`}><b>{wasCorrect ? "Richtig beantwortet" : "Falsch beantwortet"}</b><p>{question.source}</p><button onClick={next}>{questionIndex === questions.length - 1 ? "Ergebnis anzeigen" : "Nächste Frage"} →</button></div>}</section>;
 }
 
 function QuestionPanel() {
   return <div className="ai-question-panel"><div><span className="eyebrow">Nach dem Lesen</span><h2>Fragen aus diesem Kapitel erstellen</h2><p>Die KI-Funktion wird später ausschließlich den hinterlegten Kapitelinhalt als Grundlage verwenden.</p></div><button className="primary-button" disabled>KI-Fragen erstellen</button></div>;
 }
 
-function QuizPlaceholder({ setView }: { setView: (view: View) => void }) {
-  return <section className="quiz-page placeholder-page"><div className="empty-state-card"><span className="empty-icon">✓</span><span className="eyebrow">Kapiteltraining</span><h1>12 Fragen zu Schlaganfall</h1><p>Die Richtig/Falsch-Fragen werden ausschließlich aus deinem Skript erzeugt und befinden sich am Ende des Lesekapitels.</p><div className="source-note"><span>3×</span><p><b>Fortschrittslogik aktiv</b>Richtig beantwortete Fragen steigen über 33 % und 67 % auf 100 %. Eine falsche Antwort setzt die Frage auf 0 % zurück.</p></div><button className="primary-button" onClick={() => setView("oral")}>Zum Schlaganfall-Kapitel</button></div></section>;
+function QuizTraining({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
+  return <section className="quiz-page mc-training-page"><div className="section-heading"><div><span className="eyebrow">MC-Training · Schlaganfall</span><h1>Fragen aus deinem Skript</h1><p>Die Fragen aus dem Lesekapitel werden automatisch auch hier bereitgestellt. Antworten aus beiden Bereichen fließen in dieselbe Statistik ein.</p></div><div className="source-badge"><b>12</b><span>Fragen</span></div></div><TrueFalseQuiz standalone onProgressChange={onProgressChange} /><div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf 33 %, 67 % und 100 %. Eine falsche Antwort setzt nur die betreffende Frage auf 0 % zurück.</p></div></section>;
 }
 
 function ProgressView({ progress }: { progress: QuestionProgress }) {
