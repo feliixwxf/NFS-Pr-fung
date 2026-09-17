@@ -18,6 +18,20 @@ const topics = [
   "Unterkühlung / Erfrierung", "Herzbeuteltamponade", "Pseudokrupp", "Epiglottis",
 ] as const;
 
+const topicGroups = [
+  { name: "Herz & Kreislauf", icon: "♥", topicNumbers: [1, 2, 3, 7, 8, 14, 17, 22, 24, 33, 41, 46, 48] },
+  { name: "Trauma & Verletzungen", icon: "+", topicNumbers: [5, 16, 18, 19, 20, 21, 23, 26, 28, 31, 32, 34, 35, 36, 44] },
+  { name: "Gynäkologie & Geburt", icon: "♀", topicNumbers: [12, 42] },
+  { name: "Urologie & männliches Geschlecht", icon: "♂", topicNumbers: [40, 43] },
+  { name: "Atmung & Atemwege", icon: "◎", topicNumbers: [6, 10, 11, 13, 50] },
+  { name: "Neurologie", icon: "⌁", topicNumbers: [4, 25] },
+  { name: "Abdomen & Verdauung", icon: "◇", topicNumbers: [9, 15, 39, 45] },
+  { name: "Pädiatrie", icon: "✦", topicNumbers: [30, 49] },
+  { name: "Stoffwechsel & Allergie", icon: "△", topicNumbers: [27, 29] },
+  { name: "Intoxikationen", icon: "!", topicNumbers: [37, 38] },
+  { name: "Umwelt & Temperatur", icon: "❄", topicNumbers: [47] },
+] as const;
+
 const chapterSections = [
   { title: "Definition oder Erklärung", hint: "Wichtiger, eng verbundener physiologischer Zusammenhang" },
   { title: "Anatomie und Physiologie", hint: "Betroffenes Organ, Körperteil oder Organsystem" },
@@ -98,15 +112,22 @@ function Dashboard({ setView, progress }: { setView: (view: View) => void; progr
 
 function OralLibrary({ selectedTopic, setSelectedTopic }: { selectedTopic: number | null; setSelectedTopic: (topic: number | null) => void }) {
   const [search, setSearch] = useState("");
-  const filteredTopics = useMemo(() => topics.map((title, index) => ({ title, number: index + 1 })).filter((topic) => topic.title.toLowerCase().includes(search.toLowerCase())), [search]);
+  const filteredGroups = useMemo(() => topicGroups.map((group) => ({
+    ...group,
+    entries: group.topicNumbers.map((number) => ({ title: topics[number - 1], number })).filter((topic) => topic.title.toLowerCase().includes(search.toLowerCase())),
+  })).filter((group) => group.entries.length > 0), [search]);
+  const resultCount = filteredGroups.reduce((sum, group) => sum + group.entries.length, 0);
   if (selectedTopic !== null) return <TopicReader topicNumber={selectedTopic} onBack={() => setSelectedTopic(null)} />;
 
-  return <section className="page-section topic-library-page"><div className="section-heading"><div><span className="eyebrow">Mündliche Prüfung · Themenbereich 7</span><h1>Alle Prüfungsthemen</h1><p>50 mögliche Notfallbilder aus der vorgegebenen Orientierungsliste. Inhalte werden später ergänzt.</p></div><div className="source-badge"><b>50</b><span>Themen</span></div></div><div className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Thema suchen …" aria-label="Prüfungsthemen durchsuchen" /><small>{filteredTopics.length} Ergebnisse</small></div><div className="topic-name-grid">{filteredTopics.map((topic) => <button key={topic.number} onClick={() => setSelectedTopic(topic.number - 1)}><span>{String(topic.number).padStart(2, "0")}</span><div><b>{topic.title}</b><small>Kapitelstruktur angelegt · Inhalt folgt</small></div><i>→</i></button>)}</div><p className="orientation-note">Hinweis der Quelle: Die Themenübersicht dient zur Orientierung und erhebt keinen Anspruch auf Vollständigkeit.</p></section>;
+  return <section className="page-section topic-library-page"><div className="section-heading"><div><span className="eyebrow">Mündliche Prüfung · Themenbereich 7</span><h1>Nach Fachbereichen sortiert</h1><p>Herz und Kreislauf zuerst, danach Trauma, geschlechtsspezifische Themen und weitere medizinische Bereiche.</p></div><div className="source-badge"><b>50</b><span>Themen</span></div></div><div className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Thema suchen …" aria-label="Prüfungsthemen durchsuchen" /><small>{resultCount} Ergebnisse</small></div><div className="grouped-topics">{filteredGroups.map((group) => <section className="topic-group" key={group.name}><div className="topic-group-heading"><span>{group.icon}</span><div><h2>{group.name}</h2><p>{group.entries.length} {group.entries.length === 1 ? "Thema" : "Themen"}</p></div></div><div className="topic-name-grid">{group.entries.map((topic) => <button key={topic.number} onClick={() => setSelectedTopic(topic.number - 1)}><span>{String(topic.number).padStart(2, "0")}</span><div><b>{topic.title}</b><small>Kapitelstruktur angelegt · Inhalt folgt</small></div><i>→</i></button>)}</div></section>)}</div><p className="orientation-note">Hinweis der Quelle: Die Themenübersicht dient zur Orientierung und erhebt keinen Anspruch auf Vollständigkeit.</p></section>;
 }
 
 function TopicReader({ topicNumber, onBack }: { topicNumber: number; onBack: () => void }) {
   const title = topics[topicNumber];
-  return <section className="page-section topic-reader"><button className="back-button" onClick={onBack}>← Alle Themen</button><div className="reader-hero"><div><span className="eyebrow light">Mündliches Prüfungsthema {String(topicNumber + 1).padStart(2, "0")}</span><h1>{title}</h1><p>Zeitfenster laut Themenvorgabe: circa 20 Minuten. Fachmaterial wird später ergänzt.</p></div><span className="reader-status">Leere Vorlage</span></div><div className="reader-layout"><div className="reader-sections">{chapterSections.map((section, index) => <section key={section.title}><div className="reader-section-head"><span>{String(index + 1).padStart(2, "0")}</span><div><h2>{section.title}</h2><p>{section.hint}</p></div></div><div className="material-placeholder"><i>＋</i><span>Noch kein Material hinterlegt</span></div></section>)}<section className="vfa-placeholder"><div className="reader-section-head"><span>10</span><div><h2>Verfahrensanweisung Thüringen</h2><p>Passende VFA-Seite am Ende des Kapitels</p></div></div><div className="vfa-drop"><b>VFA 2026/2027</b><span>Die passende Nummer und Seite wird später von dir vorgegeben.</span></div></section><div className="ai-question-panel"><div><span className="eyebrow">Nach dem Lesen</span><h2>Fragen aus diesem Kapitel erstellen</h2><p>Die KI wird später ausschließlich den hinterlegten Kapitelinhalt als Grundlage verwenden.</p></div><button className="primary-button" disabled>KI-Fragen erstellen</button></div></div><aside className="reader-aside"><span className="eyebrow">Kapitelstatus</span><h3>Noch ohne Inhalte</h3><p>Die Struktur ist vollständig vorbereitet. Texte, Bilder und VFA-Zuordnung folgen mit deinen Materialien.</p><div><b>9</b><span>Prüfungsabschnitte</span></div><div><b>1</b><span>VFA-Platzhalter</span></div></aside></div></section>;
+  const [openSections, setOpenSections] = useState<number[]>([0]);
+  const toggleSection = (index: number) => setOpenSections((current) => current.includes(index) ? current.filter((item) => item !== index) : [...current, index]);
+  const groupName = topicGroups.find((group) => (group.topicNumbers as readonly number[]).includes(topicNumber + 1))?.name;
+  return <section className="page-section topic-reader"><button className="back-button" onClick={onBack}>← Alle Themen</button><div className="reader-hero"><div><span className="eyebrow light">{groupName} · Thema {String(topicNumber + 1).padStart(2, "0")}</span><h1>{title}</h1><p>Zeitfenster laut Themenvorgabe: circa 20 Minuten. Fachmaterial wird später ergänzt.</p></div><span className="reader-status">Leere Vorlage</span></div><div className="reader-layout"><div className="reader-sections">{chapterSections.map((section, index) => { const isOpen = openSections.includes(index); return <section className={`reader-accordion ${isOpen ? "open" : ""}`} key={section.title}><button className="reader-section-toggle" onClick={() => toggleSection(index)} aria-expanded={isOpen}><div className="reader-section-head"><span>{String(index + 1).padStart(2, "0")}</span><div><h2>{section.title}</h2><p>{section.hint}</p></div></div><i>{isOpen ? "−" : "+"}</i></button>{isOpen && <div className="accordion-content"><div className="material-placeholder"><i>＋</i><span>Noch kein Material hinterlegt</span></div></div>}</section>; })}<section className="vfa-placeholder"><div className="reader-section-head"><span>10</span><div><h2>Verfahrensanweisung Thüringen</h2><p>Passende VFA-Seite am Ende des Kapitels</p></div></div><div className="vfa-drop"><b>VFA 2026/2027</b><span>Die passende Nummer und Seite wird später von dir vorgegeben.</span></div></section><div className="ai-question-panel"><div><span className="eyebrow">Nach dem Lesen</span><h2>Fragen aus diesem Kapitel erstellen</h2><p>Die KI wird später ausschließlich den hinterlegten Kapitelinhalt als Grundlage verwenden.</p></div><button className="primary-button" disabled>KI-Fragen erstellen</button></div></div><aside className="reader-aside"><span className="eyebrow">Kapitelstatus</span><h3>Noch ohne Inhalte</h3><p>Jeder Abschnitt lässt sich einzeln öffnen und schließen. So bleibt das Kapitel auch mit vielen Inhalten übersichtlich.</p><div><b>9</b><span>Einklappbare Abschnitte</span></div><div><b>1</b><span>VFA-Platzhalter</span></div></aside></div></section>;
 }
 
 function QuizPlaceholder() {
