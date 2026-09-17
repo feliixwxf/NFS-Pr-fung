@@ -24,3 +24,21 @@ Die Quelldatei bleibt unverändert und wird nicht direkt öffentlich ausgeliefer
 10. Passendes Bild der VFA Thüringen am Kapitelende
 
 Nach dem Kapitel soll die KI ausschließlich aus dem Inhalt dieses Kapitels mündliche Übungsfragen erzeugen können.
+
+## DRK-Themenliste für die mündliche Abschlussprüfung
+
+- Quelldatei: `MuendlichePruefungsthemenAbschlusspruefungNFS_DRK.pdf`
+- Herausgeber: DRK-Bildungswerk Thüringen GGmbH
+- Version 1.0, Stand 09.06.2020
+- Umfang: 2 PDF-Seiten
+- SHA-256: `a60aa3f0d4fc86066f4d4e205d3b14859a8b98dc658b1b49b0ea68579ace2cf3`
+
+Die Datei nennt 50 mögliche Notfallbilder. Die Übersicht dient laut Quelle zur Orientierung und erhebt keinen Anspruch auf Vollständigkeit. Für jedes Thema wird zunächst nur ein leeres Kapitel nach der oben dokumentierten Prüfungsstruktur angelegt. Fachinhalte werden erst aus später vom Nutzer bereitgestellten Materialien ergänzt.
+
+## Lernfortschritt für Fragen
+
+- Neue oder falsch beantwortete Frage: 0 % / Status „Falsch“
+- Einmal richtig beantwortet: 33 %
+- Zweimal richtig beantwortet: 67 %
+- Dreimal richtig beantwortet: 100 % / Status „Sicher“
+- Jede falsche Antwort setzt ausschließlich die betroffene Frage wieder auf 0 % und den Status „Falsch“.
