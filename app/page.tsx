@@ -52,6 +52,27 @@ const nav = [
 ];
 
 const COMPLETED_TOPICS_KEY = "notsan-completed-topics-v1";
+const ACCESS_STORAGE_KEY = "notsan-access";
+const ACCESS_COOKIE_KEY = "notsan_access";
+const ACCESS_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+function hasPersistentAccess() {
+  const localAccess = localStorage.getItem(ACCESS_STORAGE_KEY) === "granted";
+  const cookieAccess = document.cookie.split("; ").some((entry) => entry === `${ACCESS_COOKIE_KEY}=granted`);
+  return localAccess || cookieAccess;
+}
+
+function persistAccess() {
+  localStorage.setItem(ACCESS_STORAGE_KEY, "granted");
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${ACCESS_COOKIE_KEY}=granted; Path=/; Max-Age=${ACCESS_COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
+}
+
+function clearPersistentAccess() {
+  localStorage.removeItem(ACCESS_STORAGE_KEY);
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${ACCESS_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+}
 
 export default function Home() {
   const [signedIn, setSignedIn] = useState(false);
@@ -64,7 +85,9 @@ export default function Home() {
   const [completedTopics, setCompletedTopics] = useState<number[]>([]);
 
   useEffect(() => {
-    setSignedIn(localStorage.getItem("notsan-access") === "granted");
+    const accessGranted = hasPersistentAccess();
+    setSignedIn(accessGranted);
+    if (accessGranted) persistAccess();
     setQuestionProgress(readQuestionProgress());
     try { setCompletedTopics(JSON.parse(localStorage.getItem(COMPLETED_TOPICS_KEY) || "[]") as number[]); } catch { setCompletedTopics([]); }
     localStorage.removeItem("notsan-learned");
@@ -75,7 +98,7 @@ export default function Home() {
   const handleLogin = (event: FormEvent) => {
     event.preventDefault();
     if (code.trim() === "Salami") {
-      localStorage.setItem("notsan-access", "granted");
+      persistAccess();
       setSignedIn(true);
       setError(false);
     } else setError(true);
@@ -100,7 +123,7 @@ export default function Home() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar"><div className="brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><nav aria-label="Hauptnavigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav><div className="sidebar-tip"><span>☼</span><b>50 Themen angelegt</b><p>Die Fachinhalte folgen ausschließlich aus deinen bereitgestellten Materialien.</p></div><button className="logout" onClick={() => { localStorage.removeItem("notsan-access"); setSignedIn(false); }}>↪ Abmelden</button></aside>
+      <aside className="sidebar"><div className="brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><nav aria-label="Hauptnavigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav><div className="sidebar-tip"><span>☼</span><b>50 Themen angelegt</b><p>Die Fachinhalte folgen ausschließlich aus deinen bereitgestellten Materialien.</p></div><button className="logout" onClick={() => { clearPersistentAccess(); setSignedIn(false); }}>↪ Abmelden</button></aside>
       <main className="main-content">
         <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="status-pill preparing"><span /> Struktur angelegt</div><div className="avatar">FS</div></header>
         {view === "start" && <Dashboard setView={changeView} progress={summarizeQuestionProgress(questionProgress).average} />}
