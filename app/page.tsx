@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { QuestionProgress, readQuestionProgress, recordQuestionAnswer, summarizeQuestionProgress } from "./lib/questionProgress";
 
-type View = "start" | "oral" | "quiz" | "progress";
+type View = "start" | "oral" | "written" | "quiz" | "progress";
 type TrainingTopic = "acs" | "apoplex" | "sht" | "lae" | "hypoglykaemie";
 type ReviewMode = "wrong" | "once" | null;
 
@@ -49,6 +49,7 @@ const chapterSections = [
 const nav = [
   { id: "start" as View, label: "Start", icon: "⌂" },
   { id: "oral" as View, label: "Mündlich", icon: "◫" },
+  { id: "written" as View, label: "Schriftlich", icon: "✎" },
   { id: "quiz" as View, label: "MC-Training", icon: "✓" },
   { id: "progress" as View, label: "Fortschritt", icon: "↗" },
 ];
@@ -133,6 +134,7 @@ export default function Home() {
         <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="status-pill preparing"><span /> Struktur angelegt</div><div className="avatar">FS</div></header>
         {view === "start" && <Dashboard setView={changeView} progress={summarizeQuestionProgress(questionProgress).average} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={setSelectedTopic} onProgressChange={setQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
+        {view === "written" && <WrittenLibrary />}
         {view === "quiz" && <QuizTraining onProgressChange={setQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); }} />}
         {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
@@ -159,6 +161,15 @@ function OralLibrary({ selectedTopic, setSelectedTopic, onProgressChange, comple
   if (selectedTopic !== null) return <TopicReader topicNumber={selectedTopic} onBack={() => setSelectedTopic(null)} onProgressChange={onProgressChange} completed={completedTopics.includes(selectedTopic + 1)} onToggleComplete={() => onToggleComplete(selectedTopic + 1)} />;
 
   return <section className="page-section topic-library-page"><div className="section-heading"><div><span className="eyebrow">Mündliche Prüfung · Themenbereich 7</span><h1>Nach Fachbereichen sortiert</h1><p>Herz und Kreislauf zuerst, danach Trauma, geschlechtsspezifische Themen und weitere medizinische Bereiche.</p></div><div className="source-badge"><b>50</b><span>Themen</span></div></div><div className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Thema suchen …" aria-label="Prüfungsthemen durchsuchen" /><small>{resultCount} Ergebnisse</small></div><div className="grouped-topics">{filteredGroups.map((group) => <section className="topic-group" key={group.name}><div className="topic-group-heading"><span>{group.icon}</span><div><h2>{group.name}</h2><p>{group.entries.length} {group.entries.length === 1 ? "Thema" : "Themen"}</p></div></div><div className="topic-name-grid">{group.entries.map((topic) => { const completed = completedTopics.includes(topic.number); const ready = [3, 4, 5, 8, 27].includes(topic.number); const readyLabel = topic.number === 3 ? "VFA 12 · 13 · 14" : topic.number === 4 ? "VFA 44" : topic.number === 5 ? "VFA L2 · 35 · 36 · 38 · B2A" : topic.number === 8 ? "VFA L5 · 01 · B2A" : "VFA 27 · 28 · Medikamentenkarte"; return <button className={`${ready ? "topic-ready" : ""} ${completed ? "topic-completed" : ""}`} key={topic.number} onClick={() => setSelectedTopic(topic.number - 1)}><span>{completed ? "✓" : String(topic.number).padStart(2, "0")}</span><div><b>{topic.number === 4 ? "Apoplex (Schlaganfall)" : topic.number === 5 ? "Schädel-Hirn-Trauma (SHT)" : topic.title}</b><small>{completed ? "Kapitel absolviert" : ready ? `Offen · Lesekapitel verfügbar · ${readyLabel}` : "Offen · Kapitelstruktur angelegt"}</small></div><i>→</i></button>; })}</div></section>)}</div><p className="orientation-note">Die Themenübersicht dient zur Orientierung und erhebt keinen Anspruch auf Vollständigkeit.</p></section>;
+}
+
+function WrittenLibrary() {
+  const chapters = [
+    { number: "01", icon: "§", title: "Rechtskunde", text: "Späterer Lesebereich für Rechtsgrundlagen, Verantwortlichkeiten und prüfungsrelevante Fallentscheidungen." },
+    { number: "02", icon: "⌖", title: "Organisation & Einsatztaktik", text: "Späterer Lesebereich für Einsatzorganisation, Zusammenarbeit und taktische Entscheidungen." },
+    { number: "03", icon: "↔", title: "Kommunikation", text: "Späterer Lesebereich für Gesprächsführung, Teamkommunikation und strukturierte Übergaben." },
+  ];
+  return <section className="page-section written-library-page"><div className="section-heading"><div><span className="eyebrow">Schriftliche Prüfung · Lesekapitel</span><h1>Drei klar getrennte Fachbereiche</h1><p>Hier entstehen später deine Lesekapitel ausschließlich aus den Unterlagen, die du für den jeweiligen Bereich bereitstellst.</p></div><div className="source-badge"><b>3</b><span>Bereiche</span></div></div><div className="written-reading-grid">{chapters.map((chapter) => <article key={chapter.title}><header><span>{chapter.icon}</span><small>{chapter.number}</small></header><div><span className="eyebrow">Lesekapitel vorbereitet</span><h2>{chapter.title}</h2><p>{chapter.text}</p></div><footer><b>Noch kein Material hinterlegt</b><span>Wird später ausgebaut</span></footer></article>)}</div><p className="orientation-note">Die schriftlichen Lesekapitel bleiben vollständig von den mündlichen Krankheitsbildern und den Fragenpools getrennt.</p></section>;
 }
 
 function TopicReader({ topicNumber, onBack, onProgressChange, completed, onToggleComplete }: { topicNumber: number; onBack: () => void; onProgressChange: (progress: QuestionProgress) => void; completed: boolean; onToggleComplete: () => void }) {
