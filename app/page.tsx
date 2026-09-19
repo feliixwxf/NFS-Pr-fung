@@ -175,12 +175,36 @@ function ChapterHeading({ number, title, kicker }: { number: string; title: stri
   return <header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header>;
 }
 
+function ExpandableImage({ src, alt }: { src: string; alt: string }) {
+  const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!fullscreen) return;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setFullscreen(false); };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [fullscreen]);
+
+  return <>
+    <button className="image-open-button" type="button" onClick={() => setFullscreen(true)} aria-label={`${alt} im Vollbild öffnen`}>
+      <img src={src} alt={alt} />
+      <span>⤢ Vollbild</span>
+    </button>
+    {fullscreen && <div className="image-lightbox" role="dialog" aria-modal="true" aria-label={`Vollbild: ${alt}`} onClick={() => setFullscreen(false)}>
+      <button className="image-lightbox-close" type="button" onClick={() => setFullscreen(false)}>× Schließen</button>
+      <div className="image-lightbox-stage" onClick={(event) => event.stopPropagation()}>
+        <img src={src} alt={alt} />
+      </div>
+    </div>}
+  </>;
+}
+
 function SourceFigure({ src, alt, caption, wide = false }: { src: string; alt: string; caption: string; wide?: boolean }) {
-  return <details className={`collapsible-figure ${wide ? "wide" : ""}`} open><summary><span>{caption}</span><small>Abbildung ein-/ausklappen</small></summary><figure className="source-figure"><img src={src} alt={alt} /><figcaption>{caption}<span>Abbildung aus deiner Vorlage</span></figcaption></figure></details>;
+  return <details className={`collapsible-figure ${wide ? "wide" : ""}`} open><summary><span>{caption}</span><small>Abbildung ein-/ausklappen</small></summary><figure className="source-figure"><ExpandableImage src={src} alt={alt} /><figcaption>{caption}<span>Abbildung aus deiner Vorlage · antippen für Vollbild</span></figcaption></figure></details>;
 }
 
 function VfaFigure({ src, alt, caption }: { src: string; alt: string; caption: string }) {
-  return <details className="collapsible-figure vfa-collapsible" open><summary><span>{caption}</span><small>VFA ein-/ausklappen</small></summary><figure className="vfa-page"><img src={src} alt={alt} /><figcaption>{caption}</figcaption></figure></details>;
+  return <details className="collapsible-figure vfa-collapsible" open><summary><span>{caption}</span><small>VFA ein-/ausklappen</small></summary><figure className="vfa-page"><ExpandableImage src={src} alt={alt} /><figcaption>{caption} · antippen für Vollbild</figcaption></figure></details>;
 }
 
 function ApoplexLesson({ onProgressChange, completed, onToggleComplete }: { onProgressChange: (progress: QuestionProgress) => void; completed: boolean; onToggleComplete: () => void }) {
