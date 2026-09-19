@@ -61,3 +61,13 @@ Die Datei nennt 50 mögliche Notfallbilder. Die Übersicht dient laut Quelle zur
 - Zweimal richtig beantwortet: 67 %
 - Dreimal richtig beantwortet: 100 % / Status „Sicher“
 - Jede falsche Antwort setzt ausschließlich die betroffene Frage wieder auf 0 % und den Status „Falsch“.
+
+## Schriftliche Prüfung
+
+Die schriftlichen Materialien und Fragenpools bleiben von den mündlichen Krankheitsbildern getrennt. Dafür sind drei ausbaufähige Ordner angelegt:
+
+- `schriftlich/rechtskunde/`
+- `schriftlich/kommunikation/`
+- `schriftlich/organisation-und-einsatztaktik/`
+
+Inhalte werden erst ergänzt, wenn der Nutzer passendes Material bereitstellt.
