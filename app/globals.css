@@ -151,6 +151,7 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .stroke-types { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:27px; }
 .stroke-types article { min-height:215px; padding:25px; border-radius:16px; background:#f7f6f2; }
 .stroke-types article:last-child { background:#edf5f7; }
+.acs-lesson .stroke-types article:last-child { grid-column:1 / -1; min-height:0; }
 .stroke-types b { display:block; margin-bottom:26px; color:var(--orange); font-size:29px; letter-spacing:-.04em; }
 .stroke-types h3 { font-size:15px; }
 .stroke-types p,.reading-columns p,.pathway p,.knowledge-note p { margin:0; color:#65757b; font-size:12px; line-height:1.7; }
