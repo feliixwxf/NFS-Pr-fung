@@ -1,0 +1,9 @@
+# Felix ist Host und fachlicher Freigeber der Website.
+* @feliixwxf
+
+# Veröffentlichungs- und Projektkonfiguration besonders schützen.
+/.github/ @feliixwxf
+/.openai/ @feliixwxf
+/package.json @feliixwxf
+/package-lock.json @feliixwxf
+/vercel.json @feliixwxf
