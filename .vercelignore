@@ -1,0 +1,11 @@
+.git
+.next
+.openai
+.wrangler
+dist
+source-material
+tests
+build
+worker
+db
+*.log
