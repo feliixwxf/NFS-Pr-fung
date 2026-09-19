@@ -72,8 +72,8 @@ function HeaderClock() {
 
   return (
     <time className="header-clock" dateTime={now?.toISOString()} aria-label={now ? `Aktuelle Uhrzeit: ${timeFormatter.format(now)} Uhr` : "Aktuelle Uhrzeit wird geladen"}>
-      <span className="clock-icon" aria-hidden="true">◷</span>
-      <span className="clock-value">{now ? timeFormatter.format(now) : "--:--"}</span>
+      <span aria-hidden="true">◷</span>
+      {now ? timeFormatter.format(now) : "--:--"}
     </time>
   );
 }
