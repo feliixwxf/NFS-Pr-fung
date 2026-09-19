@@ -209,6 +209,11 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .medication-dilution-grid article > b { display:block; margin:7px 0 9px; color:var(--navy); font-size:17px; }
 .medication-dilution-grid p { margin:0; color:#65767b; font-size:10px; line-height:1.55; }
 .medication-dilution-grid strong { color:#b74d31; }
+.sht-lesson .collapsible-figure.wide { margin:20px 0 28px; }
+.sht-lesson .collapsible-figure.wide .image-open-button { padding:10px; }
+.medication-source-stack { display:grid; gap:14px; margin:25px 0; }
+.medication-source-stack .collapsible-figure { margin:0; }
+.medication-source-stack .source-figure img { width:100%; height:auto; object-fit:contain; }
 .vfa-stack { display:grid; gap:26px; }
 .ecg-pattern { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:24px 0; }.ecg-pattern article { position:relative; overflow:hidden; min-height:145px; display:grid; align-content:center; justify-items:center; padding:20px; border:1px solid #dbe4e4; border-radius:14px; background:linear-gradient(#fff,#f6f9f8); }.ecg-pattern small { color:#7f8e93; font-size:8px; font-weight:850; letter-spacing:.12em; text-transform:uppercase; }.ecg-pattern b { margin:8px 0 2px; color:#173c4a; font-size:27px; }.ecg-pattern span { color:#6d7d83; font-size:10px; }.ecg-pattern i { position:absolute; right:13px; bottom:-9px; color:#d94f42; font-size:72px; font-style:normal; opacity:.16; }
 .resus-readiness { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-top:25px; }.resus-readiness > div { min-height:135px; display:flex; flex-direction:column; padding:16px; border-radius:13px; background:#eff5f5; }.resus-readiness span { color:#df6246; font-size:9px; font-weight:900; }.resus-readiness b { margin:23px 0 5px; color:#163845; font-size:13px; }.resus-readiness small { color:#6d7e84; font-size:9px; line-height:1.5; }
