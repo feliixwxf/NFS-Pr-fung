@@ -8,7 +8,7 @@ Thüringen.
 | Person | GitHub | Aufgabe |
 | --- | --- | --- |
 | Felix | [@feliixwxf](https://github.com/feliixwxf) | Host, fachliche Freigabe und Veröffentlichung |
-| Dustin | [@sweazy](https://github.com/sweazy) | Mitarbeit an Inhalten und Funktionen |
+| Dustin | [@iTz-vSweazy](https://github.com/iTz-vSweazy) | Mitarbeit an Inhalten und Funktionen |
 
 Felix gibt Änderungen für die Produktionsseite frei. Dustin arbeitet in einem
 eigenen Branch und reicht seine Änderungen als Pull Request ein. So bleibt

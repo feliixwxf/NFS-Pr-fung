@@ -3,7 +3,7 @@
 ## Rollen
 
 - **Felix (`@feliixwxf`)** ist Host und gibt Änderungen für `main` frei.
-- **Dustin (`@sweazy`)** arbeitet in eigenen Branches und eröffnet Pull Requests.
+- **Dustin (`@iTz-vSweazy`)** arbeitet in eigenen Branches und eröffnet Pull Requests.
 
 ## Ablauf für jede Änderung
 
