@@ -58,6 +58,25 @@ const COMPLETED_TOPICS_KEY = "notsan-completed-topics-v1";
 const ACCESS_STORAGE_KEY = "notsan-access";
 const ACCESS_COOKIE_KEY = "notsan_access";
 const ACCESS_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+const timeFormatter = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit" });
+
+function HeaderClock() {
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const updateTime = () => setNow(new Date());
+    updateTime();
+    const interval = window.setInterval(updateTime, 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return (
+    <time className="header-clock" dateTime={now?.toISOString()} aria-label={now ? `Aktuelle Uhrzeit: ${timeFormatter.format(now)} Uhr` : "Aktuelle Uhrzeit wird geladen"}>
+      <span aria-hidden="true">◷</span>
+      {now ? timeFormatter.format(now) : "--:--"}
+    </time>
+  );
+}
 
 function hasPersistentAccess() {
   const localAccess = localStorage.getItem(ACCESS_STORAGE_KEY) === "granted";
@@ -140,7 +159,7 @@ export default function Home() {
     <div className="app-shell">
       <aside className="sidebar"><div className="brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><nav aria-label="Hauptnavigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav><div className="sidebar-tip"><span>☼</span><b>50 Themen angelegt</b><p>Alle Fachinhalte sind gezielt auf deine Prüfungsvorbereitung abgestimmt.</p></div><button className="logout" onClick={() => { clearPersistentAccess(); setSignedIn(false); }}>↪ Abmelden</button></aside>
       <main className="main-content">
-        <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="status-pill preparing"><span /> Struktur angelegt</div><div className="profile-control"><button className="avatar profile-button" onClick={() => setProfileOpen((open) => !open)} aria-expanded={profileOpen} aria-haspopup="dialog" aria-label="Profil und Lernstand öffnen">FS</button>{profileOpen && <section className="profile-popover" role="dialog" aria-label="Profil und Lernstand"><header><div className="profile-avatar">FS</div><div><small>Profil</small><h2>Dein Lernbereich</h2></div><button onClick={() => setProfileOpen(false)} aria-label="Profil schließen">×</button></header><div className="profile-local-status"><span>✓</span><div><b>Lernstand auf diesem Gerät gespeichert</b><p>Fragen, Kapitelstatus und Fortschritt bleiben im Browser erhalten.</p></div></div><div className="profile-stat-grid"><div><b>{profileSummary.average}%</b><span>Fragensicherheit</span></div><div><b>{profileSummary.total}</b><span>Fragen begonnen</span></div><div><b>{completedTopics.length}</b><span>Kapitel absolviert</span></div></div><div className="profile-account-preview"><span className="eyebrow">Lernkonto · vorbereitet</span><h3>Später geräteübergreifend lernen</h3><p>Mit dem Lernkonto werden Statistiken, Lernfortschritt und Kapitelstände sicher deinem Profil zugeordnet.</p><button type="button" disabled>Anmelden · folgt später</button><button className="forgot-password-preview" type="button" disabled>Passwort vergessen · folgt später</button></div></section>}</div></header>
+        <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><HeaderClock /><div className="status-pill preparing"><span /> Struktur angelegt</div><div className="profile-control"><button className="avatar profile-button" onClick={() => setProfileOpen((open) => !open)} aria-expanded={profileOpen} aria-haspopup="dialog" aria-label="Profil und Lernstand öffnen">FS</button>{profileOpen && <section className="profile-popover" role="dialog" aria-label="Profil und Lernstand"><header><div className="profile-avatar">FS</div><div><small>Profil</small><h2>Dein Lernbereich</h2></div><button onClick={() => setProfileOpen(false)} aria-label="Profil schließen">×</button></header><div className="profile-local-status"><span>✓</span><div><b>Lernstand auf diesem Gerät gespeichert</b><p>Fragen, Kapitelstatus und Fortschritt bleiben im Browser erhalten.</p></div></div><div className="profile-stat-grid"><div><b>{profileSummary.average}%</b><span>Fragensicherheit</span></div><div><b>{profileSummary.total}</b><span>Fragen begonnen</span></div><div><b>{completedTopics.length}</b><span>Kapitel absolviert</span></div></div><div className="profile-account-preview"><span className="eyebrow">Lernkonto · vorbereitet</span><h3>Später geräteübergreifend lernen</h3><p>Mit dem Lernkonto werden Statistiken, Lernfortschritt und Kapitelstände sicher deinem Profil zugeordnet.</p><button type="button" disabled>Anmelden · folgt später</button><button className="forgot-password-preview" type="button" disabled>Passwort vergessen · folgt später</button></div></section>}</div></header>
         {view === "start" && <Dashboard setView={changeView} progress={summarizeQuestionProgress(questionProgress).average} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={setSelectedTopic} onProgressChange={setQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
         {view === "written" && <WrittenLibrary />}
