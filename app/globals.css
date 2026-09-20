@@ -182,6 +182,12 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .pathway { position:relative; margin:0 0 16px; padding:23px 23px 23px 115px; border-radius:14px; background:#f3f7f8; }
 .pathway > span { position:absolute; top:23px; left:20px; padding:7px 9px; border-radius:7px; background:#dcebf0; color:#23617a; font-size:9px; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
 .pathway.bleeding { background:#fff4ef; }.pathway.bleeding > span { background:#ffe0d3; color:#a44c2f; }
+.torsion-cascade { margin:0 0 30px; padding:22px; border-radius:14px; background:#f3f7f8; }
+.torsion-cascade > small { display:inline-block; margin-bottom:16px; padding:7px 9px; border-radius:7px; background:#dcebf0; color:#23617a; font-size:9px; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
+.torsion-cascade ol { display:grid; gap:8px; margin:0; padding:0; list-style:none; }
+.torsion-cascade li { display:grid; grid-template-columns:30px minmax(0,1fr); align-items:center; gap:11px; min-width:0; padding:11px 13px; border:1px solid #dfe9ec; border-radius:10px; background:#fff; color:#405860; font-size:12px; line-height:1.45; }
+.torsion-cascade li b { display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:#e9f2f5; color:#23617a; font-size:10px; }
+.torsion-cascade li span { min-width:0; overflow-wrap:anywhere; }
 .knowledge-note { margin-top:28px; padding:23px 25px; border-left:4px solid var(--orange); border-radius:4px 12px 12px 4px; background:#fff8f4; }
 .knowledge-note b { display:block; margin-bottom:7px; color:#803e28; }
 .verified-addition { margin:26px 0; padding:22px 24px; border:1px solid #cce5df; border-radius:14px; background:#f2faf8; }
