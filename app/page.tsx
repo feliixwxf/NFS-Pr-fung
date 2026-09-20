@@ -510,7 +510,7 @@ function shuffledFlashcards(sourceCards: TrainingFlashcard[], previous: Training
 
 function StudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
   const [mode, setMode] = useState<"quiz" | "flashcards" | null>(null);
-  return <section className="study-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Wie möchtest du dich prüfen?</h2><p>Beide Trainingsformen prüfen das gesamte Schlaganfallkapitel und speichern die Ergebnisse in derselben Lernstatistik.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>MC</span><div><small>18 Prüfungsfragen</small><h3>Multiple-Choice-Training</h3><p>Mehrere richtige Aussagen pro Aufgabe – mit zunehmend anspruchsvollen Verknüpfungen auf Staatsexamensniveau.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>12</span><div><small>Gesammelte Gebiete</small><h3>Karteikarten-Prüfung</h3><p>Freie Antworten zu Anatomie, Pathophysiologie, Diagnostik, Maßnahmen und Gefahren.</p><b>Karteikarten auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <MultipleChoiceQuiz questionBank={apoplexMultipleChoiceQuestions} condition="Schlaganfall" onProgressChange={onProgressChange} /> : <FlashcardTraining sourceCards={collectedFlashcards} condition="Schlaganfall" onProgressChange={onProgressChange} />}</>}</section>;
+  return <section className="study-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Wie möchtest du dich prüfen?</h2><p>Beide Trainingsformen prüfen das gesamte Schlaganfallkapitel und speichern die Ergebnisse in derselben Lernstatistik.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>MC</span><div><small>18 Prüfungsfragen</small><h3>Multiple-Choice-Training</h3><p>Mehrere richtige Aussagen pro Aufgabe – mit zunehmend anspruchsvollen Fall- und VFA-Entscheidungen auf Staatsexamensniveau.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>12</span><div><small>Gesammelte Gebiete</small><h3>Karteikarten-Prüfung</h3><p>Freie Antworten zu Anatomie, Pathophysiologie, Diagnostik, Maßnahmen und Gefahren.</p><b>Karteikarten auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <MultipleChoiceQuiz questionBank={apoplexMultipleChoiceQuestions} condition="Schlaganfall" onProgressChange={onProgressChange} /> : <FlashcardTraining sourceCards={collectedFlashcards} condition="Schlaganfall" onProgressChange={onProgressChange} />}</>}</section>;
 }
 
 function AcsStudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
@@ -669,35 +669,113 @@ const hypoglykaemieQuestions: MultipleChoiceQuestion[] = [
   { id: "hypo-q-18", mode: "multiple", prompt: "Welche Dokumentation ermöglicht eine fachlich belastbare Übergabe nach schwerer Hypoglykämie?", options: [{ text: "Ausgangswert, Messort und klinischer Ausgangsbefund", correct: true }, { text: "Applikationsweg, Menge, Zeitpunkt und sichere Zugangslage", correct: true }, { text: "Kontrollwerte, neurologischer Verlauf, vermutete Ursache und Begleitmedikation", correct: true }, { text: "Nur der letzte Normalwert ohne Angaben zum Verlauf" }], source: "Die Übergabe braucht Ausgangsbefund, Intervention, Kontrollwerte, Wirkung, vermutete Ursache und Verlauf.", difficulty: 3 },
 ];
 
-function closestDistractor(question: MultipleChoiceQuestion, correctText: string) {
-  const distractors = question.options.filter((option) => !option.correct);
-  return [...distractors].sort((left, right) => Math.abs(left.text.length - correctText.length) - Math.abs(right.text.length - correctText.length))[0];
-}
+const additionalCorrectAnswers: Record<string, string> = {
+  "acs-sc-01": "IAP, Nicht-ST-Hebungsinfarkt und ST-Hebungsinfarkt",
+  "acs-sc-02": "Ischämie → ATP-Abfall → Ionenpumpenversagen → elektrische Instabilität → Zelluntergang",
+  "acs-sc-03": "RIVA beziehungsweise LAD und RCX",
+  "acs-sc-04": "SA-Knoten → AV-Knoten → His → Tawara → Purkinje",
+  "acs-sc-05": "Anhaltender Brustdruck mit Dyspnoe, Angst und vegetativer Begleitreaktion",
+  "acs-sc-06": "Sie folgt auf die vollständige Kammerdepolarisation und geht der Repolarisation voraus",
+  "acs-sc-07": "Person mit Niereninsuffizienz, Luftnot und Leistungsknick ohne typischen Brustschmerz",
+  "acs-sc-08": "Zwölf Ableitungen, 50 mm/s und Ableitung innerhalb der ersten zehn Minuten",
+  "acs-sc-09": "Mindestens 1 mm extremitär oder 2 mm präkordial in jeweils zwei benachbarten Ableitungen",
+  "acs-sc-10": "NSTEMI und instabile Angina bleiben trotz unauffälligem Einzel-EKG möglich",
+  "acs-sc-11": "RRsys unter 120 mmHg, PDE-5-Hemmer in den letzten 48 Stunden und möglicher Hinterwandinfarkt",
+  "acs-sc-12": "Bei ausreichender Sättigung erfolgt keine routinemäßige Sauerstoffgabe mit Maximalfluss",
+  "acs-sc-13": "Monitoring fortführen, Katheterzentrum voranmelden, EKG übertragen und Direktübergabe vorbereiten",
+  "acs-sc-14": "Pulsdefizit, Seitendifferenz des Blutdrucks und Neurologie verlangen die Prüfung auf Aortendissektion",
+  "acs-sc-15": "Verminderte Kontraktilität senkt Schlagvolumen und Organperfusion bis zum Pumpversagen",
+  "acs-sc-16": "Aufgrund von RRsys 116 mmHg, PDE-5-Einnahme und inferiorer Infarktlokalisation nicht anwenden",
+  "acs-sc-17": "Indikation, Kontraindikationen und VFA haben Vorrang vor der Reihenfolge einer Merkhilfe",
+  "acs-sc-18": "STEMI oder neuer LSB bei Ausschluss aktiver Blutung, frischem Schlaganfall und Aortendissektion",
+  "apoplex-tf-01": "Gehirn und Rückenmark gehören zum ZNS, Hirn- und Spinalnerven zum PNS",
+  "apoplex-tf-02": "Zwölf Hirnnervenpaare und 31 Spinalnervenpaare",
+  "apoplex-tf-03": "Koordination zielgerichteter Bewegung und Regulation des Gleichgewichts",
+  "apoplex-tf-04": "Kontinuierlicher Bedarf an Sauerstoff und Glukose bei geringen Energiereserven",
+  "apoplex-tf-05": "Arterieller Verschluss → Minderperfusion → Ischämie → Infarktareal",
+  "apoplex-tf-06": "Intrakranielle Blutung → Raumforderung → Druckanstieg → mögliche Herniation",
+  "apoplex-tf-07": "Auch bei vollständiger Rückbildung bleibt die Situation zeitkritisch und abklärungsbedürftig",
+  "apoplex-tf-08": "Eine akute Vigilanzminderung kann zusammen mit fokalen Ausfällen auftreten",
+  "apoplex-tf-09": "Schon eine auffällige BEFAST-Komponente begründet den Schlaganfallverdacht",
+  "apoplex-tf-10": "Kapilläre Glukosekontrolle und großlumiger peripherer Zugang ab 18 G",
+  "apoplex-tf-11": "Postiktaler Zustand, Unterzuckerung und Migräne mit Aura",
+  "apoplex-tf-12": "Oberkörper etwa 30 Grad anheben",
+  "apoplex-tf-13": "Natrium und Wasser fördern das Ödem, Kalzium den oxidativen Zellschaden",
+  "apoplex-tf-14": "Der Subarachnoidalraum liegt zwischen Arachnoidea und Pia mater",
+  "apoplex-tf-15": "ACA versorgt mediale Anteile, PCA vor allem okzipitale Regionen",
+  "apoplex-tf-16": "Karotis- und Vertebralisstromgebiet sind im Circulus Willisii miteinander verbunden",
+  "apoplex-tf-17": "Innere Drosselvene → Vena cava superior",
+  "apoplex-tf-18": "30°-Lagerung, Einsatzzeit unter 20 Minuten und prähospitale Zeit unter 60 Minuten",
+  "sht-sc-01": "Traumatische Schädigung des Gehirns oder seiner Hüllen durch eine äußere Krafteinwirkung",
+  "sht-sc-02": "Schädel → Epiduralraum → Dura → Subduralraum → Arachnoidea → Subarachnoidalraum → Pia",
+  "sht-sc-03": "Schädigung kontralateral zur unmittelbaren Anprallstelle",
+  "sht-sc-04": "GCS 13–15 leicht, 9–12 mittelschwer und 3–8 schwer",
+  "sht-sc-05": "Traumamechanismus, Amnesie, Erbrechen und neu aufgetretene Anisokorie",
+  "sht-sc-06": "Eröffnung bis zur Dura mit Verbindung zwischen intrakraniellem Raum und Außenwelt",
+  "sht-sc-07": "Ödem oder Blutung → ICP-Anstieg → Perfusionsabfall → sekundäre Ischämie",
+  "sht-sc-08": "Blutung unter der Dura und über der Arachnoidea, häufig venösen Ursprungs",
+  "sht-sc-09": "Epidurales Hämatom mit vorübergehend unauffälliger Bewusstseinslage",
+  "sht-sc-10": "Blutdruckanstieg, Bradykardie und auffälliges Atemmuster",
+  "sht-sc-11": "Hypotonie verhindern und einen systolischen Druck von mindestens 90 mmHg sichern",
+  "sht-sc-12": "Wiederholte und zeitlich dokumentierte Beurteilung von GCS, Pupillen und Vitalparametern",
+  "sht-sc-13": "Nur bei drohender Herniation vorübergehend mild hyperventilieren und starke Hypokapnie vermeiden",
+  "sht-sc-14": "Lebensrettende Maßnahmen parallel zum raschen Transport in ein geeignetes Traumazentrum",
+  "sht-sc-15": "Auf 10 ml Gesamtvolumen verdünnen, sodass 1 ml genau 1 mg Morphin enthält",
+  "sht-sc-16": "50 mg Esketamin auf insgesamt 10 ml aufziehen; daraus resultieren 5 mg/ml",
+  "sht-sc-17": "Midazolam bleibt bei 1 mg/ml unverdünnt; 1 mg i.v. ist an die Esketaminanalgesie gekoppelt",
+  "sht-sc-18": "Ausgangsneurologie und Verlauf müssen vom Einfluss der Analgosedierung abgrenzbar bleiben",
+  "lae-sc-01": "Embolischer Teil- oder Komplettverschluss der Pulmonalarterie beziehungsweise eines Astes",
+  "lae-sc-02": "Entlang des Partialdruckgefälles aus dem Alveolarraum in das venöse Kapillarblut",
+  "lae-sc-03": "Vom venösen Kapillarblut entlang des CO₂-Partialdruckgefälles in die Alveole",
+  "lae-sc-04": "Tiefe Vene → Vena cava → rechter Vorhof → rechter Ventrikel → Pulmonalarterie",
+  "lae-sc-05": "Stase, Endothelschaden und veränderte Gerinnungsneigung",
+  "lae-sc-06": "Luft-, Fett-, Fruchtwasser-, Fremdkörper- und Thromboembolie",
+  "lae-sc-07": "Das Areal bleibt belüftet, erhält hinter dem Verschluss jedoch kaum Blutfluss",
+  "lae-sc-08": "Plötzliche Erhöhung der pulmonalen Gefäßresistenz mit akuter RV-Nachlasterhöhung",
+  "lae-sc-09": "Beschleunigte Atmung, schneller Puls und thorakale Schmerzen",
+  "lae-sc-10": "Frische Operation, längere Immobilität und einseitige klinische TVT-Zeichen",
+  "lae-sc-11": "S₁ sowie Q₃ und T-Negativierung in III sprechen für mögliche, nicht beweisende RV-Belastung",
+  "lae-sc-12": "Ein neu aufgetretener RSB kann die Rechtsherzbelastung stützen, beweist die LAE aber nicht",
+  "lae-sc-13": "Pulmonale Obstruktion → RV-Nachlastanstieg → HZV-Abfall → obstruktiver Schock",
+  "lae-sc-14": "Puls- und Blutdruckseitendifferenz bei Dissektion; grobblasige Rasselgeräusche beim Lungenödem",
+  "lae-sc-15": "Entzündete oder traumatisch veränderte Haut über dem geplanten Gefäßzugang",
+  "lae-sc-16": "Lage und Durchgängigkeit kontrollieren und nach begrenzten Versuchen eine Alternative erwägen",
+  "lae-sc-17": "Notarzt früh nachfordern, Reanimationsbereitschaft herstellen und Transport parallel organisieren",
+  "lae-sc-18": "Plasmin baut nach Aktivierung von Plasminogen das Fibrinnetz ab; Alteplase bleibt NEF-gebunden",
+  "hypo-q-01": "Beschwerden können individuell bereits zwischen 60 und 80 mg/dl einsetzen",
+  "hypo-q-03": "Neuroglykopenie beeinträchtigt die neuronale Energieversorgung bis zum Ausfall von Schutzreflexen",
+  "hypo-q-05": "Kapillär früh messen, Intervention dokumentieren und den Verlauf erneut kapillär kontrollieren",
+  "hypo-q-07": "Bei sicherer Kooperation 20 g Glukose oral geben und anschließend kapillär nachmessen",
+  "hypo-q-09": "Ein normalisierter BZ beendet bei fortbestehendem Defizit nicht die neurologische Abklärung",
+  "hypo-q-11": "Typ 1 beruht auf absolutem Insulinmangel, Typ 2 auf Resistenz mit Sekretionsstörung",
+  "hypo-q-13": "Glukose 20 % langsam über den sicher laufenden Zugang geben und danach erneut messen",
+  "hypo-q-15": "Eine fortbestehende Ursache kann nach der kurz wirksamen Substitution erneut den BZ senken",
+  "hypo-q-17": "Unter 50 kg initial 2 ml/kgKG Glukose 20 % i.v.; bei fehlender Besserung 1 ml/kgKG prüfen",
+};
 
 function multipleChoiceQuestions(questionBank: MultipleChoiceQuestion[]) {
-  return questionBank.map((question) => {
-    const sameDifficulty = questionBank.filter((candidate) => candidate.difficulty === question.difficulty);
-    const position = sameDifficulty.findIndex((candidate) => candidate.id === question.id);
-    const partCount = question.difficulty === 3 ? 3 : 2;
-    const parts = Array.from({ length: partCount }, (_, offset) => sameDifficulty[(position + offset) % sameDifficulty.length]);
-    const labels = ["I", "II", "III"];
-    const options = parts.flatMap((part, partIndex) => {
-      const correctOptions = part.options.filter((option) => option.correct);
-      const correct = correctOptions[(position + partIndex) % correctOptions.length];
-      const distractor = closestDistractor(part, correct.text);
-      return [
-        { text: `${labels[partIndex]} · ${correct.text}`, correct: true },
-        { text: `${labels[partIndex]} · ${distractor.text}` },
-      ];
+  return questionBank.map((question, questionIndex) => {
+    const correctOptions = question.options.filter((option) => option.correct);
+    if (correctOptions.length > 1) return { ...question, mode: "multiple" as const };
+
+    const additionalCorrect = additionalCorrectAnswers[question.id];
+    const originalCorrect = correctOptions[0];
+    const distractors = question.options.filter((option) => !option.correct);
+    const replacedDistractor = [...distractors].sort((left, right) => Math.abs(right.text.length - originalCorrect.text.length) - Math.abs(left.text.length - originalCorrect.text.length))[0];
+    const retainedDistractors = distractors.filter((option) => option !== replacedDistractor);
+    const longestRetained = [...retainedDistractors].sort((left, right) => right.text.length - left.text.length)[0];
+    const longestCorrectLength = Math.max(originalCorrect.text.length, additionalCorrect.length);
+
+    const options = question.options.map((option) => {
+      if (option === replacedDistractor) return { text: additionalCorrect, correct: true };
+      if (questionIndex % 2 === 0 && option === longestRetained && option.text.length <= longestCorrectLength) {
+        const otherDistractor = retainedDistractors.find((candidate) => candidate !== option);
+        return { text: `${option.text}; ${otherDistractor?.text.charAt(0).toLowerCase()}${otherDistractor?.text.slice(1)}` };
+      }
+      return option;
     });
 
-    return {
-      ...question,
-      mode: "multiple" as const,
-      prompt: `Welche Antworten lösen die verknüpften Teilaspekte fachlich korrekt? ${parts.map((part, index) => `${labels[index]} · ${part.prompt}`).join("  ")}`,
-      options,
-      source: parts.map((part, index) => `${labels[index]} · ${part.source}`).join(" "),
-    };
+    return { ...question, mode: "multiple" as const, options };
   });
 }
 
@@ -763,7 +841,7 @@ function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standal
     }
   };
 
-  if (!questions.length) return <div className={`ai-question-panel quiz-launch ${standalone ? "standalone" : ""}`}><div><span className="eyebrow">{standalone ? "MC-Training" : "Nach dem Lesen"}</span><h2>Schwere Multiple-Choice-Fragen</h2><p>Jede Aufgabe zu {condition} enthält mehrere richtige Antworten. Medizinische Zusammenhänge und passende Thüringer VFA werden miteinander verknüpft; Fragen und Antworten werden bei jedem Neustart neu gemischt.</p></div><button className="primary-button" onClick={start}>{standalone ? "Training starten" : "Prüfungsfragen starten"}</button></div>;
+  if (!questions.length) return <div className={`ai-question-panel quiz-launch ${standalone ? "standalone" : ""}`}><div><span className="eyebrow">{standalone ? "MC-Training" : "Nach dem Lesen"}</span><h2>Schwere Multiple-Choice-Fragen</h2><p>Jede Aufgabe zu {condition} enthält mehrere richtige Antworten. Die Aufgaben prüfen medizinische Zusammenhänge und passende Thüringer VFA; Fragen und Antworten werden bei jedem Neustart neu gemischt.</p></div><button className="primary-button" onClick={start}>{standalone ? "Training starten" : "Prüfungsfragen starten"}</button></div>;
 
   if (finished) return <section className={`chapter-quiz quiz-result ${standalone ? "standalone" : ""}`}><span className="eyebrow">Training abgeschlossen</span><h2>{correctAnswers} von {questions.length} richtig</h2><p>Jede Antwort wurde in deiner Fortschrittsstatistik gespeichert. Falsche Antworten setzen die jeweilige Frage wieder auf 0 %.</p><button className="primary-button" onClick={start}>Neu starten und mischen</button></section>;
 
@@ -794,7 +872,7 @@ function QuizTraining({ onProgressChange, progress, selectedTopic, reviewMode, s
   const completeBank = selectedTopic === "acs" ? acsMultipleChoiceQuestions : selectedTopic === "sht" ? shtMultipleChoiceQuestions : selectedTopic === "lae" ? laeMultipleChoiceQuestions : selectedTopic === "hypoglykaemie" ? hypoglykaemieQuestions : apoplexMultipleChoiceQuestions;
   const questionBank = reviewMode === "wrong" ? completeBank.filter((question) => progress[question.id]?.correctCount === 0) : reviewMode === "once" ? completeBank.filter((question) => progress[question.id]?.correctCount === 1) : completeBank;
   const reviewLabel = reviewMode === "wrong" ? "Falsche Antworten wiederholen" : reviewMode === "once" ? "Einmal richtig beantwortete Fragen festigen" : "Vollständiges Kapitel";
-  return <section className="quiz-page mc-training-page"><button className="back-button" onClick={reviewMode ? onReviewBack : () => setSelectedTopic(null)}>← {reviewMode ? "Zurück zum Fortschritt" : "Anderes Kapitel wählen"}</button><div className="section-heading"><div><span className="eyebrow">MC-Training · Mündlich · {condition}</span><h1>{reviewLabel}</h1><p>{reviewMode ? "Diese Auswahl enthält ausschließlich die Fragen, die deinem gewählten Wiederholungsstand entsprechen." : "Mehrere plausible Aussagen erfordern medizinisches Verständnis und sicheres Verknüpfen. Die Schwierigkeit steigt bis zum Staatsexamensniveau."}</p></div><div className="source-badge"><b>{questionBank.length}</b><span>Fragen</span></div></div>{questionBank.length ? <MultipleChoiceQuiz standalone questionBank={questionBank} condition={condition} onProgressChange={onProgressChange} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine passenden Fragen mehr offen</h2><p>Durch deine letzten Antworten hat sich dieser Wiederholungsstapel geleert.</p></div></div>}<div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf 33 %, 67 % und 100 %. Eine falsche Antwort setzt nur die betreffende Frage auf 0 % zurück.</p></div></section>;
+  return <section className="quiz-page mc-training-page"><button className="back-button" onClick={reviewMode ? onReviewBack : () => setSelectedTopic(null)}>← {reviewMode ? "Zurück zum Fortschritt" : "Anderes Kapitel wählen"}</button><div className="section-heading"><div><span className="eyebrow">MC-Training · Mündlich · {condition}</span><h1>{reviewLabel}</h1><p>{reviewMode ? "Diese Auswahl enthält ausschließlich die Fragen, die deinem gewählten Wiederholungsstand entsprechen." : "Mehrere plausible Aussagen erfordern medizinisches Verständnis und genaues Abwägen. Die Schwierigkeit steigt bis zum Staatsexamensniveau."}</p></div><div className="source-badge"><b>{questionBank.length}</b><span>Fragen</span></div></div>{questionBank.length ? <MultipleChoiceQuiz standalone questionBank={questionBank} condition={condition} onProgressChange={onProgressChange} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine passenden Fragen mehr offen</h2><p>Durch deine letzten Antworten hat sich dieser Wiederholungsstapel geleert.</p></div></div>}<div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf 33 %, 67 % und 100 %. Eine falsche Antwort setzt nur die betreffende Frage auf 0 % zurück.</p></div></section>;
 }
 
 function ChapterProgressCard({ title, category, questions, progress, onTrain }: { title: string; category: string; questions: MultipleChoiceQuestion[]; progress: QuestionProgress; onTrain: (mode: Exclude<ReviewMode, null>) => void }) {
