@@ -62,7 +62,7 @@ button { cursor:pointer; }
 .logout { margin-top:16px; padding:10px; border:0; background:none; color:#919a9e; font-size:12px; text-align:left; }
 .main-content { min-height:100vh; margin-left:230px; display:flex; flex-direction:column; }
 .topbar { position:relative; height:74px; padding:0 4.5vw; border-bottom:1px solid var(--line); background:#fff; display:flex; align-items:center; justify-content:flex-end; gap:18px; }
-.header-clock { position:absolute; left:calc(50% - 115px); top:50%; display:flex; align-items:center; gap:8px; color:var(--navy); font-size:15px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.04em; text-decoration:underline; text-underline-offset:3px; transform:translate(-50%,-50%); }
+.header-clock { position:absolute; left:calc(50% - 115px); top:50%; display:flex; align-items:center; gap:8px; color:var(--navy); font-size:15px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.04em; transform:translate(-50%,-50%); }
 .header-clock span { display:grid; place-items:center; width:25px; height:25px; border-radius:8px; background:var(--orange-light); color:var(--orange); font-size:14px; }
 .status-pill { padding:8px 12px; border-radius:99px; background:#f0f7f4; color:#4b7464; font-size:11px; font-weight:700; }
 .status-pill span { display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#40a879; }
