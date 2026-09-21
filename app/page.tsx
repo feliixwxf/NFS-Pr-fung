@@ -6,8 +6,9 @@ import { rechtskundeFlashcards, rechtskundeQuestions } from "./rechtskunde-data"
 import { hyperventilationFlashcards, hyperventilationQuestions } from "./hyperventilation-data";
 import { geburtFlashcards, geburtQuestions } from "./geburt-data";
 import { abdominaltraumaFlashcards, abdominaltraumaQuestions } from "./abdominaltrauma-data";
+import MedicationTrainer from "./medikamentenrechnen/MedicationTrainer";
 
-type View = "start" | "oral" | "written" | "quiz" | "progress";
+type View = "start" | "oral" | "written" | "quiz" | "progress" | "medication";
 type TrainingTopic = "acs" | "apoplex" | "sht" | "lae" | "hyperventilation" | "geburt" | "abdominaltrauma" | "hypoglykaemie" | "nierensteinkolik" | "hodentorsion" | "rechtskunde";
 type ReviewMode = "wrong" | "once" | null;
 
@@ -55,6 +56,7 @@ const nav = [
   { id: "oral" as View, label: "Mündlich", icon: "◫" },
   { id: "written" as View, label: "Schriftlich", icon: "✎" },
   { id: "quiz" as View, label: "MC-Training", icon: "✓" },
+  { id: "medication" as View, label: "Medikamentenrechnen", icon: "▦" },
   { id: "progress" as View, label: "Fortschritt", icon: "↗" },
 ];
 
@@ -122,6 +124,7 @@ export default function Home() {
     localStorage.removeItem("notsan-learned");
     localStorage.removeItem("notsan-last-score");
     setReady(true);
+    if (window.location.pathname === "/medikamentenrechnen") setView("medication");
   }, []);
 
   useEffect(() => {
@@ -140,7 +143,7 @@ export default function Home() {
     } else setError(true);
   };
 
-  const changeView = (nextView: View) => { setProfileOpen(false); setView(nextView); setSelectedTopic(null); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
+  const changeView = (nextView: View) => { setProfileOpen(false); setView(nextView); setSelectedTopic(null); window.history.pushState({}, "", nextView === "medication" ? "/medikamentenrechnen" : "/"); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
   const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
@@ -169,6 +172,7 @@ export default function Home() {
         {view === "written" && <WrittenLibrary onProgressChange={setQuestionProgress} />}
         {view === "quiz" && <QuizTraining onProgressChange={setQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); }} />}
         {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} />}
+        {view === "medication" && <MedicationTrainer />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
       <nav className="mobile-nav" aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav>
