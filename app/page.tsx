@@ -55,6 +55,7 @@ const nav = [
   { id: "oral" as View, label: "Mündlich", icon: "◫" },
   { id: "written" as View, label: "Schriftlich", icon: "✎" },
   { id: "quiz" as View, label: "MC-Training", icon: "✓" },
+  { id: "medication" as View, label: "Medikamentenrechnen", icon: "▦" },
   { id: "progress" as View, label: "Fortschritt", icon: "↗" },
 ];
 
@@ -122,6 +123,7 @@ export default function Home() {
     localStorage.removeItem("notsan-learned");
     localStorage.removeItem("notsan-last-score");
     setReady(true);
+    if (window.location.pathname === "/medikamentenrechnen") setView("medication");
   }, []);
 
   useEffect(() => {
@@ -140,7 +142,7 @@ export default function Home() {
     } else setError(true);
   };
 
-  const changeView = (nextView: View) => { setProfileOpen(false); setView(nextView); setSelectedTopic(null); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
+  const changeView = (nextView: View) => { setProfileOpen(false); setView(nextView); setSelectedTopic(null); window.history.pushState({}, "", nextView === "medication" ? "/medikamentenrechnen" : "/"); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
   const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
@@ -169,6 +171,7 @@ export default function Home() {
         {view === "written" && <WrittenLibrary onProgressChange={setQuestionProgress} />}
         {view === "quiz" && <QuizTraining onProgressChange={setQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); }} />}
         {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} />}
+        {view === "medication" && <MedicationTrainer />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
       <nav className="mobile-nav" aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav>
@@ -755,6 +758,11 @@ function AbdominaltraumaStudyFinale({ onProgressChange }: { onProgressChange: (p
 function NierensteinkolikStudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
   const [mode, setMode] = useState<"quiz" | "flashcards" | null>(null);
   return <section className="study-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Nierensteinkolik auf Prüfungsniveau testen</h2><p>Anatomie, Pathophysiologie, Warnzeichen, Differenzialdiagnostik und die Thüringer VFA 18 und 39.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>MC</span><div><small>18 Prüfungsfragen</small><h3>Multiple-Choice-Training</h3><p>Mehrere richtige Aussagen pro Aufgabe mit enger Abgrenzung und anspruchsvollen VFA-Entscheidungen.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>14</span><div><small>Alle Prüfungsbereiche</small><h3>Karteikarten-Prüfung</h3><p>Wissen frei herleiten und mit ausführlichen Musterantworten vergleichen.</p><b>Karteikarten auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <MultipleChoiceQuiz questionBank={nierensteinkolikQuestions} condition="Nierensteinkolik" onProgressChange={onProgressChange} /> : <FlashcardTraining sourceCards={nierensteinkolikFlashcards} condition="Nierensteinkolik" onProgressChange={onProgressChange} />}</>}</section>;
+}
+
+function NierensteinkolikStudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
+  const [mode, setMode] = useState<"quiz" | "flashcards" | null>(null);
+  return <section className="study-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Nierensteinkolik auf Prüfungsniveau testen</h2><p>Anatomie, Pathophysiologie, Warnzeichen, Differenzialdiagnostik und sichere Versorgung.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>SC/MC</span><div><small>18 gemischte Prüfungsfragen</small><h3>Single- &amp; Multiple-Choice</h3><p>Vier Optionen, klare Mehrfachauswahl und nachvollziehbare Erklärungen.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>14</span><div><small>Alle Prüfungsbereiche</small><h3>Karteikarten-Prüfung</h3><p>Wissen frei herleiten und mit ausführlichen Musterantworten vergleichen.</p><b>Karteikarten auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <SingleChoiceQuiz questionBank={nierensteinkolikQuestions} condition="Nierensteinkolik" onProgressChange={onProgressChange} /> : <FlashcardTraining sourceCards={nierensteinkolikFlashcards} condition="Nierensteinkolik" onProgressChange={onProgressChange} />}</>}</section>;
 }
 
 function HypoglykaemieStudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
