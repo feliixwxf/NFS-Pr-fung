@@ -17,7 +17,7 @@ type ReviewMode = "wrong" | "once" | null;
 const topics = [
   "Myokardinfarkt", "Angina Pectoris", "Akutes Koronarsyndrom", "Apoplex", "Schädelhirntrauma",
   "Pneumonie", "Venenthrombose", "Lungenembolie", "Ulkusblutung", "Chronisch obstruktive Lungenerkrankung (COPD)",
-  "Hyperventilationstetanie", "Geburt", "Asthmaanfall", "Hypertensive Krise", "Akutes Abdomen",
+  "Hyperventilationstetanie", "Geburt", "Asthmaanfall", "Hypertensiver Notfall", "Akutes Abdomen",
   "Wirbelsäulentrauma", "Instabile Bradykardie", "Thoraxtrauma", "Abdominaltrauma", "Amputationsverletzung",
   "Beckentrauma", "Lungenödem (kardial)", "Extremitätentrauma", "Vorhofflimmern", "Krampfanfall",
   "Schussverletzungen", "Hypoglykämie", "Elektrounfall", "Allergische Reaktionen", "Kindlicher Fieberkrampf",
