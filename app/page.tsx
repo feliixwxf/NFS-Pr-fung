@@ -114,6 +114,7 @@ export default function Home() {
   const [questionProgress, setQuestionProgress] = useState<QuestionProgress>({});
   const [completedTopics, setCompletedTopics] = useState<number[]>([]);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const accessGranted = hasPersistentAccess();
@@ -128,11 +129,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!profileOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setProfileOpen(false); };
+    if (!profileOpen && !mobileMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") { setProfileOpen(false); setMobileMenuOpen(false); } };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [profileOpen]);
+  }, [profileOpen, mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [mobileMenuOpen]);
 
   const handleLogin = (event: FormEvent) => {
     event.preventDefault();
@@ -143,7 +151,7 @@ export default function Home() {
     } else setError(true);
   };
 
-  const changeView = (nextView: View) => { setProfileOpen(false); setView(nextView); setSelectedTopic(null); window.history.pushState({}, "", nextView === "medication" ? "/medikamentenrechnen" : "/"); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
+  const changeView = (nextView: View) => { setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); window.history.pushState({}, "", nextView === "medication" ? "/medikamentenrechnen" : "/"); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
   const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
@@ -166,7 +174,7 @@ export default function Home() {
     <div className="app-shell">
       <aside className="sidebar"><div className="brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><nav aria-label="Hauptnavigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav><div className="sidebar-tip"><span>☼</span><b>50 Themen angelegt</b><p>Alle Fachinhalte sind gezielt auf deine Prüfungsvorbereitung abgestimmt.</p></div><button className="logout" onClick={() => { clearPersistentAccess(); setSignedIn(false); }}>↪ Abmelden</button></aside>
       <main className="main-content">
-        <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><HeaderClock /><div className="status-pill preparing"><span /> Struktur angelegt</div><div className="profile-control"><button className="avatar profile-button" onClick={() => setProfileOpen((open) => !open)} aria-expanded={profileOpen} aria-haspopup="dialog" aria-label="Profil und Lernstand öffnen">FS</button>{profileOpen && <section className="profile-popover" role="dialog" aria-label="Profil und Lernstand"><header><div className="profile-avatar">FS</div><div><small>Profil</small><h2>Dein Lernbereich</h2></div><button onClick={() => setProfileOpen(false)} aria-label="Profil schließen">×</button></header><div className="profile-local-status"><span>✓</span><div><b>Lernstand auf diesem Gerät gespeichert</b><p>Fragen, Kapitelstatus und Fortschritt bleiben im Browser erhalten.</p></div></div><div className="profile-stat-grid"><div><b>{profileSummary.average}%</b><span>Fragensicherheit</span></div><div><b>{profileSummary.total}</b><span>Fragen begonnen</span></div><div><b>{completedTopics.length}</b><span>Kapitel absolviert</span></div></div><div className="profile-account-preview"><span className="eyebrow">Lernkonto · vorbereitet</span><h3>Später geräteübergreifend lernen</h3><p>Mit dem Lernkonto werden Statistiken, Lernfortschritt und Kapitelstände sicher deinem Profil zugeordnet.</p><button type="button" disabled>Anmelden · folgt später</button><button className="forgot-password-preview" type="button" disabled>Passwort vergessen · folgt später</button></div></section>}</div></header>
+        <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><HeaderClock /><div className="status-pill preparing"><span /> Struktur angelegt</div><div className="topbar-actions"><button className={`mobile-menu-toggle ${mobileMenuOpen ? "open" : ""}`} type="button" onClick={() => { setProfileOpen(false); setMobileMenuOpen((open) => !open); }} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label={mobileMenuOpen ? "Menü schließen" : "Menü öffnen"}><i /><i /><i /></button><div className="profile-control"><button className="avatar profile-button" onClick={() => { setMobileMenuOpen(false); setProfileOpen((open) => !open); }} aria-expanded={profileOpen} aria-haspopup="dialog" aria-label="Profil und Lernstand öffnen">FS</button>{profileOpen && <section className="profile-popover" role="dialog" aria-label="Profil und Lernstand"><header><div className="profile-avatar">FS</div><div><small>Profil</small><h2>Dein Lernbereich</h2></div><button onClick={() => setProfileOpen(false)} aria-label="Profil schließen">×</button></header><div className="profile-local-status"><span>✓</span><div><b>Lernstand auf diesem Gerät gespeichert</b><p>Fragen, Kapitelstatus und Fortschritt bleiben im Browser erhalten.</p></div></div><div className="profile-stat-grid"><div><b>{profileSummary.average}%</b><span>Fragensicherheit</span></div><div><b>{profileSummary.total}</b><span>Fragen begonnen</span></div><div><b>{completedTopics.length}</b><span>Kapitel absolviert</span></div></div><div className="profile-account-preview"><span className="eyebrow">Lernkonto · vorbereitet</span><h3>Später geräteübergreifend lernen</h3><p>Mit dem Lernkonto werden Statistiken, Lernfortschritt und Kapitelstände sicher deinem Profil zugeordnet.</p><button type="button" disabled>Anmelden · folgt später</button><button className="forgot-password-preview" type="button" disabled>Passwort vergessen · folgt später</button></div></section>}</div></div></header>
         {view === "start" && <Dashboard setView={changeView} progress={summarizeQuestionProgress(questionProgress).average} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={setSelectedTopic} onProgressChange={setQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
         {view === "written" && <WrittenLibrary onProgressChange={setQuestionProgress} />}
@@ -175,7 +183,8 @@ export default function Home() {
         {view === "medication" && <MedicationTrainer />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
-      <nav className="mobile-nav" aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav>
+      {mobileMenuOpen && <button className="mobile-menu-backdrop" type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen" />}
+      <aside id="mobile-menu" className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`} aria-hidden={!mobileMenuOpen}><header><div className="brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen">×</button></header><small>MENÜ</small><nav aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span><b>{item.label}</b>{view === item.id && <i>Aktiv</i>}</button>)}</nav><div className="mobile-menu-note"><span>☼</span><div><b>50 Themen angelegt</b><p>Deine gesamte Prüfungsvorbereitung an einem Ort.</p></div></div></aside>
     </div>
   );
 }
