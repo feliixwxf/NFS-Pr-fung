@@ -2,6 +2,10 @@
 
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { QuestionProgress, readQuestionProgress, recordQuestionAnswer, summarizeQuestionProgress } from "./lib/questionProgress";
+import MedicationTrainer from "./medikamentenrechnen/MedicationTrainer";
+
+type View = "start" | "oral" | "written" | "quiz" | "progress" | "medication";
+type TrainingTopic = "acs" | "apoplex" | "sht" | "lae" | "hypoglykaemie";
 import { rechtskundeFlashcards, rechtskundeQuestions } from "./rechtskunde-data";
 import { hyperventilationFlashcards, hyperventilationQuestions } from "./hyperventilation-data";
 import { geburtFlashcards, geburtQuestions } from "./geburt-data";

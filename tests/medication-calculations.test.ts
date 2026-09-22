@@ -46,6 +46,7 @@ test("accepts rounded whole millilitres but keeps medication amounts and small v
 test("keeps all 32 references plus variants and excludes ambiguous rules", async () => {
   const data = await readFile(new URL("../app/lib/medicationData.ts", import.meta.url), "utf8");
   const ids = [...data.matchAll(/\["(?:esk|morph|hep|mid|glu|ana|adr|cpr|fluid)-\d{2}"/g)];
+  assert.equal(ids.length, 66);
   assert.equal(ids.length, 54);
   assert.match(data, /exakt 30 kg/);
   assert.match(data, /i\.m\. exakt 40 kg/);
