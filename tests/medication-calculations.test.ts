@@ -34,10 +34,19 @@ test("accepts decimal comma, rejects invalid values and uses strict rounding tol
   assert.equal(isCorrect("0,2", .15, 2), false);
 });
 
-test("keeps all 32 reproducible reference cases and excludes ambiguous rules", async () => {
+test("accepts rounded whole millilitres but keeps medication amounts and small volumes exact", () => {
+  assert.equal(isCorrect("3", 3.2, 1, "ml"), true);
+  assert.equal(isCorrect("3,2", 3.2, 1, "ml"), true);
+  assert.equal(isCorrect("4", 3.2, 1, "ml"), false);
+  assert.equal(isCorrect("3", 3.2, 1, "mg"), false);
+  assert.equal(isCorrect("1", .96, 2, "ml"), false);
+  assert.equal(isCorrect("0,96", .96, 2, "ml"), true);
+});
+
+test("keeps all 32 references plus variants and excludes ambiguous rules", async () => {
   const data = await readFile(new URL("../app/lib/medicationData.ts", import.meta.url), "utf8");
   const ids = [...data.matchAll(/\["(?:esk|morph|hep|mid|glu|ana|adr|cpr|fluid)-\d{2}"/g)];
-  assert.equal(ids.length, 32);
+  assert.equal(ids.length, 54);
   assert.match(data, /exakt 30 kg/);
   assert.match(data, /i\.m\. exakt 40 kg/);
   assert.match(data, /keine Interpolation/);

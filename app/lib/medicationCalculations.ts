@@ -1,4 +1,4 @@
-export type Unit = "µg" | "mg" | "g" | "I.E." | "ml" | "ml/h" | "mg/ml" | "l";
+export type Unit = "µg" | "mg" | "g" | "I.E." | "I.E./ml" | "ml" | "ml/h" | "mg/ml" | "l";
 
 const mass: Record<string, number> = { "µg": .001, mg: 1, g: 1000 };
 const volume: Record<string, number> = { ml: 1, l: 1000 };
@@ -24,7 +24,12 @@ export function parseGermanNumber(input: string) {
   return Number.isFinite(value) && value >= 0 ? value : null;
 }
 
-export function isCorrect(input: string, expected: number, decimals: number) {
+export function isCorrect(input: string, expected: number, decimals: number, unit?: Unit) {
   const value = parseGermanNumber(input);
-  return value !== null && Math.abs(value - expected) <= Math.max(1e-9, 0.5 * 10 ** -(decimals + 2));
+  if (value === null) return false;
+  const exact = Math.abs(value - expected) <= Math.max(1e-9, 0.5 * 10 ** -(decimals + 2));
+  // Wirkstoffmengen bleiben strikt. Bei praktisch aufzuziehenden Volumina ab 1 ml
+  // wird zusätzlich die kaufmännisch gerundete ganze Milliliterangabe akzeptiert.
+  const roundedVolume = unit === "ml" && expected >= 1 && value === Math.round(expected);
+  return exact || roundedVolume;
 }
