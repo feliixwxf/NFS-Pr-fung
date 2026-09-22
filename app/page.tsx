@@ -2,8 +2,9 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { QuestionProgress, readQuestionProgress, recordQuestionAnswer, summarizeQuestionProgress } from "./lib/questionProgress";
+import MedicationTrainer from "./medikamentenrechnen/MedicationTrainer";
 
-type View = "start" | "oral" | "written" | "quiz" | "progress";
+type View = "start" | "oral" | "written" | "quiz" | "progress" | "medication";
 type TrainingTopic = "acs" | "apoplex" | "sht" | "lae" | "hypoglykaemie";
 type ReviewMode = "wrong" | "once" | null;
 
@@ -51,6 +52,7 @@ const nav = [
   { id: "oral" as View, label: "Mündlich", icon: "◫" },
   { id: "written" as View, label: "Schriftlich", icon: "✎" },
   { id: "quiz" as View, label: "MC-Training", icon: "✓" },
+  { id: "medication" as View, label: "Medikamentenrechnen", icon: "▦" },
   { id: "progress" as View, label: "Fortschritt", icon: "↗" },
 ];
 
@@ -110,14 +112,18 @@ export default function Home() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
-    const accessGranted = hasPersistentAccess();
-    setSignedIn(accessGranted);
-    if (accessGranted) persistAccess();
-    setQuestionProgress(readQuestionProgress());
-    try { setCompletedTopics(JSON.parse(localStorage.getItem(COMPLETED_TOPICS_KEY) || "[]") as number[]); } catch { setCompletedTopics([]); }
-    localStorage.removeItem("notsan-learned");
-    localStorage.removeItem("notsan-last-score");
-    setReady(true);
+    const frame = window.requestAnimationFrame(() => {
+      const accessGranted = hasPersistentAccess();
+      setSignedIn(accessGranted);
+      if (accessGranted) persistAccess();
+      setQuestionProgress(readQuestionProgress());
+      try { setCompletedTopics(JSON.parse(localStorage.getItem(COMPLETED_TOPICS_KEY) || "[]") as number[]); } catch { setCompletedTopics([]); }
+      localStorage.removeItem("notsan-learned");
+      localStorage.removeItem("notsan-last-score");
+      setReady(true);
+      if (window.location.pathname === "/medikamentenrechnen") setView("medication");
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {
@@ -136,7 +142,7 @@ export default function Home() {
     } else setError(true);
   };
 
-  const changeView = (nextView: View) => { setProfileOpen(false); setView(nextView); setSelectedTopic(null); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
+  const changeView = (nextView: View) => { setProfileOpen(false); setView(nextView); setSelectedTopic(null); window.history.pushState({}, "", nextView === "medication" ? "/medikamentenrechnen" : "/"); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
   const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
@@ -165,6 +171,7 @@ export default function Home() {
         {view === "written" && <WrittenLibrary />}
         {view === "quiz" && <QuizTraining onProgressChange={setQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); }} />}
         {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} />}
+        {view === "medication" && <MedicationTrainer />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
       <nav className="mobile-nav" aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav>
@@ -233,12 +240,14 @@ function ExpandableImage({ src, alt }: { src: string; alt: string }) {
 
   return <>
     <button className="image-open-button" type="button" onClick={() => setFullscreen(true)} aria-label={`${alt} im Vollbild öffnen`}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- lesson assets retain their source dimensions */}
       <img src={src} alt={alt} />
       <span>⤢ Vollbild</span>
     </button>
-    {fullscreen && <div className="image-lightbox" role="dialog" aria-modal="true" aria-label={`Vollbild: ${alt}`} onClick={() => setFullscreen(false)}>
+    {fullscreen && <div className="image-lightbox" role="dialog" aria-modal="true" aria-label={`Vollbild: ${alt}`}>
       <button className="image-lightbox-close" type="button" onClick={() => setFullscreen(false)}>× Schließen</button>
-      <div className="image-lightbox-stage" onClick={(event) => event.stopPropagation()}>
+      <div className="image-lightbox-stage">
+        {/* eslint-disable-next-line @next/next/no-img-element -- zoom view must preserve the original asset */}
         <img src={src} alt={alt} />
       </div>
     </div>}
