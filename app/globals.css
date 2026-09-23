@@ -202,6 +202,38 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .samplers-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
 .samplers-grid p { display:grid; gap:4px; padding:13px 14px; border:1px solid #d7ebe6; border-radius:10px; background:#fff; font-size:11px; line-height:1.55; }
 .samplers-grid p b { color:#24564d; font-size:11px; }
+.extremity-system-grid,.extremity-action-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:22px 0; }
+.extremity-system-card { min-width:0; padding:21px 22px; border:1px solid #d9e9e5; border-radius:14px; background:#f3faf7; }
+.extremity-system-card:nth-child(2) { border-color:#e8e2d7; background:#fcf8f0; }
+.extremity-system-card small { color:#468a73; font-size:10px; font-weight:850; letter-spacing:.1em; text-transform:uppercase; }
+.extremity-system-card:nth-child(2) small { color:#a47635; }
+.extremity-system-card h3 { margin:8px 0; font-size:17px; line-height:1.3; }
+.extremity-system-card p { margin:0; font-size:12px; line-height:1.6; }
+.extremity-action-grid > div { display:grid; grid-template-columns:31px minmax(0,1fr); column-gap:11px; align-content:start; min-width:0; padding:15px; border:1px solid #dce9e6; border-radius:12px; background:#f9fcfb; }
+.extremity-action-grid span { grid-row:span 2; display:grid; place-items:center; width:29px; height:29px; border-radius:8px; background:#dcefe9; color:#24564d; font-size:10px; font-weight:900; }
+.extremity-action-grid b { color:#244a44; font-size:12px; }
+.extremity-action-grid p { margin:3px 0 0; font-size:11px; line-height:1.5; }
+.lesson-prose > p.extremity-priority-note { margin:8px 0 24px; padding:12px 15px; border-left:3px solid #dc8b43; border-radius:4px 9px 9px 4px; background:#fff8f1; font-family:inherit; font-size:12px; line-height:1.6; }
+.extremity-samplers { margin-bottom:14px; }
+.extremity-samplers p { margin:0; }
+.lesson-prose > p.extremity-opqrst { margin:0; font-family:inherit; font-size:12px; line-height:1.6; }
+@media (max-width:650px) { .extremity-system-grid,.extremity-action-grid { grid-template-columns:1fr; } }
+.birth-anatomy-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; margin:8px 0 28px; }
+.birth-anatomy-card { min-width:0; padding:22px; border:1px solid #dbe7e3; border-radius:15px; background:#f5faf8; }
+.birth-anatomy-card:nth-child(2) { border-color:#eee3d8; background:#fff9f3; }
+.birth-anatomy-card small { color:#3c806b; font-size:9px; font-weight:850; letter-spacing:.11em; text-transform:uppercase; }
+.birth-anatomy-card:nth-child(2) small { color:#a76946; }
+.birth-anatomy-card h3 { margin:8px 0 15px; font-size:17px; line-height:1.3; }
+.birth-anatomy-card p { margin:17px 0 0; color:#53666b; font-size:12px; line-height:1.65; }
+.birth-organ-list { display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; list-style:none; }
+.birth-organ-list li { padding:8px 10px; border:1px solid #dce9e4; border-radius:99px; background:#fff; color:#345850; font-size:11px; font-weight:750; }
+.birth-anatomy-card:nth-child(2) .birth-organ-list li { border-color:#f0e1d5; color:#82533f; }
+.birth-trimester-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:14px 0 25px; }
+.birth-trimester-grid > div { display:grid; align-content:start; gap:6px; min-width:0; padding:17px; border:1px solid #dbe9e4; border-radius:12px; background:#f6faf8; }
+.birth-trimester-grid span { display:grid; place-items:center; width:28px; height:28px; margin-bottom:3px; border-radius:8px; background:#dcefe8; color:#286858; font-size:10px; font-weight:900; }
+.birth-trimester-grid b { color:#214640; font-size:13px; }
+.birth-trimester-grid small { color:#64746d; font-size:11px; line-height:1.45; }
+@media (max-width:650px) { .birth-anatomy-grid,.birth-trimester-grid { grid-template-columns:1fr; } }
 .anamnesis-priority { margin-top:12px; padding:16px 18px; border-radius:10px; background:#dcefe9; }
 .anamnesis-priority b { color:#24564d; }
 .anamnesis-priority p { margin-top:5px; }
