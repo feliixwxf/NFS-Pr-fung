@@ -1,0 +1,73 @@
+name: Main und Dustin synchronisieren
+
+on:
+  push:
+    branches:
+      - main
+      - Dustin
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-main-dustin
+  cancel-in-progress: false
+
+jobs:
+  fast-forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Repository mit beiden Zweigen laden
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Richtung sicher bestimmen
+        id: direction
+        shell: bash
+        run: |
+          git fetch --prune origin main Dustin
+          main=$(git rev-parse origin/main)
+          dustin=$(git rev-parse origin/Dustin)
+
+          if [[ "$main" == "$dustin" ]]; then
+            echo "source=" >> "$GITHUB_OUTPUT"
+            echo "target=" >> "$GITHUB_OUTPUT"
+            echo "Beide Zweige sind bereits gleich."
+          elif git merge-base --is-ancestor origin/main origin/Dustin; then
+            echo "source=Dustin" >> "$GITHUB_OUTPUT"
+            echo "target=main" >> "$GITHUB_OUTPUT"
+          elif git merge-base --is-ancestor origin/Dustin origin/main; then
+            echo "source=main" >> "$GITHUB_OUTPUT"
+            echo "target=Dustin" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::main und Dustin haben unterschiedliche neue Commits. Ein automatisches Fast-Forward ist nicht möglich; Änderungen müssen geprüft und zusammengeführt werden."
+            exit 1
+          fi
+
+      - name: Node.js einrichten
+        if: steps.direction.outputs.source == 'Dustin'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Dustins Stand vor Übernahme prüfen
+        if: steps.direction.outputs.source == 'Dustin'
+        run: |
+          npm ci
+          npm run build:vercel
+          npm run build
+          node --test tests/medication-calculations.test.ts
+          node --test tests/medication-dataset-integrity.test.ts
+
+      - name: Zurückliegenden Zweig per Fast-Forward aktualisieren
+        if: steps.direction.outputs.source != ''
+        env:
+          SOURCE: ${{ steps.direction.outputs.source }}
+          TARGET: ${{ steps.direction.outputs.target }}
+        shell: bash
+        run: |
+          git push origin "refs/remotes/origin/$SOURCE:refs/heads/$TARGET"
