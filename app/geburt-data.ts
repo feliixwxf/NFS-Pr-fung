@@ -1,3 +1,5 @@
+import { supplementalQuestions } from "./supplemental-questions";
+
 type TrainingFlashcard = { id: string; area: string; question: string; answer: string };
 type ChoiceOption = { text: string; correct?: boolean };
 type MultipleChoiceQuestion = { id: string; prompt: string; options: ChoiceOption[]; source: string; difficulty: 1 | 2 | 3; mode: "multiple" };
@@ -17,7 +19,7 @@ export const geburtFlashcards: TrainingFlashcard[] = [
   { id: "geburt-card-12", area: "VFA 43", question: "Welche Voraussetzungen und welche Dosis gelten für Partusisten nach der offiziellen Thüringer VFA 43?", answer: "Wehentätigkeit plus geburtsunmögliche Situation beziehungsweise BEL, Schwangerschaftswoche mindestens 22. Gabe: 10 ml mit 25 µg Partusisten langsam über drei Minuten i.v.; bei wieder einsetzender Wehentätigkeit innerhalb 15 Minuten einmal wiederholbar. Die 25-mg-Angabe in der Themen-PDF ist ein Einheitenfehler." },
 ];
 
-export const geburtQuestions: MultipleChoiceQuestion[] = [
+const geburtBaseQuestions: MultipleChoiceQuestion[] = [
   { id: "geburt-q-01", mode: "multiple", difficulty: 1, prompt: "Welche Strukturen gehören zu den inneren weiblichen Geschlechtsorganen?", options: [{ text: "Ovarien", correct: true }, { text: "Tubae uterinae", correct: true }, { text: "Uterus und Vagina", correct: true }, { text: "Klitoris und große Labien ausschließlich" }], source: "Zu den inneren Organen gehören Ovarien, Eileiter, Uterus und Vagina." },
   { id: "geburt-q-02", mode: "multiple", difficulty: 1, prompt: "Welche Zuordnungen zur Uteruswand sind korrekt?", options: [{ text: "Endometrium: innere Schleimhautschicht", correct: true }, { text: "Myometrium: glatte Muskulatur und Wehenbildung", correct: true }, { text: "Perimetrium: äußerer Bauchfellüberzug", correct: true }, { text: "Myometrium: ausschließlich hormonbildendes Drüsengewebe" }], source: "Die drei Schichten sind Endometrium, kontraktiles Myometrium und Perimetrium." },
   { id: "geburt-q-03", mode: "multiple", difficulty: 1, prompt: "Welche Aussagen zu den Geburtsphasen stimmen?", options: [{ text: "Die Eröffnungsphase endet mit vollständig geöffnetem Muttermund", correct: true }, { text: "Die Austrittsphase endet mit der Geburt des Kindes", correct: true }, { text: "Die Nachgeburtsphase umfasst die Geburt der Plazenta und Eihäute", correct: true }, { text: "Die Nachgeburtsphase endet grundsätzlich vor der Geburt des Kindes" }], source: "Die Geburt gliedert sich in Eröffnungs-, Austritts- und Nachgeburtsphase." },
@@ -37,3 +39,5 @@ export const geburtQuestions: MultipleChoiceQuestion[] = [
   { id: "geburt-q-17", mode: "multiple", difficulty: 3, prompt: "Welche Befunde sprechen bei einer Gebärenden für eine unmittelbare mütterliche und fetale Gefährdung?", options: [{ text: "Zerreißschmerz mit Schockzeichen bei möglicher Uterusruptur", correct: true }, { text: "Brettharter Uterus und Blutung bei möglicher Plazentaablösung", correct: true }, { text: "Nabelschnurvorfall nach Blasensprung", correct: true }, { text: "Regelmäßige Kindsbewegung ohne Beschwerden als alleinige Red Flag" }], source: "Uterusruptur, Plazentaablösung und Nabelschnurvorfall sind zeitkritische Gefahren für Mutter und Kind." },
   { id: "geburt-q-18", mode: "multiple", difficulty: 3, prompt: "Welche Angaben gehören in eine belastbare Übergabe nach präklinischer Geburt?", options: [{ text: "Geburtszeit, Schwangerschaftswoche, Lage und Geburtsverlauf", correct: true }, { text: "Mütterliche Vitalwerte, Blutverlust, Plazentastatus und Maßnahmen", correct: true }, { text: "Atmung, Herzfrequenz, Tonus, Hautfarbe, Temperatur und Verlauf des Neugeborenen", correct: true }, { text: "Nur der APGAR-Gesamtwert ohne Einzelbefunde oder Zeitpunkte" }], source: "Mutter und Kind benötigen getrennte, zeitbezogene Befund- und Maßnahmenverläufe einschließlich Geburts- und Abnabelungszeit." },
 ];
+
+export const geburtQuestions: MultipleChoiceQuestion[] = [...geburtBaseQuestions, ...supplementalQuestions.geburt];

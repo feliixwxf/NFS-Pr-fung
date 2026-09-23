@@ -1,3 +1,5 @@
+import { supplementalQuestions } from "./supplemental-questions";
+
 export type LegalFlashcard = { id: string; area: string; question: string; answer: string };
 
 export type LegalQuestion = {
@@ -24,7 +26,7 @@ export const rechtskundeFlashcards: LegalFlashcard[] = [
   { id: "recht-card-12", area: "BtMG", question: "Welche Voraussetzungen müssen für § 13 Abs. 1b BtMG zusammen vorliegen?", answer: "Notfallsanitäter verabreichen ein Anlage-III-Betäubungsmittel im Rahmen einer heilkundlichen Maßnahme; standardisierte ärztliche Vorgaben liegen vor; ärztliches Eintreffen kann nicht abgewartet werden; die Gabe ist zur Gefahrenabwehr oder zur Beseitigung beziehungsweise Linderung erheblicher Beschwerden erforderlich. Nachweis und Dokumentation bleiben Pflicht." },
 ];
 
-export const rechtskundeQuestions: LegalQuestion[] = [
+const rechtskundeBaseQuestions: LegalQuestion[] = [
   { id: "recht-q-01", prompt: "Welche Aussagen zur Normenhierarchie und zu juristischen Personen treffen zu?", options: [
     { text: "Eine Rechtsverordnung braucht grundsätzlich eine gesetzliche Ermächtigungsgrundlage.", correct: true },
     { text: "Eine Satzung darf höherrangigem Recht widersprechen, wenn sie lokal beschlossen wurde." },
@@ -134,3 +136,5 @@ export const rechtskundeQuestions: LegalQuestion[] = [
     { text: "Eine medizinisch richtige Maßnahme ist unabhängig von Einwilligung, Zuständigkeit und Dokumentation immer rechtmäßig." },
   ], source: "Prüfungssicheres Handeln verbindet medizinische Indikation mit Patientenwillen, Befugnis, Verhältnismäßigkeit, Kompetenz, Überwachung und Dokumentation.", difficulty: 3, mode: "multiple" },
 ];
+
+export const rechtskundeQuestions: LegalQuestion[] = [...rechtskundeBaseQuestions, ...supplementalQuestions.rechtskunde];

@@ -1,6 +1,7 @@
 import type { ThoraxtraumaChoiceQuestion, ThoraxtraumaFlashcard } from "./thoraxtrauma-data";
+import { supplementalQuestions } from "./supplemental-questions";
 
-export const wirbelsaeulentraumaQuestions: ThoraxtraumaChoiceQuestion[] = [
+const wirbelsaeulentraumaBaseQuestions: ThoraxtraumaChoiceQuestion[] = [
   {
     "id": "ws-q-01",
     "mode": "multiple",
@@ -489,6 +490,8 @@ export const wirbelsaeulentraumaQuestions: ThoraxtraumaChoiceQuestion[] = [
   }
 ];
 
+export const wirbelsaeulentraumaQuestions: ThoraxtraumaChoiceQuestion[] = [...wirbelsaeulentraumaBaseQuestions, ...supplementalQuestions.wirbelsaeulentrauma];
+
 export const wirbelsaeulentraumaFlashcards: ThoraxtraumaFlashcard[] = [
   {
     "id": "ws-card-01",
@@ -575,4 +578,3 @@ export const wirbelsaeulentraumaFlashcards: ThoraxtraumaFlashcard[] = [
     "answer": "Unfallmechanismus und Zeitpunkt, neurologischer Ausgangsbefund und Verlauf, Atem-/Kreislaufstörungen, Begleitverletzungen, Rettung/Lagerung, Analgetikum mit mg, ml, Konzentration und Zeiten, Wirkung und Nebenwirkungen."
   }
 ];
-
