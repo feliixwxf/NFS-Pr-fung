@@ -47,15 +47,21 @@ jobs:
             exit 1
           fi
 
+      - name: Zu übertragenden Stand auschecken
+        if: steps.direction.outputs.source != ''
+        env:
+          SOURCE: ${{ steps.direction.outputs.source }}
+        run: git checkout --detach "refs/remotes/origin/$SOURCE"
+
       - name: Node.js einrichten
-        if: steps.direction.outputs.source == 'Dustin'
+        if: steps.direction.outputs.source != ''
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-      - name: Dustins Stand vor Übernahme prüfen
-        if: steps.direction.outputs.source == 'Dustin'
+      - name: Zu übertragenden Stand prüfen
+        if: steps.direction.outputs.source != ''
         run: |
           npm ci
           npm run build:vercel
