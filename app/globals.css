@@ -591,3 +591,99 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .case-actions .primary-button{min-width:160px;}
 @media(max-width:800px){.trainer-settings{grid-template-columns:1fr 1fr}.mode-switch{grid-column:1/-1}.answer-grid{grid-template-columns:1fr 1fr}.case-card{padding:22px 18px}.case-progress{margin-top:10px}}
 @media(max-width:530px){.trainer-settings,.answer-grid{grid-template-columns:1fr}.mode-switch{grid-column:auto}.medication-page{width:calc(100% - 24px)}.case-card{padding:20px 14px}.case-progress{margin-top:0}}
+
+/* EUG: Farbtrennung der äußeren und inneren Genitale wie in der Vorlage. */
+.eug-anatomy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0 28px}
+.eug-anatomy-card{min-width:0;padding:24px;border:1px solid;border-radius:18px}
+.eug-anatomy-card.outer{background:#f8f2fc;border-color:#e8d7f0}
+.eug-anatomy-card.inner{background:#fff3f7;border-color:#f3d9e4}
+.eug-anatomy-card small{display:block;margin-bottom:8px;color:#86638e;font-size:10px;font-weight:850;letter-spacing:.07em;text-transform:uppercase}
+.eug-anatomy-card.inner small{color:#a45d79}
+.eug-anatomy-card h3{margin:0 0 14px!important;color:#3e3049;font-size:20px}
+.eug-anatomy-card.inner h3{color:#613e4d}
+.eug-anatomy-card .script-list{margin:0;padding-left:18px}
+.eug-anatomy-card .script-list li{margin:0 0 10px;line-height:1.55;overflow-wrap:anywhere}
+.eug-lesson .figure-grid{align-items:start}
+.eug-lesson .figure-grid .source-figure img{width:100%;height:auto;object-fit:contain}
+@media(max-width:760px){.eug-anatomy-grid{grid-template-columns:1fr}.eug-anatomy-card{padding:20px}}
+.eug-care-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:8px 0 14px}
+.eug-care-grid>div{display:grid;grid-template-columns:39px minmax(0,1fr);column-gap:11px;align-content:center;min-height:106px;padding:18px;border:1px solid #e2e9e8;border-radius:15px;background:#f9fbfa}
+.eug-care-grid span{grid-row:span 2;display:grid;place-items:center;align-self:start;width:34px;height:34px;border-radius:11px;background:#e8f0ee;color:#2e6158;font-size:10px;font-weight:900}
+.eug-care-grid b{color:#23454f;font-size:13px;line-height:1.35}
+.eug-care-grid small{margin-top:4px;color:#62767b;font-size:11px;line-height:1.5}
+.eug-destination{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:14px;padding:19px 21px;border-radius:15px;background:#243f4a;color:#fff}
+.eug-destination>span{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#ffffff1c;color:#9fe0d1;font-size:21px}
+.eug-destination small{display:block;margin-bottom:3px;color:#9fe0d1;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.eug-destination b{display:block;font-size:15px}
+.eug-destination p{margin:5px 0 0;color:#dce9e9;font-size:11px;line-height:1.5}
+@media(max-width:650px){.eug-care-grid{grid-template-columns:1fr}.eug-care-grid>div{min-height:88px;padding:15px}.eug-destination{padding:17px}}
+
+/* Kardiales Lungenödem: kurze, gut scannbare Lesebausteine */
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:20px 0 26px}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid>div{min-width:0;padding:20px;border:1px solid #d9e7e7;border-radius:17px;background:#f8fbfa}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare>div:first-child{border-color:#d8e7ec;background:#f2f8fa}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare small,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid small{display:block;margin-bottom:7px;color:#4b8580;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare h3{margin-bottom:9px;font-size:18px}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare p,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid p,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid p{margin:0;color:#52686e;font-size:12px;line-height:1.65}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare span{display:block;margin-top:12px;color:#54747a;font-size:11px;line-height:1.5}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid b,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid b{display:block;margin-bottom:7px;color:#244852;font-size:15px}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:22px 0}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid>div{min-width:0;padding:17px;border-radius:15px;background:#f4f8f9;border:1px solid #deeaec}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid small{display:block;margin-bottom:6px;color:#638b91;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid b{display:block;color:#244852;font-size:13px}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid p{margin:8px 0 0;color:#5a7075;font-size:11px;line-height:1.6}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:22px 0;padding:16px;border-radius:16px;background:#eaf4f3}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path span{padding:9px 12px;border-radius:10px;background:#fff;color:#28534f;font-size:11px;font-weight:800;line-height:1.35}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path i{color:#629188;font-style:normal;font-weight:900}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-symptoms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:20px 0}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-symptoms span{padding:12px 15px;border-left:3px solid #58a39a;border-radius:10px;background:#f0f8f6;color:#315a57;font-size:12px;font-weight:750;line-height:1.5}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-care-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-vfa-flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:18px 0 25px}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-care-grid>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-vfa-flow>div{display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:11px;align-content:center;min-width:0;padding:16px;border:1px solid #dce9e7;border-radius:15px;background:#f8fbfa}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-care-grid span,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-vfa-flow span{grid-row:span 2;display:grid;place-items:center;align-self:start;width:32px;height:32px;border-radius:10px;background:#e1f1ed;color:#246a61;font-size:10px;font-weight:900}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-care-grid b,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-vfa-flow b{color:#234b51;font-size:12px;line-height:1.35}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-care-grid small,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-vfa-flow small{margin-top:5px;color:#63787b;font-size:11px;line-height:1.55}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-morphine-note{display:grid;gap:7px;margin:15px 0 22px;padding:17px 19px;border-left:4px solid #c3874d;border-radius:10px;background:#fff8ef;color:#654c3d}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-morphine-note b{font-size:13px}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-morphine-note span{font-size:11px;line-height:1.6}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .figure-grid .source-figure img{width:100%;height:auto;object-fit:contain}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson) .figure-grid{grid-template-columns:1fr}
+@media(max-width:760px){:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid{grid-template-columns:1fr}}
+@media(max-width:650px){:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-symptoms,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-care-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-vfa-flow{grid-template-columns:1fr}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid>div{padding:17px}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path{gap:6px;padding:12px}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path span{font-size:10px}}
+.rib-section{padding-top:54px}
+.rib-section>summary{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;cursor:pointer;list-style:none}
+.rib-section>summary::-webkit-details-marker{display:none}
+.rib-section>summary .chapter-heading{flex:1;min-width:0}
+.rib-section>summary>i{margin-top:13px;color:#77938f;font-size:18px;font-style:normal;transition:transform .2s}
+.rib-section:not([open])>summary>i{transform:rotate(-90deg)}
+.rib-section>summary:focus-visible{outline:2px solid #4c8c7e;outline-offset:6px;border-radius:8px}
+.rib-fracture-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0 25px}
+.rib-fracture-grid>div{min-width:0;padding:17px 18px;border-radius:13px;background:#f5f8f8;border:1px solid #e0e9e8}
+.rib-fracture-grid b{display:block;margin-bottom:6px;color:#274b53;font-size:13px}
+.rib-fracture-grid span{display:block;color:#5a7075;font-size:12px;line-height:1.6}
+.rippenfraktur-lesson .source-figure img{background:#fff;object-fit:contain;height:auto}
+@media(max-width:650px){.rib-fracture-grid{grid-template-columns:1fr}.rib-section{padding-top:42px}}
+.unterkuehlung-lesson .hypo-resus-check{display:grid;grid-template-columns:110px minmax(0,1fr);gap:18px;align-items:center;margin:20px 0 14px;padding:19px 21px;border-radius:17px;background:#eaf4f3;border:1px solid #cfe3df}
+.unterkuehlung-lesson .hypo-resus-check>span,.unterkuehlung-lesson .hypo-resus-divider span{color:#237467;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.unterkuehlung-lesson .hypo-resus-check h3,.unterkuehlung-lesson .hypo-resus-branch h3,.unterkuehlung-lesson .hypo-resus-rules h3{margin:0 0 5px;color:#173f48;font-size:17px}
+.unterkuehlung-lesson .hypo-resus-check p,.unterkuehlung-lesson .hypo-resus-branch p,.unterkuehlung-lesson .hypo-resus-rules p{margin:0;color:#4f6a70;font-size:12px;line-height:1.65}
+.unterkuehlung-lesson .hypo-resus-branches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 27px}
+.unterkuehlung-lesson .hypo-resus-branch{min-width:0;padding:19px;border:1px solid #d7e7e4;border-radius:17px;background:#f7fbfa}
+.unterkuehlung-lesson .hypo-resus-branch.arrest{border-color:#eac9bd;background:#fff7f4}
+.unterkuehlung-lesson .hypo-resus-branch small{display:block;margin-bottom:9px;color:#278274;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.unterkuehlung-lesson .hypo-resus-branch.arrest small{color:#b65d49}
+.unterkuehlung-lesson .hypo-resus-branch b{display:block;margin-top:14px;padding-top:12px;border-top:1px solid #dae8e5;color:#31545a;font-size:11px;line-height:1.6}
+.unterkuehlung-lesson .hypo-resus-branch.arrest b{border-color:#edd8d0}
+.unterkuehlung-lesson .hypo-resus-divider{display:flex;align-items:center;gap:13px;margin:24px 0 15px}
+.unterkuehlung-lesson .hypo-resus-divider:after{content:"";height:1px;flex:1;background:#d9e6e4}
+.unterkuehlung-lesson .hypo-resus-rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:24px}
+.unterkuehlung-lesson .hypo-resus-rules>div{min-width:0;padding:18px;border:1px solid #e0e9e8;border-radius:15px;background:#f7f9f9}
+.unterkuehlung-lesson .hypo-resus-icon{display:grid;place-items:center;width:33px;height:33px;margin-bottom:11px;border-radius:10px;background:#dcefeb;color:#247869;font-size:16px;font-weight:900}
+.unterkuehlung-lesson .hypo-resus-subtitle{margin:22px 0 12px;color:#244953;font-size:18px}
+.unterkuehlung-lesson .hypo-temp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.unterkuehlung-lesson .hypo-temp-grid>div{min-width:0;padding:17px;border-radius:14px;background:#eef5f4;border:1px solid #d8e6e3}
+.unterkuehlung-lesson .hypo-temp-grid>div:first-child{background:#fff6f1;border-color:#ecd6c9}
+.unterkuehlung-lesson .hypo-temp-grid span{display:block;margin-bottom:9px;color:#2e7169;font-size:12px;font-weight:900}
+.unterkuehlung-lesson .hypo-temp-grid>div:first-child span{color:#ae6046}
+.unterkuehlung-lesson .hypo-temp-grid p{margin:0;color:#53696e;font-size:11px;line-height:1.65}
+.unterkuehlung-lesson .hypo-resus-note{margin-top:22px;padding:14px 18px;border-left:3px solid #8aaea6;background:#f6f9f8;color:#52686d;font-size:12px}
+.unterkuehlung-lesson .hypo-resus-source{margin-top:17px;color:#73888b;font-size:11px;line-height:1.6}
+@media(max-width:650px){.unterkuehlung-lesson .hypo-resus-check{grid-template-columns:1fr;gap:8px}.unterkuehlung-lesson .hypo-resus-branches,.unterkuehlung-lesson .hypo-resus-rules,.unterkuehlung-lesson .hypo-temp-grid{grid-template-columns:1fr}}
