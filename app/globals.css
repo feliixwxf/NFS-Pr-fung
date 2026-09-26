@@ -707,3 +707,123 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .unterkuehlung-lesson .hypo-resus-note{margin-top:22px;padding:14px 18px;border-left:3px solid #8aaea6;background:#f6f9f8;color:#52686d;font-size:12px}
 .unterkuehlung-lesson .hypo-resus-source{margin-top:17px;color:#73888b;font-size:11px;line-height:1.6}
 @media(max-width:650px){.unterkuehlung-lesson .hypo-resus-check{grid-template-columns:1fr;gap:8px}.unterkuehlung-lesson .hypo-resus-branches,.unterkuehlung-lesson .hypo-resus-rules,.unterkuehlung-lesson .hypo-temp-grid{grid-template-columns:1fr}}
+
+/* Unified application design system */
+:root{
+  --navy:#202b30;--navy-2:#344148;--ink:#202b30;--muted:#66737a;
+  --orange:#c65330;--orange-light:#fbece5;--cream:#f7f6f2;
+  --line:#e4e2dc;--green:#477a61;--green-light:#eaf3ec;--white:#fff;
+  --surface:#fff;--surface-soft:#fbfaf7;--radius-sm:10px;--radius-md:14px;
+  --radius-lg:20px;--shadow-card:0 8px 28px #2831360a;--focus:#205f78;
+}
+html{background:var(--cream)}
+body{background:var(--cream);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px}
+button,input,select,textarea{font:inherit}
+:where(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid var(--focus)!important;outline-offset:3px}
+button{min-height:44px}
+.app-shell,.main-content{background:var(--cream)}
+.sidebar{width:248px;padding:28px 18px 22px;border-color:var(--line);box-shadow:none}
+.main-content{margin-left:248px}
+.sidebar nav button{min-height:48px;padding:12px 14px;border-radius:var(--radius-sm);color:#526067;font-size:14px}
+.sidebar nav button:hover,.sidebar nav button.active{background:var(--orange-light);color:#9f3f25}
+.brand-mark{border-radius:8px;background:var(--orange);box-shadow:none}
+.brand b{color:inherit}
+.sidebar-tip{background:var(--surface-soft);border:1px solid var(--line)}
+.topbar{height:72px;padding-inline:clamp(20px,4vw,58px);background:#fff;border-color:var(--line)}
+.header-clock{color:#4d5b62}.status-pill{background:var(--green-light);color:#39664f}
+.avatar,.profile-avatar{background:#efe8e1;color:#5c493d}
+.profile-popover{border-radius:var(--radius-md);box-shadow:0 18px 48px #202b3018}
+.page-section,.quiz-page{width:min(1180px,calc(100% - 48px));margin:clamp(32px,5vw,64px) auto 72px}
+.section-heading{align-items:end;margin-bottom:28px}
+.section-heading h1{max-width:850px;margin:8px 0 10px;color:var(--ink);font-size:clamp(34px,4vw,52px);line-height:1.05;letter-spacing:-.045em}
+.section-heading p{max-width:720px;color:var(--muted);font-size:15px;line-height:1.65}
+.eyebrow{color:#a94126;font-size:11px;letter-spacing:.14em}
+.source-badge{background:var(--surface);border:1px solid var(--line);box-shadow:none}
+.primary-button,.light-button{background:var(--orange);border-radius:var(--radius-sm);box-shadow:none;color:#fff}
+.primary-button:hover:not(:disabled),.light-button:hover{background:#aa4328;transform:none}
+
+/* Calm overview cards and controls */
+.library-tools{display:grid;grid-template-columns:minmax(280px,1fr) auto;gap:14px;align-items:center;margin:0 0 38px}
+.library-tools .topic-search{margin:0;min-height:52px;background:#fff;border:1px solid #d9d7d1;border-radius:var(--radius-sm);box-shadow:none}
+.availability-filters{display:flex;gap:8px}
+.availability-filters button{padding:0 17px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;color:#59666c;font-size:12px;font-weight:750;white-space:nowrap}
+.availability-filters button.active{border-color:#e8b9aa;background:var(--orange-light);color:#9f3f25}
+.library-empty{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:18px;padding:28px;border:1px dashed #cfcac1;border-radius:var(--radius-md);background:#fff}
+.library-empty>span{display:grid;place-items:center;width:50px;height:50px;border-radius:12px;background:var(--orange-light);color:var(--orange);font-size:24px}
+.library-empty h2{margin:0 0 5px;font-size:20px}.library-empty p{margin:0;color:var(--muted)}
+.library-empty button{padding:0 16px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-weight:750}
+.topic-group{margin-top:34px}.topic-group-heading{padding-bottom:14px;border-bottom:1px solid var(--line)}
+.topic-group-heading>span{background:var(--orange-light);color:var(--orange)}
+.topic-name-grid{gap:14px;margin-top:16px}
+.topic-name-grid>button,.written-reading-grid>button,.study-mode-grid>button,.action-cards>button{border:1px solid var(--line);border-radius:var(--radius-md);background:#fff;box-shadow:var(--shadow-card)}
+.topic-name-grid>button{min-height:148px;align-items:start;padding:22px;text-align:left}
+.topic-name-grid>button:hover:not(:disabled){border-color:#dda18d;transform:none;box-shadow:0 10px 30px #6d321710}
+.topic-name-grid>button:disabled{cursor:default;opacity:1;background:#faf9f6;color:#707a7e}
+.topic-name-grid>button>i{align-self:end;width:auto;color:var(--orange);font-size:11px;font-style:normal;font-weight:800;white-space:nowrap}
+.topic-name-grid>button:disabled>i{color:#879094}
+.topic-name-grid .availability-status,.topic-name-grid .learning-status{display:block;width:max-content;max-width:100%;margin-top:9px;padding:4px 8px;border-radius:99px;background:var(--green-light);color:#35634c;font-size:9px;font-weight:800;line-height:1.3}
+.topic-name-grid .learning-status{margin-top:6px;padding:0;background:transparent;color:#68767b;font-weight:650}
+.topic-name-grid>button:disabled .availability-status{background:#f0ede7;color:#6e665d}
+
+/* Reading and training surfaces share typography and geometry */
+.topic-reader{width:min(1100px,calc(100% - 48px))}
+.reader-hero,.reader-hero-ready,.legal-hero{min-height:0;padding:36px 42px;border:1px solid var(--line);border-radius:var(--radius-lg) var(--radius-lg) 0 0;background:#fff;color:var(--ink)}
+.reader-hero-ready::after{display:none}
+.reader-hero .eyebrow,.legal-hero .eyebrow{color:#a94126}
+.reader-hero h1,.legal-hero h1{color:var(--ink);font-size:clamp(34px,5vw,52px)}
+.reader-hero p,.legal-hero p{color:var(--muted)}
+.reader-status{border-color:#e6b8a9;background:var(--orange-light);color:#964128}
+.reader-status.completed{border-color:#bad4c3;background:var(--green-light);color:#35634c}
+.lesson-article{border-color:var(--line);box-shadow:var(--shadow-card)}
+.lesson-intro .lead,.chapter-heading h2,.lesson-prose>p,.case-card h2,.exam-summary>h2{font-family:inherit}
+.lesson-intro .lead{color:var(--ink);font-weight:650}
+.chapter-heading h2{color:var(--ink)}
+.chapter-heading>span{border-radius:10px}
+.lesson-prose>p{color:#46565d;font-size:16px;line-height:1.8}
+.source-figure,.collapsible-figure{border-color:var(--line);border-radius:var(--radius-md)}
+.lesson-article table,.legal-reader table{display:block;width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.knowledge-note,.ventilation-caution{border:1px solid #efd7ce;border-left:4px solid var(--orange);background:#fff6f2}
+.verified-addition{border-color:#cddfd3;background:#f2f8f4}
+.study-finale,.flashcard-training,.chapter-quiz,.ai-question-panel,.case-card,.exam-summary,.empty-medication{border:1px solid var(--line);border-radius:var(--radius-lg);background:#fff;color:var(--ink);box-shadow:var(--shadow-card)}
+.ai-question-panel h2,.ai-question-panel p{color:var(--ink)}
+.flashcard-training-head{color:var(--muted)}
+.exam-flashcard{border:1px solid var(--line);background:var(--surface-soft);color:var(--ink)}
+.multiple-choice-actions button{min-height:54px}
+.check-multiple-answer{min-height:48px;background:var(--orange)!important}
+.mc-training-rule{border-color:var(--line);background:#fff}
+
+/* Home and medication trainer */
+.welcome{background:#fff;border-color:var(--line);box-shadow:var(--shadow-card)}
+.welcome::after,.drk-cross{display:none}
+.hero-drk-badge{border-radius:var(--radius-lg);background:var(--orange-light);box-shadow:none;backdrop-filter:none}
+.hero-drk-badge b{color:var(--orange)}
+.stats-grid article,.daily-card{border:1px solid var(--line);background:#fff;box-shadow:var(--shadow-card)}
+.medication-warning{border:1px solid #efd7ce;border-left:4px solid var(--orange);background:#fff6f2}
+.trainer-settings{border-color:var(--line);box-shadow:var(--shadow-card)}
+.trainer-settings select{min-height:46px;background:#fff}
+.mode-switch{background:#f0ede8}.mode-switch button{min-height:44px}.mode-switch button.active{background:var(--orange);color:#fff}
+.case-card h2,.exam-summary>h2{color:var(--ink)}
+.case-tags span,.trainer-stats span{background:#f1efea!important;color:#526168!important}
+.case-progress{height:6px}.case-feedback.correct{background:var(--green-light)}
+
+@media(max-width:1100px){
+  .sidebar{display:none}.main-content{margin-left:0}.topbar{justify-content:space-between}.topbar .mobile-brand,.mobile-menu-toggle{display:flex}
+  .header-clock{display:none}.status-pill{margin-left:auto}.mobile-menu{width:min(390px,90vw)}
+}
+@media(max-width:760px){
+  .page-section,.quiz-page,.topic-reader{width:calc(100% - 24px);margin-top:26px}
+  .topbar{height:66px;padding-inline:14px}.topbar .status-pill{display:none}
+  .section-heading{align-items:start}.section-heading h1{font-size:clamp(30px,10vw,40px)}
+  .section-heading p{font-size:14px}.source-badge{align-self:start}
+  .library-tools{grid-template-columns:1fr}.availability-filters{display:grid;grid-template-columns:1fr 1fr}
+  .availability-filters button:first-child{grid-column:1/-1}.availability-filters button{white-space:normal}
+  .library-empty{grid-template-columns:44px 1fr}.library-empty>button{grid-column:1/-1;width:100%}
+  .topic-name-grid>button{min-height:0;padding:18px}.topic-name-grid>button>i{white-space:normal;text-align:right}
+  .reader-hero,.reader-hero-ready,.legal-hero{padding:28px 20px}.lesson-article{padding-inline:18px}.lesson-prose{padding-left:0}
+  .case-actions .primary-button,.exam-summary .primary-button{width:100%}
+}
+@media(max-width:480px){
+  .topbar .brand{font-size:14px}.topbar .brand-mark{width:32px;height:32px}.section-heading{display:block}.source-badge{width:max-content;margin-top:18px}
+  .availability-filters{grid-template-columns:1fr}.availability-filters button:first-child{grid-column:auto}
+  .topic-name-grid>button{grid-template-columns:38px minmax(0,1fr)}.topic-name-grid>button>i{grid-column:2;margin-top:8px;justify-self:start}
+}
