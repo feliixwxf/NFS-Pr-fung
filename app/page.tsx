@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, cloneElement, FormEvent, isValidElement, ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
+import { Children, cloneElement, FormEvent, isValidElement, ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { QuestionProgress, readQuestionProgress, recordQuestionAnswer, summarizeQuestionProgress } from "./lib/questionProgress";
 import { readCompletedTopics, writeTopicCompletion } from "./lib/topicProgress";
 import { activateLocalUser, saveQuestionProgress, saveTopicProgress, syncLearningProgress } from "./lib/cloudProgress";
@@ -153,6 +153,11 @@ export default function Home() {
   const [completedTopics, setCompletedTopics] = useState<number[]>([]);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [headerMenuVisible, setHeaderMenuVisible] = useState(true);
+  const headerMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const floatingMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLElement>(null);
+  const menuOpenerRef = useRef<HTMLButtonElement | null>(null);
   const [accountUserId, setAccountUserId] = useState<string | null>(null);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [accountAvatarUrl, setAccountAvatarUrl] = useState<string | null>(null);
@@ -228,11 +233,61 @@ export default function Home() {
   }, [profileOpen, mobileMenuOpen]);
 
   useEffect(() => {
+    const button = headerMenuButtonRef.current;
+    if (!button) return;
+    const observer = new IntersectionObserver(([entry]) => setHeaderMenuVisible(entry.isIntersecting), { threshold: 0.01 });
+    observer.observe(button);
+    return () => observer.disconnect();
+  }, [signedIn]);
+
+  useEffect(() => {
     if (!mobileMenuOpen) return;
-    const previousOverflow = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    const previousStyles = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    };
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    const menu = mobileMenuRef.current;
+    const focusable = menu?.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    focusable?.[0]?.focus({ preventScroll: true });
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    menu?.addEventListener("keydown", trapFocus);
+    return () => {
+      menu?.removeEventListener("keydown", trapFocus);
+      document.body.style.overflow = previousStyles.overflow;
+      document.body.style.position = previousStyles.position;
+      document.body.style.top = previousStyles.top;
+      document.body.style.width = previousStyles.width;
+      window.scrollTo(0, scrollY);
+      window.requestAnimationFrame(() => {
+        const opener = menuOpenerRef.current;
+        const visibleTrigger = [opener, floatingMenuButtonRef.current, headerMenuButtonRef.current].find((candidate) => {
+          if (!candidate?.isConnected || !candidate.getClientRects().length) return false;
+          const rect = candidate.getBoundingClientRect();
+          return rect.bottom > 0 && rect.top < window.innerHeight;
+        });
+        visibleTrigger?.focus({ preventScroll: true });
+      });
+    };
   }, [mobileMenuOpen]);
+
+  const openMobileMenu = (opener: HTMLButtonElement) => {
+    menuOpenerRef.current = opener;
+    setProfileOpen(false);
+    setMobileMenuOpen(true);
+  };
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -318,7 +373,7 @@ export default function Home() {
           <HeaderClock />
           <div className="status-pill"><span /> {accountUserId && syncStatus === "synced" ? "Lernstand synchronisiert" : "Lernstand lokal gespeichert"}</div>
           <div className="topbar-actions">
-            <button className={`mobile-menu-toggle ${mobileMenuOpen ? "open" : ""}`} type="button" onClick={() => { setProfileOpen(false); setMobileMenuOpen((open) => !open); }} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label={mobileMenuOpen ? "Menü schließen" : "Menü öffnen"}><i /><i /><i /></button>
+            <button ref={headerMenuButtonRef} className={`mobile-menu-toggle ${mobileMenuOpen ? "open" : ""}`} type="button" onClick={(event) => openMobileMenu(event.currentTarget)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Menü öffnen"><i /><i /><i /></button>
             <div className="profile-control">
               <button className="avatar profile-button" onClick={() => { setMobileMenuOpen(false); setPasswordResetMessage(""); setProfileOpen((open) => !open); }} aria-expanded={profileOpen} aria-haspopup="dialog" aria-label="Profil und Lernstand öffnen">{accountAvatar}</button>
               {profileOpen && <section className="profile-popover" role="dialog" aria-label="Profil und Lernstand">
@@ -345,7 +400,8 @@ export default function Home() {
         {view === "medication" && <MedicationTrainer key={accountUserId || "guest"} accountUserId={accountUserId} onSyncError={() => setSyncStatus("error")} />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
-      {mobileMenuOpen && <><button className="mobile-menu-backdrop" type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen" /><aside id="mobile-menu" className="mobile-menu open" role="dialog" aria-modal="true" aria-label="Navigation"><header><div className="brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen">×</button></header><small>MENÜ</small><nav aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span><b>{item.label}</b>{view === item.id && <i>Aktiv</i>}</button>)}</nav><div className="mobile-menu-note"><span>☼</span><div><b>{topics.length} Themen angelegt</b><p>Deine gesamte Prüfungsvorbereitung an einem Ort.</p></div></div></aside></>}
+      {!headerMenuVisible && !mobileMenuOpen && <button ref={floatingMenuButtonRef} className="floating-menu-toggle" type="button" onClick={(event) => openMobileMenu(event.currentTarget)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Menü öffnen"><span aria-hidden="true"><i /><i /><i /></span>Menü</button>}
+      {mobileMenuOpen && <><button className="mobile-menu-backdrop" type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen" /><aside ref={mobileMenuRef} id="mobile-menu" className="mobile-menu open" role="dialog" aria-modal="true" aria-label="Navigation"><header><div className="brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen">×</button></header><small>MENÜ</small><nav aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span><b>{item.label}</b>{view === item.id && <i>Aktiv</i>}</button>)}</nav><div className="mobile-menu-note"><span>☼</span><div><b>{topics.length} Themen angelegt</b><p>Deine gesamte Prüfungsvorbereitung an einem Ort.</p></div></div></aside></>}
     </div>
   );
 }
