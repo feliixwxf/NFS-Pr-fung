@@ -1,5 +1,32 @@
 @import "tailwindcss";
 
+.burn-grade-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin:20px 0; }
+.burn-grade-grid > div { min-width:0; padding:17px; border:1px solid #dfebe9; border-radius:16px; background:linear-gradient(150deg,#fff,#f4f9f7); }
+.burn-grade-grid span { display:inline-flex; min-width:44px; min-height:34px; align-items:center; justify-content:center; padding:0 8px; border-radius:9px; background:#dcefeb; color:#1c6c63; font-weight:850; }
+.burn-grade-grid b { display:block; margin:12px 0 5px; color:#163b42; font-size:14px; }
+.burn-grade-grid p { margin:0; color:#536b70; font-size:13px; line-height:1.55; }
+.burn-infusion-card { margin:30px 0 12px; padding:clamp(18px,3vw,30px); border:1px solid #c9dfdb; border-radius:22px; background:linear-gradient(145deg,#f0faf7,#fff 62%); box-shadow:0 18px 40px #123d3920; }
+.burn-infusion-header { display:flex; align-items:flex-start; gap:16px; }
+.burn-infusion-header > span { display:grid; place-items:center; flex:0 0 45px; width:45px; height:45px; border-radius:13px; background:#236c65; color:#fff; font-size:24px; }
+.burn-infusion-header small { color:#1e746b; font-size:11px; font-weight:850; letter-spacing:.1em; text-transform:uppercase; }
+.burn-infusion-header h3 { margin:4px 0 6px; color:#14343c; font-size:clamp(20px,2.4vw,28px); letter-spacing:-.03em; }
+.burn-infusion-header p { margin:0; color:#526a70; font-size:13px; line-height:1.5; }
+.burn-infusion-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:25px 0 16px; }
+.burn-infusion-form label { display:grid; gap:7px; min-width:0; color:#1d3c42; font-size:13px; font-weight:750; }
+.burn-infusion-form label span { color:#6e8286; font-weight:550; }
+.burn-infusion-form input { width:100%; min-width:0; height:50px; padding:0 14px; border:1.5px solid #a8cbc4; border-radius:11px; outline:0; background:#fff; color:#15343b; font-size:18px; font-weight:750; }
+.burn-infusion-form input:focus { border-color:#218f79; box-shadow:0 0 0 4px #218f7920; }
+.burn-infusion-result { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; min-height:102px; }
+.burn-infusion-result > div { min-width:0; display:flex; flex-direction:column; justify-content:center; padding:16px 19px; border-radius:15px; background:#173d42; color:#fff; }
+.burn-infusion-result > div:nth-child(2) { background:#e4f2ed; color:#174b43; }
+.burn-infusion-result small { color:inherit; opacity:.8; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
+.burn-infusion-result strong { display:block; margin-top:4px; font-size:clamp(26px,3vw,36px); letter-spacing:-.05em; white-space:nowrap; }
+.burn-infusion-result strong span { font-size:15px; letter-spacing:0; }
+.burn-infusion-result > p { grid-column:1/-1; align-self:center; margin:0; padding:15px; border-radius:12px; background:#e6f3ef; color:#285c55; }
+.burn-infusion-equation { margin:14px 0 0!important; color:#2a6a61; font-size:13px; font-weight:850; }
+.burn-infusion-warning { margin:15px 0 0!important; padding:14px 16px; border-left:3px solid #e88752; border-radius:0 10px 10px 0; background:#fff3eb; color:#6d4832; font-size:12px; line-height:1.6; }
+@media(max-width:620px) { .burn-infusion-form,.burn-infusion-result { grid-template-columns:1fr; } .burn-infusion-result { min-height:0; } .burn-infusion-header { gap:11px; } .burn-infusion-header > span { flex-basis:38px; width:38px; height:38px; } }
+
 :root { --navy:#0b2634; --navy-2:#12394a; --ink:#13232c; --muted:#6e7d84; --orange:#f26a3d; --orange-light:#fff0e9; --cream:#f5f3ed; --line:#e5e8e7; --green:#2d9b73; --white:#fff; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
@@ -30,6 +57,24 @@ button { cursor:pointer; }
 .ecg i:nth-child(3) { width:70px; height:120px; background:none; border-left:2px solid #fff; border-top:2px solid #fff; transform:rotate(58deg) skew(-20deg); }
 .login-panel { display:grid; place-items:center; padding:42px; background:#fbfbf9; }
 .login-card { width:min(410px,100%); }
+.login-card > form > p { color:var(--muted); line-height:1.55; margin:0 0 22px; }
+.login-card > form > .primary-button { width:100%; margin-top:18px; }
+.account-access { margin-top:25px; padding-top:22px; border-top:1px solid var(--line); }
+.account-mode-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:4px; border-radius:12px; background:#eef2f1; }
+.account-mode-tabs button { min-height:38px; border:0; border-radius:9px; background:transparent; color:#607078; font-weight:750; cursor:pointer; }
+.account-mode-tabs button.active { background:#fff; color:var(--navy); box-shadow:0 2px 8px #102b3516; }
+.account-access form { display:grid; gap:11px; padding-top:15px; }
+.account-access h3 { margin:0 0 2px; font-size:17px; }
+.account-access label { display:grid; gap:5px; margin:0; color:var(--navy); font-size:12px; font-weight:750; }
+.account-access input,.account-access textarea { width:100%; min-height:40px; padding:9px 11px; border:1px solid #d8e1df; border-radius:9px; background:#fff; color:var(--navy); font:inherit; }
+.account-access textarea { min-height:66px; resize:vertical; }
+.account-access form > button[type="submit"] { min-height:42px; border:0; border-radius:9px; background:var(--orange); color:white; font-weight:800; cursor:pointer; }
+.account-access form > button:disabled { opacity:.55; cursor:not-allowed; }
+.account-access .account-text-button { border:0; background:transparent; color:var(--navy); text-decoration:underline; cursor:pointer; }
+.account-access .account-message { margin:0; padding:9px; border-radius:8px; background:#edf7f2; color:#245e48; font-size:12px; line-height:1.4; }
+.account-access .account-honeypot { position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden; }
+.profile-popover .account-access { margin-top:10px; padding-top:8px; }
+.profile-popover .account-access label,.profile-popover .account-access p { font-size:12px; }
 .mobile-brand { display:none; }
 .lock-icon { display:grid; place-items:center; width:50px; height:50px; margin-bottom:26px; border-radius:15px; color:var(--orange); background:var(--orange-light); font-size:23px; }
 .login-card h2 { margin:10px 0 12px; font-size:34px; line-height:1.1; letter-spacing:-.045em; }
@@ -163,6 +208,11 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .stroke-types p,.reading-columns p,.pathway p,.knowledge-note p { margin:0; color:#65757b; font-size:12px; line-height:1.7; }
 .source-figure { margin:34px 0; overflow:hidden; border:1px solid #edf0ef; border-radius:16px; background:#fbfbf9; }
 .source-figure img { display:block; width:auto; max-width:100%; height:auto; margin-inline:auto; object-fit:contain; background:#fff; }
+.image-filter-defs { position:absolute; width:0; height:0; overflow:hidden; }
+.pankreas-gefaesse-sharp img { filter:url(#pankreas-gefaesse-unsharp) contrast(1.16); }
+.pankreas-anatomie-crop .image-open-button > img,.pankreas-anatomie-crop .image-lightbox-stage img { width:100%; height:auto; aspect-ratio:2000 / 1080; object-fit:cover; object-position:center bottom; }
+.pankreas-anatomie-crop .image-lightbox-stage { width:min(2000px,calc(100vw - 48px)); }
+.pankreas-anatomie-crop .image-lightbox-stage.is-zoomed img { width:2000px; max-width:none; max-height:none; }
 .source-figure figcaption { display:flex; justify-content:space-between; gap:15px; padding:12px 15px; color:#52656d; border-top:1px solid #edf0ef; font-size:10px; font-weight:750; }
 .source-figure figcaption span { color:#99a4a8; font-size:8px; font-weight:650; letter-spacing:.08em; text-transform:uppercase; }
 .collapsible-figure { margin:30px 0; overflow:hidden; border:1px solid #e3e8e7; border-radius:16px; background:#fff; }
@@ -626,8 +676,23 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .pe-lesson .pe-decision>div{min-width:0;padding:16px;border:1px solid #deeaec;border-radius:14px;background:#f6f9f9}
 .pe-lesson .pe-decision b,.pe-lesson .pe-vfa-dose b{display:block;color:#244852;font-size:14px;line-height:1.4}
 .pe-lesson .pe-decision p{margin:8px 0 0;color:#526b71;font-size:12px;line-height:1.6}
+.pe-lesson .pe-image-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0 8px}
+.pe-lesson .pe-image-comparison figure{min-width:0;margin:0;padding:14px;border:1px solid #dce8ec;border-radius:17px;background:#fff}
+.pe-lesson .pe-image-comparison img{display:block;width:100%;height:270px;object-fit:contain;background:#10252e;border-radius:10px}
+.pe-lesson .pe-image-open{display:block;border-radius:10px;overflow:hidden;cursor:zoom-in}
+.pe-lesson .pe-image-open:focus-visible{outline:3px solid #328a93;outline-offset:3px}
+.pe-lesson .pe-image-comparison figcaption{display:grid;gap:5px;padding:11px 2px 2px;font-size:12px;line-height:1.5;color:#536b70}
+.pe-lesson .pe-image-comparison figcaption b{font-size:13px;color:#244852}
+.pe-lesson .pe-image-comparison a{color:#2d6973;text-decoration:underline}
+.pe-lesson .pe-image-note{margin:0 0 20px;color:#65777a;font-size:11px;line-height:1.55}
+.pe-lesson .pe-cause-strip,.pe-lesson .pe-effect-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 24px}
+.pe-lesson .pe-cause-strip>div,.pe-lesson .pe-effect-strip>div{min-width:0;padding:17px;border:1px solid #dce8ec;border-radius:15px;background:#f5f9fa}
+.pe-lesson .pe-cause-strip>div:first-child,.pe-lesson .pe-effect-strip>div:first-child{border-top:3px solid #bd655b;background:#fff8f6}
+.pe-lesson .pe-cause-strip small,.pe-lesson .pe-effect-strip small{display:block;margin-bottom:7px;color:#638b91;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.pe-lesson .pe-cause-strip b,.pe-lesson .pe-effect-strip b{display:block;color:#244852;font-size:14px;line-height:1.45}
+.pe-lesson .pe-cause-strip span,.pe-lesson .pe-effect-strip p{display:block;margin:8px 0 0;color:#536b70;font-size:12px;line-height:1.6}
 @media(max-width:760px){.pe-lesson .pe-decision{grid-template-columns:1fr}}
-@media(max-width:650px){.pe-lesson .pe-vs-grid,.pe-lesson .pe-vfa-dose{grid-template-columns:1fr}.pe-lesson .pe-comparison>div{grid-template-columns:88px minmax(0,1fr) minmax(0,1fr)}.pe-lesson .pe-comparison>div>*{padding:9px 8px;font-size:10px}.pe-lesson .pe-airway-layers{flex-direction:column;align-items:stretch;text-align:center}.pe-lesson .pe-airway-layers i{line-height:1}}
+@media(max-width:650px){.pe-lesson .pe-vs-grid,.pe-lesson .pe-vfa-dose,.pe-lesson .pe-image-comparison,.pe-lesson .pe-cause-strip,.pe-lesson .pe-effect-strip{grid-template-columns:1fr}.pe-lesson .pe-image-comparison img{height:240px}.pe-lesson .pe-comparison>div{grid-template-columns:88px minmax(0,1fr) minmax(0,1fr)}.pe-lesson .pe-comparison>div>*{padding:9px 8px;font-size:10px}.pe-lesson .pe-airway-layers{flex-direction:column;align-items:stretch;text-align:center}.pe-lesson .pe-airway-layers i{line-height:1}}
 .krampfanfall-lesson .seizure-onset-grid{margin-bottom:12px}
 .krampfanfall-lesson .seizure-onset-note{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:start;margin:0 0 22px;padding:16px 18px;border-left:4px solid #dc884e;border-radius:0 12px 12px 0;background:#fff6ef;color:#3c555c;font-size:13px;line-height:1.65}
 .krampfanfall-lesson .seizure-onset-note b{color:#a65127}
@@ -664,6 +729,37 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .gallensteinkolik-lesson .galle-prep-legend .drug{background:#3d9d90}
 .gallensteinkolik-lesson .galle-prep-legend .saline{background:#bbdfe3}
 @media(max-width:650px){.gallensteinkolik-lesson .galle-infusion-visual{grid-template-columns:1fr;gap:7px;padding:12px}.gallensteinkolik-lesson .galle-infusion-visual span{min-height:64px}.gallensteinkolik-lesson .galle-infusion-visual i{transform:rotate(90deg)}}
+.topic-reader .universal-prep{margin:20px 0 26px;border:1px solid #d5e6e3;border-radius:18px;background:#f8fcfa;overflow:hidden}
+.topic-reader .universal-prep>summary{display:flex;align-items:center;gap:12px;padding:17px 20px;cursor:pointer;list-style:none}
+.topic-reader .universal-prep>summary::-webkit-details-marker{display:none}
+.topic-reader .universal-prep-icon{display:grid;width:38px;height:38px;place-items:center;flex:none;border-radius:11px;background:#e0f1ec;color:#28695f;font-size:23px}
+.topic-reader .universal-prep>summary>span:nth-child(2){display:grid;gap:3px;min-width:0}
+.topic-reader .universal-prep>summary small{color:#668482;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+.topic-reader .universal-prep>summary b{color:#244852;font-size:15px}
+.topic-reader .universal-prep>summary i{margin-left:auto;color:#537d7a;font-style:normal;transition:transform .2s}
+.topic-reader .universal-prep[open]>summary i{transform:rotate(180deg)}
+.topic-reader .universal-prep-body{padding:2px 20px 20px;border-top:1px solid #dfece9}
+.topic-reader .universal-prep-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.topic-reader .universal-prep-tabs button{padding:9px 13px;border:1px solid #cbdcda;border-radius:999px;background:#fff;color:#315960;font-size:12px;font-weight:750;cursor:pointer}
+.topic-reader .universal-prep-tabs button.active{border-color:#246f66;background:#246f66;color:#fff}
+.topic-reader .universal-prep-tabs button:focus-visible,.topic-reader .universal-prep>summary:focus-visible{outline:3px solid #eca066;outline-offset:2px}
+.topic-reader .universal-prep-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.topic-reader .universal-prep-values>div{min-width:0;padding:12px;border:1px solid #dce9e7;border-radius:11px;background:#fff}
+.topic-reader .universal-prep-values small{display:block;margin-bottom:4px;color:#6a8285;font-size:10px;font-weight:750;text-transform:uppercase}
+.topic-reader .universal-prep-values b{color:#194b4c;font-size:14px;overflow-wrap:anywhere}
+.topic-reader .universal-prep-drawing{margin-top:16px;padding:10px;border:1px solid #e3ebea;border-radius:12px;background:#fff;overflow-x:auto}
+.topic-reader .universal-prep-drawing svg{display:block;width:100%;min-width:420px;height:auto}
+.topic-reader .universal-prep-route{display:flex;align-items:stretch;justify-content:center;gap:8px;margin-top:16px;padding:16px;border:1px solid #e3ebea;border-radius:12px;background:#fff}
+.topic-reader .universal-prep-route span{display:grid;align-content:center;gap:4px;min-width:0;flex:1;min-height:68px;padding:10px;border:1px solid #d7e6e4;border-radius:10px;background:#edf8f5;text-align:center}
+.topic-reader .universal-prep-route .target{background:#d9f1e9}
+.topic-reader .universal-prep-route span b{color:#21554f;font-size:15px}
+.topic-reader .universal-prep-route span small{color:#577279;font-size:11px;line-height:1.4}
+.topic-reader .universal-prep-route i{align-self:center;color:#6b9590;font-size:19px;font-style:normal;font-weight:800}
+.topic-reader .universal-prep-body>p{margin:13px 0 0;color:#365e61;font-size:12px;line-height:1.6}
+.topic-reader .universal-prep-body>p span{color:#678183}
+.topic-reader .universal-prep-body .universal-prep-note{color:#677679}
+.topic-reader .universal-prep-caution{display:block;margin-top:12px;color:#748487;font-size:10px;line-height:1.55}
+@media(max-width:650px){.topic-reader .universal-prep>summary{padding:15px}.topic-reader .universal-prep-body{padding:2px 14px 16px}.topic-reader .universal-prep-values{grid-template-columns:1fr}.topic-reader .universal-prep-route{flex-direction:column}.topic-reader .universal-prep-route i{transform:rotate(90deg)}}
 .krampfanfall-kind-lesson .child-fact-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:20px 0 18px}
 .krampfanfall-kind-lesson .child-fact-grid>div{min-width:0;padding:17px;border:1px solid #dce9e7;border-radius:13px;background:#f4faf8}
 .krampfanfall-kind-lesson .child-fact-grid small{display:block;margin-bottom:5px;color:#3c8176;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
@@ -826,4 +922,105 @@ button{min-height:44px}
   .topbar .brand{font-size:14px}.topbar .brand-mark{width:32px;height:32px}.section-heading{display:block}.source-badge{width:max-content;margin-top:18px}
   .availability-filters{grid-template-columns:1fr}.availability-filters button:first-child{grid-column:auto}
   .topic-name-grid>button{grid-template-columns:38px minmax(0,1fr)}.topic-name-grid>button>i{grid-column:2;margin-top:8px;justify-self:start}
+}
+
+/* Verbrennung: Lesekarten wie in den übrigen mündlichen Kapiteln. */
+.verbrennung-lesson .pulmo-anatomy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:22px 0}
+.verbrennung-lesson .pulmo-anatomy-grid>div{min-width:0;padding:17px;border:1px solid #deeaec;border-radius:15px;background:#f4f8f9}
+.verbrennung-lesson .pulmo-anatomy-grid small{display:block;margin-bottom:6px;color:#638b91;font-size:10px;font-weight:850;letter-spacing:.07em;text-transform:uppercase}
+.verbrennung-lesson .pulmo-anatomy-grid b{display:block;color:#244852;font-size:13px}
+.verbrennung-lesson .pulmo-anatomy-grid p{margin:8px 0 0;color:#5a7075;font-size:11px;line-height:1.6}
+.verbrennung-lesson .pulmo-path{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:22px 0;padding:16px;border-radius:16px;background:#eaf4f3}
+.verbrennung-lesson .pulmo-path span{padding:9px 12px;border-radius:10px;background:#fff;color:#28534f;font-size:11px;font-weight:800;line-height:1.35}
+.verbrennung-lesson .pulmo-path i{color:#629188;font-style:normal;font-weight:900}
+.verbrennung-lesson .pulmo-compare,.verbrennung-lesson .pulmo-risk-grid,.verbrennung-lesson .pulmo-care-grid,.verbrennung-lesson .pulmo-vfa-flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0 26px}
+.verbrennung-lesson .pulmo-compare>div,.verbrennung-lesson .pulmo-risk-grid>div,.verbrennung-lesson .pulmo-care-grid>div,.verbrennung-lesson .pulmo-vfa-flow>div{min-width:0;padding:18px;border:1px solid #d9e7e7;border-radius:16px;background:#f8fbfa;overflow-wrap:anywhere}
+.verbrennung-lesson .pulmo-compare small{display:block;margin-bottom:8px;color:#4b8580;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.verbrennung-lesson .pulmo-compare h3{margin:0 0 9px;font-size:17px}
+.verbrennung-lesson .pulmo-compare p,.verbrennung-lesson .pulmo-risk-grid p{margin:0;color:#52686e;font-size:12px;line-height:1.65}
+.verbrennung-lesson .pulmo-risk-grid b{display:block;margin-bottom:8px;color:#244852;font-size:15px}
+.verbrennung-lesson .pulmo-care-grid>div,.verbrennung-lesson .pulmo-vfa-flow>div{display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:11px;align-content:start}
+.verbrennung-lesson .pulmo-care-grid span,.verbrennung-lesson .pulmo-vfa-flow span{grid-row:span 2;display:grid;place-items:center;align-self:start;width:32px;height:32px;border-radius:10px;background:#e1f1ed;color:#246a61;font-size:10px;font-weight:900}
+.verbrennung-lesson .pulmo-care-grid b,.verbrennung-lesson .pulmo-vfa-flow b{color:#234b51;font-size:12px;line-height:1.4}
+.verbrennung-lesson .pulmo-care-grid small,.verbrennung-lesson .pulmo-vfa-flow small{margin-top:5px;color:#63787b;font-size:11px;line-height:1.55}
+.verbrennung-lesson .source-figure img,.verbrennung-lesson .vfa-page img{max-width:100%;height:auto;object-fit:contain}
+.verbrennung-lesson .lesson-prose>*{min-width:0}
+@media(max-width:760px){.verbrennung-lesson .pulmo-anatomy-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.verbrennung-lesson .pulmo-compare,.verbrennung-lesson .pulmo-risk-grid,.verbrennung-lesson .pulmo-care-grid,.verbrennung-lesson .pulmo-vfa-flow{grid-template-columns:1fr}.verbrennung-lesson .pulmo-path{gap:6px;padding:12px}.verbrennung-lesson .pulmo-path span{font-size:10px}.verbrennung-lesson .burn-grade-grid{grid-template-columns:1fr}}
+
+/* Gemeinsames Asthma/COPD-Kapitel */
+.broncho-vs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0 25px}
+.broncho-vs article{min-width:0;padding:19px;border:1px solid #d8e7e6;border-radius:16px;background:#f2f8f7}
+.broncho-vs article:last-child{background:#f7f8fa;border-color:#e0e6ed}
+.broncho-vs small{display:block;margin-bottom:9px;color:#307369;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.broncho-vs article:last-child small{color:#597a8b}
+.broncho-vs h3{margin:0 0 9px;font-size:17px}.broncho-vs p{margin:0;color:#52696e;font-size:12px;line-height:1.7}
+.broncho-comparison{margin:20px 0 25px;overflow:hidden;border:1px solid #dce8e6;border-radius:15px}
+.broncho-comparison>div{display:grid;grid-template-columns:1fr 1.35fr 1.35fr;gap:12px;padding:12px 15px;border-bottom:1px solid #e6eeec;background:#fff}
+.broncho-comparison>div:first-child{background:#e8f3f0;color:#275e58;font-size:11px;text-transform:uppercase}
+.broncho-comparison>div:last-child{border-bottom:0}
+.broncho-comparison b,.broncho-comparison span{min-width:0;font-size:11px;line-height:1.5}
+.broncho-comparison b{color:#315258}
+.broncho-comparison span{color:#566d72}
+.broncho-preparation{margin:30px 0;padding:clamp(18px,3vw,28px);border:1px solid #cbdedb;border-radius:20px;background:linear-gradient(145deg,#f0f8f6,#fff 65%)}
+.broncho-preparation-heading small,.broncho-preparation-grid article>small{color:#34786d;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.broncho-preparation-heading h3{margin:5px 0 7px;color:#173d41;font-size:23px}
+.broncho-preparation-heading p,.broncho-preparation-grid p,.broncho-preparation-caution{color:#567074;font-size:11px;line-height:1.6}
+.broncho-preparation-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}
+.broncho-preparation-grid article{min-width:0;padding:19px;border:1px solid #d8e6e3;border-radius:15px;background:#fff}
+.broncho-preparation-icon{display:grid;place-items:center;width:36px;height:36px;margin-bottom:12px;border-radius:11px;background:#ddf0eb;color:#276b62;font-size:19px;font-weight:800}
+.broncho-preparation-grid h4{margin:7px 0 13px;color:#183e45;font-size:15px}
+.broncho-nebulizer{display:grid;grid-template-columns:65px minmax(0,1fr);align-items:center;gap:7px 11px;padding:12px;border-radius:12px;background:#eaf5f1}
+.broncho-nebulizer b{color:#185c50;font-size:16px}
+.broncho-nebulizer span{color:#4b6669;font-size:10px;line-height:1.45}
+.broncho-nebulizer i{grid-column:1/-1;justify-self:center;color:#618b83;font-style:normal;font-size:16px;line-height:1}
+.broncho-syringe{display:flex;align-items:center;width:100%;max-width:370px;margin:38px 0 19px}
+.broncho-syringe-tip{width:26px;height:12px;border:2px solid #94aaad;border-right:0;border-radius:5px 0 0 5px}
+.broncho-syringe-bar{position:relative;flex:1;min-width:0;height:54px;border:3px solid #8faeb0;border-radius:8px;background:repeating-linear-gradient(90deg,#fff 0,#fff 19.6%,#b9d3d4 19.6%,#b9d3d4 20%)}
+.broncho-syringe-fill{display:block;width:40%;height:100%;border-radius:4px;background:#58ad9e}
+.broncho-syringe-scale{position:absolute;left:0;right:0;top:-29px;display:flex;justify-content:space-between;color:#547276;font-size:10px;font-weight:800;line-height:1}
+.broncho-syringe-scale span{display:block;min-width:8px;text-align:center}
+.broncho-syringe-bar b{position:absolute;left:6px;top:16px;color:#123c39;font-size:11px}
+.broncho-syringe-plunger{width:26px;height:10px;border-top:3px solid #91a5a7;border-bottom:3px solid #91a5a7}
+.broncho-syringe-dose{display:none}
+.broncho-preparation-caution{margin:0;padding-top:12px;border-top:1px solid #dce9e6}
+@media(max-width:650px){.broncho-vs,.broncho-preparation-grid{grid-template-columns:1fr}.broncho-comparison>div{grid-template-columns:1fr;gap:4px}.broncho-comparison>div:not(:first-child) span:before{display:inline-block;width:64px;color:#3b766c;font-weight:800;content:"Asthma: "}.broncho-comparison>div:not(:first-child) span:last-child:before{content:"COPD: "}.broncho-comparison>div:first-child{display:none}}
+.broncho-gas-card{margin:25px 0;padding:19px;border:1px solid #d4e4e0;border-radius:16px;background:#f7fbfa}
+.broncho-gas-heading small{color:#32746c;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.broncho-gas-heading h3{margin:6px 0 15px;color:#173d41;font-size:17px}
+.broncho-gas-card table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid #c9dcd8;border-radius:11px;background:#fff}
+.broncho-gas-card th,.broncho-gas-card td{padding:9px 11px;border-bottom:1px solid #e3eeeb;text-align:left;overflow-wrap:anywhere;font-size:11px;line-height:1.4}
+.broncho-gas-card thead th{background:#e5f2ee;color:#28685d;font-weight:850}
+.broncho-gas-card tbody th{color:#365d61;font-weight:750}
+.broncho-gas-card tbody td{color:#173f43;font-weight:800;font-variant-numeric:tabular-nums}
+.broncho-gas-card tbody tr:last-child>*{border-bottom:0}
+.broncho-gas-card p{margin:11px 0 0;color:#5a7476;font-size:10px;line-height:1.55}
+@media(max-width:650px){
+  .broncho-preparation{padding:14px}
+  .broncho-preparation-grid article{padding:14px}
+  .broncho-preparation-grid h4{overflow-wrap:anywhere}
+  .broncho-syringe{box-sizing:border-box;max-width:100%;min-width:0}
+  .broncho-syringe-tip,.broncho-syringe-plunger{flex:0 0 16px;width:16px}
+  .broncho-syringe-bar b{display:none}
+  .broncho-syringe-dose{display:block;margin:-7px 0 13px;color:#315e59;font-size:11px;line-height:1.4}
+  .broncho-lesson .chapter-heading{grid-template-columns:30px minmax(0,1fr)}
+  .broncho-lesson .chapter-heading>div{min-width:0}
+  .broncho-lesson .chapter-heading h2{overflow-wrap:anywhere}
+  .broncho-gas-card{padding:12px}
+  .broncho-gas-card th,.broncho-gas-card td{padding:8px 5px;font-size:10px}
+}
+@media(max-width:530px){
+  .reader-hero>div,.study-finale-heading,.chapter-heading>div,.study-mode-grid>button>div{min-width:0}
+  .reader-hero h1,.study-finale-heading h2,.chapter-heading h2{max-width:100%;overflow-wrap:anywhere;hyphens:auto}
+  .reader-hero h1{font-size:clamp(27px,8vw,38px);line-height:1.08}
+  .study-finale-heading h2{font-size:clamp(24px,7.5vw,30px);line-height:1.16}
+  .chapter-heading{grid-template-columns:36px minmax(0,1fr)}
+  .samplers-grid{grid-template-columns:minmax(0,1fr)}
+  .samplers-grid p,.samplers-grid p b,.pathway,.pathway p{min-width:0;overflow-wrap:anywhere}
+  .study-mode-grid>button{grid-template-columns:52px minmax(0,1fr);min-width:0}
+  .study-mode-grid h3,.study-mode-grid small,.study-mode-grid p,.study-mode-grid b{overflow-wrap:anywhere}
+}
+@media(max-width:360px){
+  .study-mode-grid>button{grid-template-columns:40px minmax(0,1fr);gap:10px;padding:16px}
+  .study-mode-grid>button>span{width:40px;height:40px}
 }

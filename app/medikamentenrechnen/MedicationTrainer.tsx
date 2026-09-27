@@ -3,20 +3,15 @@
 import { useMemo, useState } from "react";
 import { isCorrect, parseGermanNumber } from "../lib/medicationCalculations";
 import { medicationCases, medicationRules, sourceIssues, type Category } from "../lib/medicationData";
+import { readMedicationProgress, recordMedicationAnswer, type MedicationProgress } from "../lib/medicationProgress";
+import { saveMedicationProgress } from "../lib/cloudProgress";
 
 type Mode = "learn" | "exam";
 type Result = { answers: Record<string,string>; correct: boolean };
-const STORAGE = "notsan-medication-progress-v1";
-
-function safeRead(): Record<string,{attempts:number;correct:number}> {
-  if (typeof window === "undefined") return {};
-  try { const value=JSON.parse(localStorage.getItem(STORAGE)||"{}"); return value && typeof value==="object" ? value : {}; } catch { return {}; }
-}
-
-export default function MedicationTrainer() {
+export default function MedicationTrainer({ accountUserId, onSyncError }: { accountUserId: string | null; onSyncError: () => void }) {
  const [mode,setMode]=useState<Mode>("learn"), [group,setGroup]=useState("Alle"), [category,setCategory]=useState("Alle"), [drug,setDrug]=useState("Alle");
  const [length,setLength]=useState("10"), [index,setIndex]=useState(0), [inputs,setInputs]=useState<Record<string,string>>({}), [results,setResults]=useState<Record<string,Result>>({});
- const [revealed,setRevealed]=useState(false), [hintStep,setHintStep]=useState(0), [progress,setProgress]=useState<Record<string,{attempts:number;correct:number}>>(safeRead), [wrongOnly,setWrongOnly]=useState(false);
+ const [revealed,setRevealed]=useState(false), [hintStep,setHintStep]=useState(0), [progress,setProgress]=useState<MedicationProgress>(readMedicationProgress), [wrongOnly,setWrongOnly]=useState(false);
  const ruleGroups=useMemo(()=>Array.from(new Set(medicationRules.map(r=>r.drug))),[]);
  const pool=useMemo(()=>medicationCases.filter(c=>(group==="Alle"||c.group===group)&&(category==="Alle"||c.category===category)&&(drug==="Alle"||medicationRules.find(r=>r.id===c.ruleId)?.drug===drug)&&(!wrongOnly||progress[c.id]?.correct<progress[c.id]?.attempts)),[group,category,drug,wrongOnly,progress]);
  const session=useMemo(()=>length==="frei"?pool:pool.slice(0,Number(length)),[pool,length]);
@@ -25,7 +20,8 @@ export default function MedicationTrainer() {
  const submit=()=>{ if(!current||current.answers.some(answer=>parseGermanNumber(inputs[answer.id]||"")===null)) return;
    const correct=current.answers.every(answer=>isCorrect(inputs[answer.id],answer.value,answer.decimals,answer.unit));
    const next={...results,[current.id]:{answers:{...inputs},correct}}; setResults(next);
-   const updated={...progress,[current.id]:{attempts:(progress[current.id]?.attempts||0)+1,correct:(progress[current.id]?.correct||0)+(correct?1:0)}}; setProgress(updated); localStorage.setItem(STORAGE,JSON.stringify(updated));
+   const {progress:updated,record}=recordMedicationAnswer(current.id,correct); setProgress(updated);
+   if(accountUserId) void saveMedicationProgress(accountUserId,current.id,record).catch(onSyncError);
    if(mode==="learn") setRevealed(true); else if(index<session.length-1){setIndex(index+1);setInputs({});setHintStep(0);}
  };
  const next=()=>{setIndex(Math.min(index+1,session.length-1));setInputs({});setRevealed(false);setHintStep(0)};

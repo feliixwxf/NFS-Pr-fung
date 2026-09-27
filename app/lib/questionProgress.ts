@@ -7,11 +7,20 @@ export type QuestionLearningRecord = {
 export type QuestionProgress = Record<string, QuestionLearningRecord>;
 
 export const QUESTION_PROGRESS_KEY = "notsan-question-progress-v1";
+let activeProgressUserId: string | null = null;
+
+export function setActiveProgressUser(userId: string | null) {
+  activeProgressUserId = userId;
+}
+
+export function questionProgressStorageKey(userId: string | null = activeProgressUserId) {
+  return userId ? `${QUESTION_PROGRESS_KEY}:user:${userId}` : QUESTION_PROGRESS_KEY;
+}
 
 export function readQuestionProgress(): QuestionProgress {
   if (typeof window === "undefined") return {};
   try {
-    return JSON.parse(localStorage.getItem(QUESTION_PROGRESS_KEY) || "{}") as QuestionProgress;
+    return JSON.parse(localStorage.getItem(questionProgressStorageKey()) || "{}") as QuestionProgress;
   } catch {
     return {};
   }
@@ -29,7 +38,7 @@ export function recordQuestionAnswer(questionId: string, isCorrect: boolean): Qu
       updatedAt: new Date().toISOString(),
     },
   };
-  localStorage.setItem(QUESTION_PROGRESS_KEY, JSON.stringify(next));
+  localStorage.setItem(questionProgressStorageKey(), JSON.stringify(next));
   return next;
 }
 
