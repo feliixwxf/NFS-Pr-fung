@@ -884,8 +884,22 @@ button{min-height:44px}
 .ai-question-panel h2,.ai-question-panel p{color:var(--ink)}
 .flashcard-training-head{color:var(--muted)}
 .exam-flashcard{border:1px solid var(--line);background:var(--surface-soft);color:var(--ink)}
-.multiple-choice-actions button{min-height:54px}
+.chapter-quiz-head small{color:var(--muted)}
+.choice-type-badge{border-color:#e3c1b5;background:var(--orange-light);color:#9f3f25}
+.choice-type-badge.multiple{border-color:#e3a992;background:var(--orange-light);color:#9f3f25}
+.quiz-mini-progress{background:#ebe7e1}
+.multiple-choice-actions button{min-height:54px;border-color:#d9d6cf;background:#f8f6f2;color:var(--ink)}
+.multiple-choice-actions button>span{border-color:#d5cfc5;background:#fff;color:#665b53}
+.multiple-choice-actions button:hover:not(:disabled){border-color:#d98d73;background:#fff4ef}
+.multiple-choice-actions button.selected{border-color:var(--orange);background:#fff0e9;color:var(--ink);box-shadow:0 0 0 3px #be4e2d18}
+.multiple-choice-actions button.selected>span{border-color:var(--orange);background:var(--orange);color:#fff}
+.multiple-choice-actions button.correct{border-color:#168357;background:#168357;color:#fff}
+.multiple-choice-actions button.wrong{border-color:#b43029;background:#b43029;color:#fff}
+.multiple-choice-actions button.dimmed{background:#f3f1ed;color:#59666c;opacity:.68}
 .check-multiple-answer{min-height:48px;background:var(--orange)!important}
+.quiz-source-answer{border:1px solid var(--line);background:var(--surface-soft)}
+.quiz-source-answer p{color:#536168}
+.quiz-source-answer button{color:#9f3f25}
 .mc-training-rule{border-color:var(--line);background:#fff}
 
 /* Home and medication trainer */
