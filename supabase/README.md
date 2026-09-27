@@ -4,7 +4,7 @@ Dieses Verzeichnis gehört ausschließlich zum Supabase-Projekt `uxiimrwnhcgpggq
 
 ## Einmalige Einrichtung
 
-1. Im SQL Editor dieses Projekts `migrations/202609270001_learning_accounts.sql` ausführen. Es legt die Freigabeanfragen und drei nutzergebundene Fortschrittstabellen mit Row Level Security an.
+1. Im SQL Editor dieses Projekts zuerst `migrations/202609270001_learning_accounts.sql` und danach `migrations/202609270002_account_profiles.sql` ausführen. Sie legen Freigabeanfragen, nutzergebundenen Lernfortschritt sowie private Profilbilder mit Row Level Security an.
 2. Unter **Authentication → Sign In / Providers** „Allow new users to sign up“ ausschalten. Die Website bietet selbst keine öffentliche Registrierung an; diese Einstellung sperrt zusätzlich direkte API-Registrierungen.
 3. Unter **Authentication → URL Configuration** als Site URL die produktive NotSan-Adresse eintragen und als Redirect URLs sowohl diese Adresse als auch die benötigten lokalen Entwicklungsadressen freigeben. Nur so funktionieren Einladungs- und Passwort-Zurücksetzen-Links an der richtigen Website.
 4. Bei Vercel im **NotSan-Projekt** `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` setzen. Lokal liegen sie in der ignorierten `.env.local`. Niemals einen `service_role`- oder Secret-Key im Browser verwenden.
