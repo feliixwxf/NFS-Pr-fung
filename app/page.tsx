@@ -232,7 +232,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
-    const closeOnWideScreen = () => { if (window.innerWidth > 1280) setMobileMenuOpen(false); };
+    const closeOnWideScreen = () => { if (window.innerWidth > 1400) setMobileMenuOpen(false); };
     window.addEventListener("resize", closeOnWideScreen);
     return () => window.removeEventListener("resize", closeOnWideScreen);
   }, [mobileMenuOpen]);
