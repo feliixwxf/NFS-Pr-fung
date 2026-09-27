@@ -4,6 +4,7 @@ import { LEGACY_COMPLETED_TOPICS_KEY, type TopicProgress, completedTopicsFromPro
 import { type MedicationProgress, medicationProgressStorageKey, readMedicationProgress, setActiveMedicationUser } from "./medicationProgress";
 
 const GUEST_IMPORT_OWNER_KEY = "notsan-guest-import-owner-v1";
+const questionSaveQueues = new Map<string, Promise<void>>();
 
 function newer<T extends { updatedAt?: string }>(local: T | undefined, remote: T | undefined): T | undefined {
   if (!local) return remote;
@@ -20,6 +21,9 @@ export function activateLocalUser(userId: string | null) {
 export async function syncLearningProgress(userId: string) {
   const client = getSupabaseClient();
   if (!client) throw new Error("Supabase ist nicht konfiguriert.");
+  // Switch the local storage namespace before any remote work starts. This
+  // prevents answers given immediately after login from landing in guest data.
+  activateLocalUser(userId);
   const [questionsResult, topicsResult, medicationResult] = await Promise.all([
     client.from("learning_question_progress").select("question_id,correct_count,last_result,updated_at").eq("user_id", userId),
     client.from("learning_topic_progress").select("topic_number,completed,updated_at").eq("user_id", userId),
@@ -28,7 +32,8 @@ export async function syncLearningProgress(userId: string) {
   const fetchError = questionsResult.error || topicsResult.error || medicationResult.error;
   if (fetchError) throw fetchError;
 
-  const useGuest = !localStorage.getItem(GUEST_IMPORT_OWNER_KEY);
+  const guestImportOwner = localStorage.getItem(GUEST_IMPORT_OWNER_KEY);
+  const useGuest = !guestImportOwner || guestImportOwner === userId;
   const accountQuestions = JSON.parse(localStorage.getItem(questionProgressStorageKey(userId)) || "{}") as QuestionProgress;
   const guestQuestions = useGuest ? JSON.parse(localStorage.getItem(QUESTION_PROGRESS_KEY) || "{}") as QuestionProgress : {};
   const questionProgress: QuestionProgress = {};
@@ -57,9 +62,9 @@ export async function syncLearningProgress(userId: string) {
   }
 
   const [qSave, tSave, mSave] = await Promise.all([
-    Object.entries(questionProgress).length ? client.from("learning_question_progress").upsert(Object.entries(questionProgress).map(([question_id, record]) => ({ user_id: userId, question_id, correct_count: record.correctCount, last_result: record.lastResult, updated_at: record.updatedAt }))) : Promise.resolve({ error: null }),
-    Object.entries(topicProgress).length ? client.from("learning_topic_progress").upsert(Object.entries(topicProgress).map(([topic_number, record]) => ({ user_id: userId, topic_number: Number(topic_number), completed: record.completed, updated_at: record.updatedAt }))) : Promise.resolve({ error: null }),
-    Object.entries(medicationProgress).length ? client.from("learning_medication_progress").upsert(Object.entries(medicationProgress).map(([case_id, record]) => ({ user_id: userId, case_id, attempts: record.attempts, correct_count: record.correct, updated_at: record.updatedAt || new Date().toISOString() }))) : Promise.resolve({ error: null }),
+    Object.entries(questionProgress).length ? client.from("learning_question_progress").upsert(Object.entries(questionProgress).map(([question_id, record]) => ({ user_id: userId, question_id, correct_count: record.correctCount, last_result: record.lastResult, updated_at: record.updatedAt })), { onConflict: "user_id,question_id" }) : Promise.resolve({ error: null }),
+    Object.entries(topicProgress).length ? client.from("learning_topic_progress").upsert(Object.entries(topicProgress).map(([topic_number, record]) => ({ user_id: userId, topic_number: Number(topic_number), completed: record.completed, updated_at: record.updatedAt })), { onConflict: "user_id,topic_number" }) : Promise.resolve({ error: null }),
+    Object.entries(medicationProgress).length ? client.from("learning_medication_progress").upsert(Object.entries(medicationProgress).map(([case_id, record]) => ({ user_id: userId, case_id, attempts: record.attempts, correct_count: record.correct, updated_at: record.updatedAt || new Date().toISOString() })), { onConflict: "user_id,case_id" }) : Promise.resolve({ error: null }),
   ]);
   const saveError = qSave.error || tSave.error || mSave.error;
   if (saveError) throw saveError;
@@ -73,10 +78,30 @@ export async function syncLearningProgress(userId: string) {
 
 export async function saveQuestionProgress(userId: string, progress: QuestionProgress) {
   const client = getSupabaseClient();
-  const [id, record] = Object.entries(progress).reduce<[string, QuestionProgress[string]] | null>((latest, entry) => !latest || entry[1].updatedAt > latest[1].updatedAt ? entry : latest, null) || [];
-  if (!client || !id || !record) return;
-  const { error } = await client.from("learning_question_progress").upsert({ user_id: userId, question_id: id, correct_count: record.correctCount, last_result: record.lastResult, updated_at: record.updatedAt });
-  if (error) throw error;
+  const rows = Object.entries(progress).map(([question_id, record]) => ({
+    user_id: userId,
+    question_id,
+    correct_count: record.correctCount,
+    last_result: record.lastResult,
+    updated_at: record.updatedAt,
+  }));
+  if (!client || !rows.length) return;
+
+  // Always keep an account-scoped copy. A later login can then retry a failed
+  // network write instead of silently losing the answer.
+  localStorage.setItem(questionProgressStorageKey(userId), JSON.stringify(progress));
+
+  const previous = questionSaveQueues.get(userId) || Promise.resolve();
+  const next = previous.catch(() => undefined).then(async () => {
+    const { error } = await client.from("learning_question_progress").upsert(rows, { onConflict: "user_id,question_id" });
+    if (error) throw error;
+  });
+  questionSaveQueues.set(userId, next);
+  try {
+    await next;
+  } finally {
+    if (questionSaveQueues.get(userId) === next) questionSaveQueues.delete(userId);
+  }
 }
 
 export async function saveTopicProgress(userId: string, topicNumber: number, completed: boolean, updatedAt: string) {
