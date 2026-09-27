@@ -155,7 +155,7 @@ export default function Home() {
   const [accountUserId, setAccountUserId] = useState<string | null>(null);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<"local" | "syncing" | "synced" | "error">("local");
-  const [passwordSetup, setPasswordSetup] = useState(false);
+  const [passwordSetupKind, setPasswordSetupKind] = useState<"invite" | "recovery" | null>(null);
 
   useEffect(() => {
     const accessGranted = hasPersistentAccess();
@@ -170,7 +170,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (window.location.hash.includes("type=invite") || window.location.hash.includes("type=recovery")) queueMicrotask(() => setPasswordSetup(true));
+    const isRecovery = window.location.hash.includes("type=recovery") || new URLSearchParams(window.location.search).get("password-reset") === "1";
+    if (isRecovery) queueMicrotask(() => setPasswordSetupKind("recovery"));
+    else if (window.location.hash.includes("type=invite")) queueMicrotask(() => setPasswordSetupKind("invite"));
     const client = getSupabaseClient();
     if (!client) return;
     let active = true;
@@ -196,7 +198,8 @@ export default function Home() {
     };
     const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
       if (!active) return;
-      if (event === "PASSWORD_RECOVERY" || window.location.hash.includes("type=invite")) setPasswordSetup(true);
+      if (event === "PASSWORD_RECOVERY") setPasswordSetupKind("recovery");
+      else if (window.location.hash.includes("type=invite")) setPasswordSetupKind("invite");
       if (session?.user) {
         queueMicrotask(() => { if (active) void restore(session.user.id, session.user.email); });
       } else if (event === "SIGNED_OUT") {
@@ -269,12 +272,12 @@ export default function Home() {
   };
   if (!ready || syncStatus === "syncing") return <main className="loading-screen" aria-label="Lernstand wird geladen" />;
 
-  if (passwordSetup && accountUserId) return <main className="login-page"><section className="login-brand"><div className="brand brand-light"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="login-copy"><h1>Dein Lernkonto</h1><p>Lege dein Passwort fest. Danach wird dein Lernstand deinem Konto zugeordnet.</p></div></section><section className="login-panel"><div className="login-card"><AccountAccess passwordSetup onDone={() => setPasswordSetup(false)} /></div></section></main>;
+  if (passwordSetupKind && accountUserId) return <main className="login-page"><section className="login-brand"><div className="brand brand-light"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="login-copy"><h1>{passwordSetupKind === "recovery" ? "Passwort zurücksetzen" : "Dein Lernkonto"}</h1><p>{passwordSetupKind === "recovery" ? "Wähle jetzt ein neues Passwort für dein Lernkonto." : "Lege dein Passwort fest. Danach wird dein Lernstand deinem Konto zugeordnet."}</p></div></section><section className="login-panel"><div className="login-card"><AccountAccess passwordSetupKind={passwordSetupKind} onDone={() => { setPasswordSetupKind(null); window.history.replaceState({}, "", "/"); }} /></div></section></main>;
 
   if (!signedIn) return (
     <main className="login-page">
       <section className="login-brand"><div className="brand brand-light"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="login-copy"><span className="eyebrow light">Dein digitaler Prüfungspartner</span><h1>Bereit, wenn es<br />darauf ankommt.</h1><p>Deine persönliche Lernplattform für das Staatsexamen – übersichtlich, verständlich und auf deine Unterlagen abgestimmt.</p><div className="trust-row"><span>✓ {topics.length} Themen</span><span>✓ Feste Prüfungsstruktur</span><span>✓ Lernfortschritt</span></div></div><div className="ecg" aria-hidden="true"><i /><i /><i /><i /><i /></div></section>
-      <section className="login-panel"><div className="login-card"><form onSubmit={handleLogin}><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="lock-icon">⌁</div><span className="eyebrow">Willkommen zurück</span><h2>Zugang zum Lernbereich</h2><p>Mit Einladungscode kannst du lokal lernen. Für geräteübergreifenden Fortschritt nutze dein freigegebenes Lernkonto.</p><label htmlFor="invite">Einladungscode</label><div className={`input-wrap ${error ? "has-error" : ""}`}><span>◇</span><input id="invite" type="password" value={code} onChange={(event) => { setCode(event.target.value); setError(false); }} placeholder="Code eingeben" autoComplete="current-password" aria-describedby={error ? "code-error" : undefined} /></div>{error && <p className="error-message" id="code-error">Der Einladungscode ist nicht korrekt.</p>}<button className="primary-button" type="submit">Lernbereich öffnen <span>→</span></button></form><AccountAccess passwordSetup={passwordSetup} /></div></section>
+      <section className="login-panel"><div className="login-card"><form onSubmit={handleLogin}><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="lock-icon">⌁</div><span className="eyebrow">Willkommen zurück</span><h2>Zugang zum Lernbereich</h2><p>Mit Einladungscode kannst du lokal lernen. Für geräteübergreifenden Fortschritt nutze dein freigegebenes Lernkonto.</p><label htmlFor="invite">Einladungscode</label><div className={`input-wrap ${error ? "has-error" : ""}`}><span>◇</span><input id="invite" type="password" value={code} onChange={(event) => { setCode(event.target.value); setError(false); }} placeholder="Code eingeben" autoComplete="current-password" aria-describedby={error ? "code-error" : undefined} /></div>{error && <p className="error-message" id="code-error">Der Einladungscode ist nicht korrekt.</p>}<button className="primary-button" type="submit">Lernbereich öffnen <span>→</span></button></form><AccountAccess /></div></section>
     </main>
   );
 
