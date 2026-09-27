@@ -156,6 +156,8 @@ export default function Home() {
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<"local" | "syncing" | "synced" | "error">("local");
   const [passwordSetupKind, setPasswordSetupKind] = useState<"invite" | "recovery" | null>(null);
+  const [passwordResetBusy, setPasswordResetBusy] = useState(false);
+  const [passwordResetMessage, setPasswordResetMessage] = useState("");
 
   useEffect(() => {
     const accessGranted = hasPersistentAccess();
@@ -230,7 +232,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
-    const closeOnWideScreen = () => { if (window.innerWidth > 1100) setMobileMenuOpen(false); };
+    const closeOnWideScreen = () => { if (window.innerWidth > 1280) setMobileMenuOpen(false); };
     window.addEventListener("resize", closeOnWideScreen);
     return () => window.removeEventListener("resize", closeOnWideScreen);
   }, [mobileMenuOpen]);
@@ -259,6 +261,24 @@ export default function Home() {
     setQuestionProgress(progress);
     if (accountUserId) void saveQuestionProgress(accountUserId, progress).catch(() => setSyncStatus("error"));
   };
+  const requestPasswordReset = async () => {
+    if (!accountEmail) return;
+    const client = getSupabaseClient();
+    if (!client) { setPasswordResetMessage("Die Kontofunktion ist momentan nicht verfügbar."); return; }
+    setPasswordResetBusy(true);
+    setPasswordResetMessage("");
+    try {
+      const redirectTo = new URL("/", window.location.origin);
+      redirectTo.searchParams.set("password-reset", "1");
+      const { error } = await client.auth.resetPasswordForEmail(accountEmail, { redirectTo: redirectTo.toString() });
+      if (error) throw error;
+      setPasswordResetMessage("Reset-Link gesendet. Bitte prüfe auch deinen Spam-Ordner.");
+    } catch {
+      setPasswordResetMessage("Der Reset-Link konnte nicht gesendet werden. Bitte versuche es erneut.");
+    } finally {
+      setPasswordResetBusy(false);
+    }
+  };
   const logout = async () => {
     if (accountUserId) await getSupabaseClient()?.auth.signOut();
     clearPersistentAccess();
@@ -286,7 +306,7 @@ export default function Home() {
     <div className="app-shell">
       <aside className="sidebar"><div className="brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><nav aria-label="Hauptnavigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav><div className="sidebar-tip"><span>☼</span><b>{topics.length} Themen angelegt</b><p>Alle Fachinhalte sind gezielt auf deine Prüfungsvorbereitung abgestimmt.</p></div><button className="logout" onClick={() => void logout()}>↪ Abmelden</button></aside>
       <main className="main-content">
-        <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><HeaderClock /><div className="status-pill"><span /> {accountUserId && syncStatus === "synced" ? "Lernstand synchronisiert" : "Lernstand lokal gespeichert"}</div><div className="topbar-actions"><button className={`mobile-menu-toggle ${mobileMenuOpen ? "open" : ""}`} type="button" onClick={() => { setProfileOpen(false); setMobileMenuOpen((open) => !open); }} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label={mobileMenuOpen ? "Menü schließen" : "Menü öffnen"}><i /><i /><i /></button><div className="profile-control"><button className="avatar profile-button" onClick={() => { setMobileMenuOpen(false); setProfileOpen((open) => !open); }} aria-expanded={profileOpen} aria-haspopup="dialog" aria-label="Profil und Lernstand öffnen">FS</button>{profileOpen && <section className="profile-popover" role="dialog" aria-label="Profil und Lernstand"><header><div className="profile-avatar">FS</div><div><small>Profil</small><h2>Dein Lernbereich</h2></div><button onClick={() => setProfileOpen(false)} aria-label="Profil schließen">×</button></header><div className="profile-local-status"><span>✓</span><div><b>{accountUserId ? accountEmail : "Lernstand auf diesem Gerät gespeichert"}</b><p>{accountUserId ? syncStatus === "synced" ? "Dein Lernstand ist mit deinem Konto synchronisiert." : "Synchronisierung nicht verfügbar. Der lokale Stand bleibt erhalten." : "Fragen, Kapitelstatus und Fortschritt bleiben im Browser erhalten."}</p></div></div><div className="profile-stat-grid"><div><b>{profileSummary.average}%</b><span>Fragensicherheit</span></div><div><b>{profileSummary.total}</b><span>Fragen begonnen</span></div><div><b>{completedTopics.length}</b><span>Kapitel absolviert</span></div></div><div className="profile-account-preview">{accountUserId ? <><span className="eyebrow">Lernkonto aktiv</span><button type="button" onClick={() => void logout()}>Vom Konto abmelden</button></> : <><span className="eyebrow">Lernkonto</span><p>Für geräteübergreifenden Lernfortschritt anmelden oder Zugang bei Felix anfragen.</p><AccountAccess onDone={() => setProfileOpen(false)} /></>}</div></section>}</div></div></header>
+        <header className="topbar"><div className="mobile-brand brand"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><HeaderClock /><div className="status-pill"><span /> {accountUserId && syncStatus === "synced" ? "Lernstand synchronisiert" : "Lernstand lokal gespeichert"}</div><div className="topbar-actions"><button className={`mobile-menu-toggle ${mobileMenuOpen ? "open" : ""}`} type="button" onClick={() => { setProfileOpen(false); setMobileMenuOpen((open) => !open); }} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label={mobileMenuOpen ? "Menü schließen" : "Menü öffnen"}><i /><i /><i /></button><div className="profile-control"><button className="avatar profile-button" onClick={() => { setMobileMenuOpen(false); setPasswordResetMessage(""); setProfileOpen((open) => !open); }} aria-expanded={profileOpen} aria-haspopup="dialog" aria-label="Profil und Lernstand öffnen">FS</button>{profileOpen && <section className="profile-popover" role="dialog" aria-label="Profil und Lernstand"><header><div className="profile-avatar">FS</div><div><small>Profil</small><h2>Dein Lernbereich</h2></div><button onClick={() => setProfileOpen(false)} aria-label="Profil schließen">×</button></header><div className="profile-local-status"><span>✓</span><div><b>{accountUserId ? accountEmail : "Lernstand auf diesem Gerät gespeichert"}</b><p>{accountUserId ? syncStatus === "synced" ? "Dein Lernstand ist mit deinem Konto synchronisiert." : "Synchronisierung nicht verfügbar. Der lokale Stand bleibt erhalten." : "Fragen, Kapitelstatus und Fortschritt bleiben im Browser erhalten."}</p></div></div><div className="profile-stat-grid"><div><b>{profileSummary.average}%</b><span>Fragensicherheit</span></div><div><b>{profileSummary.total}</b><span>Fragen begonnen</span></div><div><b>{completedTopics.length}</b><span>Kapitel absolviert</span></div></div><div className="profile-account-preview">{accountUserId ? <><span className="eyebrow">Lernkonto aktiv</span><p>Du kannst dir jederzeit einen sicheren Link zum Festlegen eines neuen Passworts senden lassen.</p><button className="password-reset-button" type="button" disabled={passwordResetBusy} onClick={() => void requestPasswordReset()}>{passwordResetBusy ? "Link wird gesendet …" : "Passwort ändern / vergessen"}</button>{passwordResetMessage && <p className="profile-account-message" role="status">{passwordResetMessage}</p>}<button className="account-signout-button" type="button" onClick={() => void logout()}>Vom Konto abmelden</button></> : <><span className="eyebrow">Lernkonto</span><p>Für geräteübergreifenden Lernfortschritt anmelden oder Zugang bei Felix anfragen.</p><AccountAccess onDone={() => setProfileOpen(false)} /></>}</div></section>}</div></div></header>
         {view === "start" && <Dashboard setView={changeView} progress={summarizeQuestionProgress(questionProgress).average} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={setSelectedTopic} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
         {view === "written" && <WrittenLibrary onProgressChange={handleQuestionProgress} />}
