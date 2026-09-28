@@ -883,19 +883,17 @@ function GeburtLesson({ onProgressChange, completed, onToggleComplete }: { onPro
   return <article className="lesson-article geburt-lesson">
     <div className="lesson-intro"><p className="lead">Das Thema umfasst die präklinische Begleitung der Geburt und die unmittelbare Versorgung des Neugeborenen. Entscheidend sind die frühe Einschätzung, ob ein Transport noch möglich ist, die Erkennung geburtshilflicher Gefahren und eine vorbereitete Neugeborenenversorgung.</p><p>Die Versorgung von Mutter und Kind läuft parallel: Geburtshilfe, Wärmemanagement, Atemunterstützung und Transportplanung müssen frühzeitig organisiert werden.</p></div>
 
-    <section className="lesson-section"><ChapterHeading number="01" kicker="Grundverständnis" title="Definition oder Erklärung" /><div className="lesson-prose"><p>Eine Geburt umfasst den Ausstoß des Fötus aus dem Mutterleib unter Wehentätigkeit. Zum Prüfungsthema gehört außerdem die Erstversorgung des Neugeborenen unmittelbar nach der Geburt.</p><aside className="knowledge-note"><b>Zwei Patient:innen gleichzeitig</b><p>Nach der Geburt werden mütterlicher Zustand, Blutung und Nachgeburtsphase ebenso weiter beurteilt wie Atmung, Herzfrequenz, Muskeltonus, Hautfarbe und Temperatur des Neugeborenen.</p></aside></div></section>
+    <section className="lesson-section"><ChapterHeading number="01" kicker="Geburt und Neugeborenenversorgung" title="Definition" /><div className="lesson-prose"><p>Eine Geburt umfasst den Ausstoß des Fötus aus dem Mutterleib unter Wehentätigkeit. Zum Prüfungsthema gehört außerdem die Erstversorgung des Neugeborenen unmittelbar nach der Geburt.</p><aside className="knowledge-note"><b>Zwei Patient:innen gleichzeitig</b><p>Nach der Geburt werden mütterlicher Zustand, Blutung und Nachgeburtsphase ebenso weiter beurteilt wie Atmung, Herzfrequenz, Muskeltonus, Hautfarbe und Temperatur des Neugeborenen.</p></aside></div></section>
 
-    <section className="lesson-section"><ChapterHeading number="02" kicker="Anatomie / Physiologie" title="Anatomie und Physiologie" /><div className="lesson-prose script-copy">
-      <div className="birth-anatomy-grid">
-        <section className="birth-anatomy-card">
-          <small>Innerer Bereich</small><h3>Innere Geschlechtsorgane</h3>
-          <ul className="birth-organ-list"><li>Ovarien (Eierstöcke)</li><li>Eileiter</li><li>Uterus (Gebärmutter)</li><li>Vagina (Scheide)</li></ul>
-          <p>Die Vagina bildet einen Teil des Geburtswegs. Der Uterus schützt und versorgt das Kind; Kontraktionen seines Myometriums erzeugen die Wehen. Seine Wandschichten sind Endometrium, Myometrium und Perimetrium.</p>
+    <section className="lesson-section"><ChapterHeading number="02" kicker="Geburt und Neugeborenenversorgung" title="Anatomie und Physiologie" /><div className="lesson-prose script-copy">
+      <div className="organ-anatomy-grid">
+        <section className="organ-anatomy-card outer">
+          <small>Äußere Genitale</small><h3>Äußere Geschlechtsorgane</h3>
+          <ul className="script-list"><li><b>Schamhügel:</b> polstert das Schambein.</li><li><b>Große und kleine Schamlippen:</b> schützen den Scheidenvorhof mit Harnröhren- und Scheidenöffnung.</li><li><b>Klitoris:</b> dient der sexuellen Empfindung.</li><li><b>Scheidenöffnung:</b> bildet den äußeren Ausgang des Geburtswegs.</li></ul>
         </section>
-        <section className="birth-anatomy-card">
-          <small>Äußerer Bereich</small><h3>Äußere Geschlechtsorgane</h3>
-          <ul className="birth-organ-list"><li>Schamhügel</li><li>Große Schamlippen</li><li>Kleine Schamlippen</li><li>Klitoris</li><li>Scheidenvorhof</li></ul>
-          <p>Der Schamhügel polstert das Schambein; die Schamlippen schützen den Scheidenvorhof mit Harnröhren- und Scheidenöffnung. Die Klitoris dient der sexuellen Empfindung. Die Scheidenöffnung bildet den äußeren Ausgang des Geburtswegs.</p>
+        <section className="organ-anatomy-card inner">
+          <small>Innere Genitale</small><h3>Innere Geschlechtsorgane</h3>
+          <ul className="script-list"><li><b>Ovarien:</b> Eierstöcke.</li><li><b>Eileiter:</b> gehören zu den inneren Geschlechtsorganen.</li><li><b>Uterus:</b> schützt und versorgt das Kind; Kontraktionen seines Myometriums erzeugen die Wehen. Seine Wandschichten sind Endometrium, Myometrium und Perimetrium.</li><li><b>Vagina:</b> bildet einen Teil des Geburtswegs.</li></ul>
         </section>
       </div>
       <SourceFigure src="/lessons/geburt/uterus-anatomie.jpg" alt="Beschriftete Anatomie von Uterus, Eileitern, Ovarien, Zervix und Vagina" caption="Uterus, Eileiter, Ovarien und Geburtsweg" wide />
