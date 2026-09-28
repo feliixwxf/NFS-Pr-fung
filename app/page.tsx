@@ -167,6 +167,7 @@ export default function Home() {
   const [passwordSetupKind, setPasswordSetupKind] = useState<"invite" | "recovery" | null>(null);
   const [passwordResetBusy, setPasswordResetBusy] = useState(false);
   const [passwordResetMessage, setPasswordResetMessage] = useState("");
+  const contentLocationRef = useRef("start:none:none");
 
   useEffect(() => {
     const accessGranted = hasPersistentAccess();
@@ -289,6 +290,15 @@ export default function Home() {
       });
     };
   }, [mobileMenuOpen]);
+
+  // Content changes behave like route changes; menu toggles intentionally do not.
+  useEffect(() => {
+    const contentLocation = `${view}:${selectedTopic ?? "none"}:${trainingTopic ?? "none"}`;
+    if (contentLocationRef.current !== contentLocation) {
+      contentLocationRef.current = contentLocation;
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [view, selectedTopic, trainingTopic]);
 
   const openMobileMenu = (opener: HTMLButtonElement) => {
     menuOpenerRef.current = opener;
@@ -889,15 +899,15 @@ function GeburtLesson({ onProgressChange, completed, onToggleComplete }: { onPro
     <section className="lesson-section"><ChapterHeading number="01" kicker="Grundverständnis" title="Definition oder Erklärung" /><div className="lesson-prose"><p>Eine Geburt umfasst den Ausstoß des Fötus aus dem Mutterleib unter Wehentätigkeit. Zum Prüfungsthema gehört außerdem die Erstversorgung des Neugeborenen unmittelbar nach der Geburt.</p><aside className="knowledge-note"><b>Zwei Patient:innen gleichzeitig</b><p>Nach der Geburt werden mütterlicher Zustand, Blutung und Nachgeburtsphase ebenso weiter beurteilt wie Atmung, Herzfrequenz, Muskeltonus, Hautfarbe und Temperatur des Neugeborenen.</p></aside></div></section>
 
     <section className="lesson-section"><ChapterHeading number="02" kicker="Anatomie / Physiologie" title="Anatomie und Physiologie" /><div className="lesson-prose script-copy">
-      <div className="birth-anatomy-grid">
-        <section className="birth-anatomy-card">
+      <div className="eug-anatomy-grid">
+        <section className="eug-anatomy-card inner">
           <small>Innerer Bereich</small><h3>Innere Geschlechtsorgane</h3>
-          <ul className="birth-organ-list"><li>Ovarien (Eierstöcke)</li><li>Eileiter</li><li>Uterus (Gebärmutter)</li><li>Vagina (Scheide)</li></ul>
+          <ul className="script-list"><li>Ovarien (Eierstöcke)</li><li>Eileiter</li><li>Uterus (Gebärmutter)</li><li>Vagina (Scheide)</li></ul>
           <p>Die Vagina bildet einen Teil des Geburtswegs. Der Uterus schützt und versorgt das Kind; Kontraktionen seines Myometriums erzeugen die Wehen. Seine Wandschichten sind Endometrium, Myometrium und Perimetrium.</p>
         </section>
-        <section className="birth-anatomy-card">
+        <section className="eug-anatomy-card outer">
           <small>Äußerer Bereich</small><h3>Äußere Geschlechtsorgane</h3>
-          <ul className="birth-organ-list"><li>Schamhügel</li><li>Große Schamlippen</li><li>Kleine Schamlippen</li><li>Klitoris</li><li>Scheidenvorhof</li></ul>
+          <ul className="script-list"><li>Schamhügel</li><li>Große Schamlippen</li><li>Kleine Schamlippen</li><li>Klitoris</li><li>Scheidenvorhof</li></ul>
           <p>Der Schamhügel polstert das Schambein; die Schamlippen schützen den Scheidenvorhof mit Harnröhren- und Scheidenöffnung. Die Klitoris dient der sexuellen Empfindung. Die Scheidenöffnung bildet den äußeren Ausgang des Geburtswegs.</p>
         </section>
       </div>
