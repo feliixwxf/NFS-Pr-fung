@@ -39,6 +39,7 @@ const dimenhydrinate: Preparation = { name: "Dimenhydrinat", amount: "62 mg", dr
 
 const trauma = [morphine, esketamine];
 const topicPreparations: Record<number, Preparation[]> = {
+  1: [{ ...nitroSpray, source: "VFA 13", note: "0,4 mg als ein Hub sublingual. Nach 5 Minuten Wirkung und RR kontrollieren; maximal zwei Wiederholungen und vor jeder Gabe die VFA-Kontraindikationen erneut prüfen." }],
   2: [aspirin, heparin, nitroSpray],
   4: [...trauma, midazolamAnalgesia],
   7: [alteplase],

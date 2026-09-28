@@ -598,6 +598,23 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .figure-grid{grid-template-columns:1fr}
 @media(max-width:760px){:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid{grid-template-columns:1fr}}
 @media(max-width:650px){:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-symptoms,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-care-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-vfa-flow{grid-template-columns:1fr}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid>div{padding:17px}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path{gap:6px;padding:12px}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path span{font-size:10px}}
+
+.angina-pectoris-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid,.pulmo-symptoms,.pulmo-care-grid,.pulmo-vfa-flow){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0 26px}
+.angina-pectoris-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid)>div{min-width:0;padding:20px;border:1px solid #d9e7e7;border-radius:17px;background:#f8fbfa}
+.angina-pectoris-lesson .pulmo-compare>div:first-child{border-color:#d8e7ec;background:#f2f8fa}
+.angina-pectoris-lesson :is(.pulmo-compare,.pulmo-medicine-grid) small{display:block;margin-bottom:7px;color:#4b8580;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.angina-pectoris-lesson .pulmo-compare h3{margin-bottom:9px;font-size:18px}
+.angina-pectoris-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid) p{margin:0;color:#52686e;font-size:12px;line-height:1.65}
+.angina-pectoris-lesson .pulmo-compare span{display:block;margin-top:12px;color:#54747a;font-size:11px;line-height:1.5}
+.angina-pectoris-lesson :is(.pulmo-risk-grid,.pulmo-medicine-grid) b{display:block;margin-bottom:7px;color:#244852;font-size:15px}
+.angina-pectoris-lesson .pulmo-path{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:22px 0;padding:16px;border-radius:16px;background:#eaf4f3}
+.angina-pectoris-lesson .pulmo-path span{padding:9px 12px;border-radius:10px;background:#fff;color:#28534f;font-size:11px;font-weight:800;line-height:1.35}.angina-pectoris-lesson .pulmo-path i{color:#629188;font-style:normal;font-weight:900}
+.angina-pectoris-lesson .pulmo-symptoms span{padding:12px 15px;border-left:3px solid #58a39a;border-radius:10px;background:#f0f8f6;color:#315a57;font-size:12px;font-weight:750;line-height:1.5}
+.angina-pectoris-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow)>div{display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:11px;align-content:center;min-width:0;padding:16px;border:1px solid #dce9e7;border-radius:15px;background:#f8fbfa}
+.angina-pectoris-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow) span{grid-row:span 2;display:grid;place-items:center;align-self:start;width:32px;height:32px;border-radius:10px;background:#e1f1ed;color:#246a61;font-size:10px;font-weight:900}
+.angina-pectoris-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow) b{color:#234b51;font-size:12px;line-height:1.35}.angina-pectoris-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow) small{margin-top:5px;color:#63787b;font-size:11px;line-height:1.55}
+.angina-pectoris-lesson .figure-grid{grid-template-columns:1fr}.angina-pectoris-lesson .figure-grid .source-figure img{width:100%;height:auto;object-fit:contain}
+@media(max-width:650px){.angina-pectoris-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid,.pulmo-symptoms,.pulmo-care-grid,.pulmo-vfa-flow){grid-template-columns:1fr}.angina-pectoris-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid)>div{padding:17px}.angina-pectoris-lesson .pulmo-path{gap:6px;padding:12px}.angina-pectoris-lesson .pulmo-path span{font-size:10px}}
 .rib-section{padding-top:54px}
 .rib-section>summary{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;cursor:pointer;list-style:none}
 .rib-section>summary::-webkit-details-marker{display:none}
