@@ -233,11 +233,16 @@ export default function Home() {
   }, [profileOpen, mobileMenuOpen]);
 
   useEffect(() => {
-    const button = headerMenuButtonRef.current;
-    if (!button) return;
-    const observer = new IntersectionObserver(([entry]) => setHeaderMenuVisible(entry.isIntersecting), { threshold: 0.01 });
-    observer.observe(button);
-    return () => observer.disconnect();
+    const updateHeaderMenuVisibility = () => {
+      setHeaderMenuVisible(window.scrollY < 66);
+    };
+    updateHeaderMenuVisibility();
+    window.addEventListener("scroll", updateHeaderMenuVisibility, { passive: true });
+    window.addEventListener("resize", updateHeaderMenuVisibility);
+    return () => {
+      window.removeEventListener("scroll", updateHeaderMenuVisibility);
+      window.removeEventListener("resize", updateHeaderMenuVisibility);
+    };
   }, [signedIn]);
 
   useEffect(() => {
