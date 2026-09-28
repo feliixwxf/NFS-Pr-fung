@@ -95,7 +95,7 @@ const nav = [
   { id: "oral" as View, label: "Mündlich", icon: "◫" },
   { id: "written" as View, label: "Schriftlich", icon: "✎" },
   { id: "quiz" as View, label: "MC-Training", icon: "✓" },
-  { id: "medication" as View, label: "Medikamentenrechnen", icon: "▦" },
+  { id: "medication" as View, label: "Medikamentenrechnen", icon: "💉" },
   { id: "progress" as View, label: "Fortschritt", icon: "↗" },
 ];
 
