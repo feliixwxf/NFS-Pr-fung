@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+@font-face{
+  font-family:"Atkinson Hyperlegible";
+  src:url("/fonts/atkinson-hyperlegible/atkinson-hyperlegible-400.woff2") format("woff2");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+}
+@font-face{
+  font-family:"Atkinson Hyperlegible";
+  src:url("/fonts/atkinson-hyperlegible/atkinson-hyperlegible-700.woff2") format("woff2");
+  font-style:normal;
+  font-weight:700 900;
+  font-display:swap;
+}
+
 .burn-grade-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin:20px 0; }
 .burn-grade-grid > div { min-width:0; padding:17px; border:1px solid #dfebe9; border-radius:16px; background:linear-gradient(150deg,#fff,#f4f9f7); }
 .burn-grade-grid span { display:inline-flex; min-width:44px; min-height:34px; align-items:center; justify-content:center; padding:0 8px; border-radius:9px; background:#dcefeb; color:#1c6c63; font-weight:850; }
@@ -404,7 +419,7 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .multiple-choice-actions { display:grid; gap:10px; }
 .multiple-choice-actions button { display:grid; grid-template-columns:38px minmax(0,1fr); align-items:center; gap:12px; min-width:0; min-height:64px; padding:10px 15px; border:1px solid #ffffff28; border-radius:12px; background:#ffffff0d; color:#fff; text-align:left; }
 .multiple-choice-actions button > span { display:grid; place-items:center; width:36px; height:36px; border:1px solid #ffffff42; border-radius:50%; background:#ffffff0d; font-weight:900; }
-.multiple-choice-actions button > b { min-width:0; overflow-wrap:anywhere; line-height:1.42; }
+.multiple-choice-actions button > b { min-width:0; overflow-wrap:anywhere; font-weight:400; line-height:1.42; }
 .multiple-choice-actions button:hover:not(:disabled) { border-color:#ffb49a; background:#ffffff18; transform:translateY(-1px); }
 .multiple-choice-actions button.selected { border:2px solid #f2aa8d; background:#ffffff20; box-shadow:0 0 0 4px #e9785020; }
 .multiple-choice-actions button.selected > span { border-color:#ffd1bf; background:#c85d38; }
@@ -584,6 +599,18 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .eug-destination small{display:block;margin-bottom:3px;color:#9fe0d1;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
 .eug-destination b{display:block;font-size:15px}
 .eug-destination p{margin:5px 0 0;color:#dce9e9;font-size:11px;line-height:1.5}
+.myokardinfarkt-decision-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:16px;margin-top:18px}
+.myokardinfarkt-contra,.myokardinfarkt-pci{display:grid;grid-template-columns:48px minmax(0,1fr);gap:15px;align-items:start;padding:21px;border-radius:16px}
+.myokardinfarkt-contra{background:#fff3ee;border:1px solid #edc9bd;color:#54251f}
+.myokardinfarkt-pci{background:#243f4a;color:#fff}
+.myokardinfarkt-contra>span,.myokardinfarkt-pci>span{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;font-size:20px;font-weight:900}
+.myokardinfarkt-contra>span{background:#a94737;color:#fff}.myokardinfarkt-pci>span{background:#ffffff1c;color:#9fe0d1}
+.myokardinfarkt-decision-grid small{display:block;margin-bottom:4px;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.myokardinfarkt-contra small{color:#a94737}.myokardinfarkt-pci small{color:#9fe0d1}
+.myokardinfarkt-decision-grid h3{margin:0 0 8px;font-size:17px;line-height:1.25}.myokardinfarkt-pci h3{color:#fff}
+.myokardinfarkt-decision-grid p{margin:5px 0 0;font-size:11px;line-height:1.55}.myokardinfarkt-pci p{color:#dce9e9}
+.heparin-syringe svg{filter:drop-shadow(0 8px 12px #25464d18)}
+@media(max-width:760px){.myokardinfarkt-decision-grid{grid-template-columns:1fr}.myokardinfarkt-contra,.myokardinfarkt-pci{grid-template-columns:40px minmax(0,1fr);padding:17px}.myokardinfarkt-contra>span,.myokardinfarkt-pci>span{width:36px;height:36px}}
 @media(max-width:650px){.eug-care-grid{grid-template-columns:1fr}.eug-care-grid>div{min-height:88px;padding:15px}.eug-destination{padding:17px}}
 
 /* Kardiales Lungenödem: kurze, gut scannbare Lesebausteine */
@@ -595,11 +622,11 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare p,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid p,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid p{margin:0;color:#52686e;font-size:12px;line-height:1.65}
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare span{display:block;margin-top:12px;color:#54747a;font-size:11px;line-height:1.5}
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid b,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid b{display:block;margin-bottom:7px;color:#244852;font-size:15px}
-:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:22px 0}
-:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid>div{min-width:0;padding:17px;border-radius:15px;background:#f4f8f9;border:1px solid #deeaec}
-:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid small{display:block;margin-bottom:6px;color:#638b91;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
-:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid b{display:block;color:#244852;font-size:13px}
-:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid p{margin:8px 0 0;color:#5a7075;font-size:11px;line-height:1.6}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson,.venenthrombose-lesson) .pulmo-anatomy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:22px 0}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson,.venenthrombose-lesson) .pulmo-anatomy-grid>div{min-width:0;padding:17px;border-radius:15px;background:#f4f8f9;border:1px solid #deeaec}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson,.venenthrombose-lesson) .pulmo-anatomy-grid small{display:block;margin-bottom:6px;color:#638b91;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson,.venenthrombose-lesson) .pulmo-anatomy-grid b{display:block;color:#244852;font-size:13px}
+:is(.lungenoedem-lesson,.rippenfraktur-lesson,.venenthrombose-lesson) .pulmo-anatomy-grid p{margin:8px 0 0;color:#5a7075;font-size:11px;line-height:1.6}
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:22px 0;padding:16px;border-radius:16px;background:#eaf4f3}
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path span{padding:9px 12px;border-radius:10px;background:#fff;color:#28534f;font-size:11px;font-weight:800;line-height:1.35}
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path i{color:#629188;font-style:normal;font-weight:900}
@@ -614,7 +641,7 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-morphine-note b{font-size:13px}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-morphine-note span{font-size:11px;line-height:1.6}
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .figure-grid .source-figure img{width:100%;height:auto;object-fit:contain}
 :is(.lungenoedem-lesson,.rippenfraktur-lesson) .figure-grid{grid-template-columns:1fr}
-@media(max-width:760px){:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-anatomy-grid{grid-template-columns:1fr}}
+@media(max-width:760px){:is(.lungenoedem-lesson,.rippenfraktur-lesson,.venenthrombose-lesson) .pulmo-anatomy-grid{grid-template-columns:1fr}}
 @media(max-width:650px){:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-symptoms,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-care-grid,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-vfa-flow{grid-template-columns:1fr}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-compare>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-risk-grid>div,:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-medicine-grid>div{padding:17px}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path{gap:6px;padding:12px}:is(.lungenoedem-lesson,.rippenfraktur-lesson) .pulmo-path span{font-size:10px}}
 
 .angina-pectoris-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid,.pulmo-symptoms,.pulmo-care-grid,.pulmo-vfa-flow){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0 26px}
@@ -632,6 +659,7 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .angina-pectoris-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow) span{grid-row:span 2;display:grid;place-items:center;align-self:start;width:32px;height:32px;border-radius:10px;background:#e1f1ed;color:#246a61;font-size:10px;font-weight:900}
 .angina-pectoris-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow) b{color:#234b51;font-size:12px;line-height:1.35}.angina-pectoris-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow) small{margin-top:5px;color:#63787b;font-size:11px;line-height:1.55}
 .angina-pectoris-lesson .figure-grid{grid-template-columns:1fr}.angina-pectoris-lesson .figure-grid .source-figure img{width:100%;height:auto;object-fit:contain}
+.myokardinfarkt-intro .knowledge-note{max-width:760px;margin:0;padding:20px 22px;box-sizing:border-box}
 @media(max-width:650px){.angina-pectoris-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid,.pulmo-symptoms,.pulmo-care-grid,.pulmo-vfa-flow){grid-template-columns:1fr}.angina-pectoris-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid)>div{padding:17px}.angina-pectoris-lesson .pulmo-path{gap:6px;padding:12px}.angina-pectoris-lesson .pulmo-path span{font-size:10px}}
 .rib-section{padding-top:54px}
 .rib-section>summary{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;cursor:pointer;list-style:none}
@@ -1183,3 +1211,120 @@ input,select,textarea{font-family:inherit}
   .action-cards b{margin-top:12px;align-items:center}
   .daily-card{margin-top:16px}
 }
+
+/* Unified learning typography: highly legible and identical on every device. */
+:root{
+  --font-sans:"Atkinson Hyperlegible",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-display:"Atkinson Hyperlegible",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body{font-family:var(--font-sans);text-rendering:optimizeLegibility}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-display)!important;font-weight:700}
+.lesson-prose>p{font-family:var(--font-sans);font-size:17px;line-height:1.78;letter-spacing:.002em}
+
+/* New oral chapters follow the same reading rhythm as Apoplex and ACS. */
+.reference-reading-lesson .rib-section{padding-top:62px}
+.reference-reading-lesson .rib-section>summary .chapter-heading{margin-bottom:26px}
+.reference-reading-lesson .lesson-prose,
+.reference-reading-lesson .lesson-prose p,
+.reference-reading-lesson .lesson-prose li,
+.reference-reading-lesson .lesson-prose small,
+.reference-reading-lesson .lesson-prose b{font-family:var(--font-sans)}
+.reference-reading-lesson .lesson-prose>p{font-size:17px;line-height:1.8}
+.reference-reading-lesson .script-copy>h3{font-family:var(--font-display);font-size:21px;line-height:1.25}
+.reference-reading-lesson :is(.pulmo-compare,.pulmo-risk-grid,.pulmo-medicine-grid) p{font-size:13px;line-height:1.7}
+.reference-reading-lesson :is(.pulmo-risk-grid,.pulmo-medicine-grid) b{font-size:16px}
+.reference-reading-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow) b{font-size:13px}
+.reference-reading-lesson :is(.pulmo-care-grid,.pulmo-vfa-flow) small{font-size:12px;line-height:1.6}
+.reference-reading-lesson .pulmo-anatomy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 28px}
+.reference-reading-lesson .pulmo-anatomy-grid>div{min-width:0;padding:18px;border:1px solid #deeaec;border-radius:15px;background:#f4f8f9}
+.reference-reading-lesson .pulmo-anatomy-grid small{display:block;margin-bottom:7px;color:#638b91;font-size:10px;font-weight:850;letter-spacing:.07em;text-transform:uppercase}
+.reference-reading-lesson .pulmo-anatomy-grid b{display:block;color:#244852;font-size:14px;line-height:1.35}
+.reference-reading-lesson .pulmo-anatomy-grid p{margin:8px 0 0;color:#5a7075;font-size:12px;line-height:1.65}
+.organ-quadrant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0 34px}
+.organ-quadrant-grid .collapsible-figure{min-width:0;margin:0}
+.organ-quadrant-grid .collapsible-figure>summary{min-height:52px;box-sizing:border-box}
+.organ-quadrant-grid .source-figure img{width:100%;height:280px;object-fit:contain}
+.organ-quadrant-grid .source-figure figcaption{min-height:42px;box-sizing:border-box}
+@media(max-width:650px){
+  .reference-reading-lesson .rib-section{padding-top:48px}
+  .reference-reading-lesson .pulmo-anatomy-grid{grid-template-columns:1fr}
+  .organ-quadrant-grid{grid-template-columns:1fr;gap:14px}
+  .organ-quadrant-grid .source-figure img{height:auto;max-height:none}
+}
+
+/* Shared Felix/Dustin dashboard and home-link behavior. */
+.brand-home{
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.brand-home:hover{color:var(--orange)}
+.sidebar>.brand-home{width:100%;padding:0 9px 29px;border-bottom:1px solid var(--line)}
+.mobile-menu>header>.brand-home{flex:0 1 auto;width:auto;height:auto;min-height:44px;padding:0;border-radius:0;background:transparent;color:inherit;font-size:17px}
+
+.dashboard-learning-stat{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:clamp(28px,5vw,72px);
+  align-items:center;
+  margin-top:36px;
+  padding:clamp(24px,4vw,40px);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  background:#fff;
+  box-shadow:var(--shadow-card);
+}
+.dashboard-learning-copy{max-width:610px}
+.dashboard-learning-copy h2{margin:7px 0 9px;font-size:clamp(24px,3vw,32px);letter-spacing:-.04em}
+.dashboard-learning-copy p{margin:0;color:var(--muted);font-size:14px;line-height:1.65}
+.dashboard-learning-copy button{margin-top:19px;padding:0;border:0;background:transparent;color:var(--orange);font-size:12px;font-weight:750}
+.dashboard-learning-copy button span{margin-left:9px}
+.dashboard-learning-chart{display:flex;align-items:center;gap:26px}
+.dashboard-learning-ring{display:grid;place-items:center;flex:0 0 148px;width:148px;height:148px;border-radius:50%;box-shadow:inset 0 0 0 1px #0000000a}
+.dashboard-learning-ring>div{display:grid;place-items:center;width:100px;height:100px;border-radius:50%;background:#fff;box-shadow:0 3px 16px #26333a14}
+.dashboard-learning-ring b{font-size:29px;line-height:1}
+.dashboard-learning-ring span{margin-top:3px;color:#829095;font-size:9px;font-weight:750;letter-spacing:.07em;text-transform:uppercase}
+.dashboard-learning-legend{display:grid;gap:11px;min-width:118px}
+.dashboard-learning-legend>div{display:flex;align-items:center;gap:9px;color:#647278;font-size:11px;white-space:nowrap}
+.dashboard-learning-legend i{display:block;flex:0 0 10px;width:10px;height:10px;border-radius:50%}
+.dashboard-learning-legend i.wrong{background:#c9574f}
+.dashboard-learning-legend i.once{background:#dc9344}
+.dashboard-learning-legend i.twice{background:#4f84a5}
+.dashboard-learning-legend i.mastered{background:#4f8668}
+.dashboard-learning-legend b{color:var(--ink);font-size:13px}
+
+@media(max-width:759px){
+  .dashboard-learning-stat{grid-template-columns:1fr;gap:25px;margin-top:22px;padding:24px}
+  .dashboard-learning-chart{justify-content:space-between;gap:18px}
+  .dashboard-learning-ring{flex-basis:126px;width:126px;height:126px}
+  .dashboard-learning-ring>div{width:84px;height:84px}
+  .dashboard-learning-ring b{font-size:25px}
+}
+
+@media(max-width:430px){
+  .dashboard-learning-chart{align-items:flex-start;flex-direction:column}
+  .dashboard-learning-ring{align-self:center}
+  .dashboard-learning-legend{grid-template-columns:1fr 1fr;width:100%}
+}
+
+/* Anatomy library — uses the application's existing surface and accent tokens. */
+.anatomy-page{width:min(1180px,calc(100% - 9vw));margin:clamp(28px,5vw,58px) auto 70px;min-width:0}
+.anatomy-hero{position:relative;overflow:hidden;min-height:250px;display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding:clamp(30px,5vw,54px);border-radius:var(--radius-lg);background:linear-gradient(125deg,var(--navy),#205b69);color:#fff;box-shadow:var(--shadow-card)}
+.anatomy-hero:after{content:"";position:absolute;right:-55px;top:-70px;width:260px;height:260px;border:1px solid #ffffff20;border-radius:50%;box-shadow:inset 0 0 0 22px #ffffff08}
+.anatomy-hero>div{position:relative;z-index:1}.anatomy-hero h1{margin:11px 0 12px;font-size:clamp(40px,6vw,66px);line-height:1;letter-spacing:-.055em}.anatomy-hero p{max-width:620px;margin:0;color:#cbdadd;font-size:15px;line-height:1.6}
+.anatomy-count{flex:0 0 auto;display:grid;place-items:center;width:110px;height:110px;border:1px solid #ffffff32;border-radius:50%}.anatomy-count b{font-size:33px;line-height:1}.anatomy-count span{font-size:10px;text-transform:uppercase;letter-spacing:.12em}
+.anatomy-source-warning{display:grid;grid-template-columns:38px minmax(0,1fr);gap:13px;align-items:start;margin:20px 0;padding:17px 19px;border:1px solid #ecd9c9;border-radius:var(--radius-md);background:#fff8ef;color:#73533e}.anatomy-source-warning>span{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#f6e3d1;color:#9f3f25;font-weight:900}.anatomy-source-warning b{font-size:12px}.anatomy-source-warning p{margin:4px 0 0;font-size:11px;line-height:1.6}.anatomy-source-warning code{overflow-wrap:anywhere}
+.anatomy-source-ready{display:grid;grid-template-columns:38px minmax(0,1fr);gap:13px;align-items:start;margin:20px 0;padding:17px 19px;border:1px solid #c9dfd0;border-radius:var(--radius-md);background:#f1f8f3;color:#385f49}.anatomy-source-ready>span{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#dceee1;color:#397252;font-weight:900}.anatomy-source-ready b{font-size:12px}.anatomy-source-ready p{margin:4px 0 0;font-size:11px;line-height:1.6}
+.anatomy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.anatomy-grid>button{min-width:0;min-height:260px;display:flex;flex-direction:column;align-items:flex-start;padding:25px;border:1px solid var(--line);border-radius:var(--radius-md);background:#fff;color:var(--ink);text-align:left;box-shadow:var(--shadow-card);transition:.2s}.anatomy-grid>button:hover{transform:translateY(-3px);border-color:#efaa91;box-shadow:0 15px 35px #18363f12}.anatomy-grid>button:focus-visible,.anatomy-chapter-switcher button:focus-visible,.anatomy-breadcrumbs button:focus-visible,.anatomy-script-page button:focus-visible{outline:3px solid #e88b6b66;outline-offset:3px}.anatomy-card-number{display:grid;place-items:center;min-width:42px;height:42px;padding:0 10px;border-radius:11px;background:var(--orange-light);color:#9f3f25;font-weight:900}.anatomy-grid h2{margin:20px 0 9px;font-size:20px;line-height:1.25;overflow-wrap:anywhere}.anatomy-grid p{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.55}.anatomy-grid small{color:#859195;font-size:9px;font-weight:750;text-transform:uppercase;letter-spacing:.07em}.anatomy-card-action{display:flex;justify-content:space-between;width:100%;margin-top:auto;padding-top:17px;color:var(--orange);font-size:11px;font-weight:850}.anatomy-card-action i{font-style:normal;font-size:17px}
+.anatomy-back-button{position:sticky;z-index:25;top:max(14px,env(safe-area-inset-top));display:flex;width:max-content;max-width:100%;align-items:center;gap:11px;min-height:50px;margin:0 0 10px;padding:8px 15px 8px 10px;border:1px solid var(--line);border-radius:999px;background:#fffffff2;color:var(--ink);box-shadow:0 8px 24px #18363f1c;backdrop-filter:blur(12px);text-align:left;transition:.2s}.anatomy-back-button:hover{transform:translateX(-2px);border-color:#e8b19c;background:#fff9f6}.anatomy-back-button:focus-visible{outline:3px solid #e88b6b66;outline-offset:3px}.anatomy-back-button>span:first-child{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--orange-light);color:var(--orange);font-size:18px;font-weight:900}.anatomy-back-button>span:last-child{display:grid;gap:1px}.anatomy-back-button small{color:var(--muted);font-size:8px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}.anatomy-back-button b{font-size:11px}.anatomy-breadcrumbs{display:flex;align-items:center;gap:9px;margin-bottom:17px;color:var(--muted);font-size:11px}.anatomy-breadcrumbs button{min-height:40px;padding:0;border:0;background:transparent;color:var(--orange);font:inherit;font-weight:850}.anatomy-breadcrumbs span:last-child{min-width:0;overflow-wrap:anywhere}.anatomy-hero.compact{min-height:210px;align-items:center;justify-content:flex-start}.anatomy-hero.compact h1{font-size:clamp(32px,5vw,50px)}.anatomy-roman{position:relative;z-index:1;display:grid;place-items:center;flex:0 0 68px;height:68px;border:1px solid #ffffff40;border-radius:16px;font-size:23px;font-weight:900}
+.anatomy-chapter-intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr);gap:28px;align-items:start;margin:20px 0;padding:clamp(22px,4vw,34px);border:1px solid var(--line);border-radius:var(--radius-lg);background:#fff;box-shadow:var(--shadow-card)}.anatomy-chapter-intro h2{margin:7px 0 8px;font-size:clamp(22px,3vw,29px)}.anatomy-chapter-intro p{margin:0;color:var(--muted);font-size:13px;line-height:1.65}.anatomy-chapter-intro ul{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}.anatomy-chapter-intro li{padding:8px 10px;border-radius:999px;background:#edf3f2;color:#49646b;font-size:10px;font-weight:750}
+.anatomy-page-stack{display:grid;gap:24px;max-width:920px;margin:28px auto}.anatomy-script-page{margin:0;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius-lg);background:#fff;box-shadow:0 15px 45px #18363f12}.anatomy-script-page button{position:relative;display:block;width:100%;min-height:0;padding:0;border:0;background:#eef0ed}.anatomy-script-page img{display:block;width:100%;height:auto}.anatomy-script-page button>span{position:absolute;right:13px;bottom:13px;padding:8px 11px;border-radius:999px;background:#172b34df;color:#fff;font-size:10px;font-weight:800;backdrop-filter:blur(5px)}.anatomy-script-page figcaption{display:flex;justify-content:space-between;gap:18px;padding:14px 18px;color:#64757b;font-size:10px}.anatomy-script-page figcaption b{color:var(--ink)}
+.anatomy-lightbox{position:fixed;z-index:1000;inset:0;display:grid;place-items:center;padding:58px 18px 18px;background:#0d171de8;backdrop-filter:blur(8px)}.anatomy-lightbox>button{position:fixed;z-index:1;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));width:44px;height:44px;padding:0;border:1px solid #ffffff55;border-radius:50%;background:#172b34;color:#fff;font-size:27px}.anatomy-lightbox img{display:block;max-width:min(1100px,calc(100vw - 36px));max-height:calc(100dvh - 76px);object-fit:contain;box-shadow:0 20px 70px #0008}
+.anatomy-chapter-switcher{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.anatomy-chapter-switcher button{min-width:0;min-height:88px;padding:15px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;color:var(--ink);text-align:left}.anatomy-chapter-switcher button:last-child{text-align:right}.anatomy-chapter-switcher button.overview{text-align:center}.anatomy-chapter-switcher span,.anatomy-chapter-switcher b{display:block;overflow-wrap:anywhere}.anatomy-chapter-switcher span{margin-bottom:5px;color:var(--orange);font-size:9px;font-weight:850}.anatomy-chapter-switcher b{font-size:11px;line-height:1.4}
+@media(min-width:768px) and (max-width:1100px){.anatomy-page{width:calc(100% - 64px)}.anatomy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:767px){.anatomy-page{width:calc(100% - 30px);margin-top:22px}.anatomy-hero{min-height:220px;padding:29px 24px}.anatomy-count{width:76px;height:76px}.anatomy-grid{grid-template-columns:1fr;gap:11px}.anatomy-grid>button{min-height:210px}.anatomy-hero.compact{align-items:flex-start;flex-direction:column;gap:18px}.anatomy-chapter-intro{grid-template-columns:1fr}.anatomy-page-stack{gap:15px}.anatomy-chapter-switcher{grid-template-columns:1fr}.anatomy-chapter-switcher button,.anatomy-chapter-switcher button:last-child{text-align:left}.anatomy-chapter-switcher button.overview{order:-1;text-align:left}}
+@media(max-width:480px){.anatomy-hero:not(.compact){display:block}.anatomy-count{margin-top:25px}.anatomy-source-warning,.anatomy-source-ready{grid-template-columns:1fr}.anatomy-grid h2{font-size:18px}.anatomy-script-page figcaption{align-items:flex-start;flex-direction:column;gap:3px}.anatomy-script-page button>span{right:8px;bottom:8px}.anatomy-lightbox{padding-inline:8px}.anatomy-lightbox img{max-width:calc(100vw - 16px)}}
