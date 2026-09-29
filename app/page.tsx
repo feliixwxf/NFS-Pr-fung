@@ -46,8 +46,9 @@ import GallensteinkolikPreparation from "./gallensteinkolik-preparation";
 import MetamizolRisikoaufklaerung from "./metamizol-risikoaufklaerung";
 import MedicationPreparation from "./medication-preparation";
 import MedicationTrainer from "./medikamentenrechnen/MedicationTrainer";
+import AnatomyLibrary from "./anatomy-library";
 
-type View = "start" | "oral" | "written" | "quiz" | "progress" | "medication";
+type View = "start" | "oral" | "written" | "quiz" | "progress" | "medication" | "anatomy";
 type TrainingTopic = "bronchoobstruktion" | "pseudokrupp-epiglottitis" | "hypertensiver-notfall" | "vorhofflimmern" | "krampfanfall-kind" | "krampfanfall" | "unterkuehlung" | "rippenfraktur" | "verbrennung" | "lungenoedem" | "eug" | "extremitaetentrauma" | "wirbelsaeulentrauma" | "angina-pectoris" | "acs" | "apoplex" | "sht" | "lae" | "hyperventilation" | "geburt" | "thoraxtrauma" | "abdominaltrauma" | "hypoglykaemie" | "gallensteinkolik" | "nierensteinkolik" | "hodentorsion" | "rechtskunde";
 type ReviewMode = "wrong" | "once" | null;
 
@@ -96,6 +97,7 @@ const nav = [
   { id: "start" as View, label: "Start", icon: "⌂" },
   { id: "oral" as View, label: "Mündlich", icon: "◫" },
   { id: "written" as View, label: "Schriftlich", icon: "✎" },
+  { id: "anatomy" as View, label: "Anatomie", icon: "◇" },
   { id: "quiz" as View, label: "MC-Training", icon: "✓" },
   { id: "medication" as View, label: "Medikamentenrechnen", icon: "💉" },
   { id: "progress" as View, label: "Fortschritt", icon: "↗" },
@@ -179,6 +181,7 @@ export default function Home() {
     localStorage.removeItem("notsan-last-score");
     setReady(true);
     if (window.location.pathname === "/medikamentenrechnen") setView("medication");
+    else if (window.location.pathname.startsWith("/anatomie")) setView("anatomy");
   }, []);
 
   useEffect(() => {
@@ -307,6 +310,16 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const restoreViewFromPath = () => {
+      if (window.location.pathname.startsWith("/anatomie")) setView("anatomy");
+      else if (window.location.pathname === "/medikamentenrechnen") setView("medication");
+      else setView("start");
+    };
+    window.addEventListener("popstate", restoreViewFromPath);
+    return () => window.removeEventListener("popstate", restoreViewFromPath);
+  }, []);
+
+  useEffect(() => {
     if (!mobileMenuOpen) return;
     const closeOnWideScreen = () => { if (window.innerWidth > 1400) setMobileMenuOpen(false); };
     window.addEventListener("resize", closeOnWideScreen);
@@ -322,7 +335,7 @@ export default function Home() {
     } else setError(true);
   };
 
-  const changeView = (nextView: View) => { setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); window.history.pushState({}, "", nextView === "medication" ? "/medikamentenrechnen" : "/"); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
+  const changeView = (nextView: View) => { setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); window.history.pushState({}, "", nextView === "medication" ? "/medikamentenrechnen" : nextView === "anatomy" ? "/anatomie" : "/"); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
   const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
@@ -415,6 +428,7 @@ export default function Home() {
         {view === "quiz" && <QuizTraining onProgressChange={handleQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); }} />}
         {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} />}
         {view === "medication" && <MedicationTrainer key={accountUserId || "guest"} accountUserId={accountUserId} onSyncError={() => setSyncStatus("error")} />}
+        {view === "anatomy" && <AnatomyLibrary />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
       {!headerMenuVisible && !mobileMenuOpen && <button ref={floatingMenuButtonRef} className="floating-menu-toggle" type="button" onClick={(event) => openMobileMenu(event.currentTarget)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Menü öffnen"><span aria-hidden="true"><i /><i /><i /></span>Menü</button>}
