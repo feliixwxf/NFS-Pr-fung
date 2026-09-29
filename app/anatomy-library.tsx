@@ -12,6 +12,25 @@ function SourceLink() {
   </a>;
 }
 
+function AnatomySlides({ chapterTitle }: { chapterTitle: string }) {
+  return <section className="anatomy-slides" aria-labelledby="anatomy-slides-title">
+    <header>
+      <div><span className="eyebrow">ORIGINALFOLIEN</span><h2 id="anatomy-slides-title">Abbildungen und Informationen</h2></div>
+      <SourceLink />
+    </header>
+    <div className="anatomy-slide-frame">
+      <iframe
+        src={anatomyScriptUrl}
+        title={`Anatomie-Skript – ${chapterTitle}`}
+        loading="lazy"
+        allow="fullscreen"
+        allowFullScreen
+      />
+    </div>
+    <p className="anatomy-slide-hint">Blättere im eingebetteten Skript zum Kapitel „{chapterTitle}“. Über den Button oben lässt sich die Darstellung bei Bedarf in einem eigenen Tab vergrößern.</p>
+  </section>;
+}
+
 export default function AnatomyLibrary() {
   const initialSlug = typeof window === "undefined" ? "" : window.location.pathname.split("/")[2] || "";
   const [selectedSlug, setSelectedSlug] = useState(initialSlug);
@@ -44,9 +63,7 @@ export default function AnatomyLibrary() {
         <span className="anatomy-roman">{selected.roman}</span>
         <div><span className="eyebrow light">ANATOMIE · KAPITEL {selected.roman}</span><h1 id="anatomy-title">{selected.title}</h1></div>
       </header>
-      <aside className="anatomy-source-warning" role="status">
-        <span aria-hidden="true">i</span><div><b>Abbildungen im Original-Skript</b><p>Das vollständige Skript einschließlich seiner anatomischen Abbildungen steht im bereitgestellten Online-Flipbook zur Verfügung.</p><SourceLink /></div>
-      </aside>
+      <AnatomySlides chapterTitle={selected.title} />
       <nav className="anatomy-chapter-switcher" aria-label="Zwischen Anatomie-Kapiteln wechseln">
         {index > 0 && <button type="button" onClick={() => openChapter(anatomyChapters[index - 1].slug)}><span>← Vorheriges Kapitel</span><b>{anatomyChapters[index - 1].title}</b></button>}
         <button type="button" className="overview" onClick={openOverview}><span>Alle Kapitel</span><b>Zur Übersicht</b></button>
