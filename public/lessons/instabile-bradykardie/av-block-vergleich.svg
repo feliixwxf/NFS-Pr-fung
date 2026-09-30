@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">EKG Vergleich von Sinusbradykardie und AV Blöcken</title>
+  <desc id="desc">Fünf schematische EKG Streifen zeigen Sinusbradykardie, AV Block Grad eins, Wenckebach, Mobitz zwei und kompletten AV Block.</desc>
+  <defs>
+    <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#f5dfe0" stroke-width="0.7"/></pattern>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><rect width="50" height="50" fill="url(#smallGrid)"/><path d="M50 0H0V50" fill="none" stroke="#e8bfc2" stroke-width="1"/></pattern>
+    <style>.label{font:700 22px Arial,sans-serif;fill:#20343a}.sub{font:500 16px Arial,sans-serif;fill:#5c7076}.trace{fill:none;stroke:#163f4a;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.atrial{fill:none;stroke:#c05f45;stroke-width:4;stroke-linecap:round}.ventricular{fill:none;stroke:#163f4a;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.lane{stroke:#d7dedd;stroke-width:1.5;stroke-dasharray:5 6}.laneLabel{font:700 13px Arial,sans-serif}.p{fill:#be5b3f}.miss{font:700 25px Arial,sans-serif;fill:#be5b3f}.box{fill:url(#grid);stroke:#d9e1df;stroke-width:2}</style>
+  </defs>
+  <rect width="1200" height="760" rx="24" fill="#fbfaf7"/>
+
+  <g transform="translate(30 30)"><rect class="box" x="260" width="880" height="120" rx="14"/><text class="label" x="0" y="42">Sinusbradykardie</text><text class="sub" x="0" y="70">P vor jedem QRS</text><text class="sub" x="0" y="94">langsame Regelmäßigkeit</text><path class="trace" d="M285 70h40q12-24 24 0h38l10-18 12 58 14-96 14 71 14-15h70q12-24 24 0h38l10-18 12 58 14-96 14 71 14-15h70q12-24 24 0h38l10-18 12 58 14-96 14 71 14-15h55"/><circle class="p" cx="349" cy="70" r="5"/><circle class="p" cx="555" cy="70" r="5"/><circle class="p" cx="761" cy="70" r="5"/></g>
+
+  <g transform="translate(30 175)"><rect class="box" x="260" width="880" height="120" rx="14"/><text class="label" x="0" y="42">AV Block I</text><text class="sub" x="0" y="70">PQ konstant &gt; 200 ms</text><text class="sub" x="0" y="94">jede P wird übergeleitet</text><path class="trace" d="M285 70h25q12-24 24 0h85l10-18 12 58 14-96 14 71 14-15h42q12-24 24 0h85l10-18 12 58 14-96 14 71 14-15h42q12-24 24 0h85l10-18 12 58 14-96 14 71 14-15h20"/><circle class="p" cx="334" cy="70" r="5"/><circle class="p" cx="559" cy="70" r="5"/><circle class="p" cx="784" cy="70" r="5"/></g>
+
+  <g transform="translate(30 320)"><rect class="box" x="260" width="880" height="120" rx="14"/><text class="label" x="0" y="38">AV Block II</text><text class="sub" x="0" y="65">Typ Wenckebach</text><text class="sub" x="0" y="92">PQ länger → Ausfall</text><path class="trace" d="M285 70h15q12-24 24 0h30l10-15 11 50 13-85 13 63 14-13h35q12-24 24 0h55l10-15 11 50 13-85 13 63 14-13h35q12-24 24 0h82q12-24 24 0h38l10-15 11 50 13-85 13 63 14-13h70"/><circle class="p" cx="324" cy="70" r="5"/><circle class="p" cx="474" cy="70" r="5"/><circle class="p" cx="649" cy="70" r="5"/><circle class="p" cx="755" cy="70" r="5"/><text class="miss" x="642" y="108">×</text></g>
+
+  <g transform="translate(30 465)"><rect class="box" x="260" width="880" height="120" rx="14"/><text class="label" x="0" y="38">AV Block II</text><text class="sub" x="0" y="65">Typ Mobitz</text><text class="sub" x="0" y="92">PQ konstant → Ausfall</text><path class="trace" d="M285 70h20q12-24 24 0h34l10-15 11 50 13-85 13 63 14-13h52q12-24 24 0h34l10-15 11 50 13-85 13 63 14-13h52q12-24 24 0h115q12-24 24 0h34l10-15 11 50 13-85 13 63 14-13h52"/><circle class="p" cx="329" cy="70" r="5"/><circle class="p" cx="500" cy="70" r="5"/><circle class="p" cx="671" cy="70" r="5"/><circle class="p" cx="842" cy="70" r="5"/><text class="miss" x="664" y="108">×</text></g>
+
+  <g transform="translate(30 610)">
+    <rect class="box" x="260" width="880" height="120" rx="14"/>
+    <text class="label" x="0" y="38">AV Block III</text>
+    <text class="sub" x="0" y="65">AV-Dissoziation</text>
+    <text class="sub" x="0" y="92">P und QRS unabhängig</text>
+    <line class="lane" x1="276" y1="60" x2="1124" y2="60"/>
+    <text class="laneLabel" x="278" y="24" fill="#a74f39">VORHOF · P-WELLEN</text>
+    <text class="laneLabel" x="278" y="78" fill="#163f4a">KAMMER · QRS</text>
+    <path class="atrial" d="M420 40h10q12-20 24 0h76q12-20 24 0h76q12-20 24 0h76q12-20 24 0h76q12-20 24 0h76q12-20 24 0h76q12-20 24 0h38"/>
+    <path class="ventricular" d="M420 94h45l10-14 12 35 14-58 14 45 13-8h154l10-14 12 35 14-58 14 45 13-8h154l10-14 12 35 14-58 14 45 13-8h95"/>
+  </g>
+</svg>
