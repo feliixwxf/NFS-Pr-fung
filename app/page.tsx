@@ -574,16 +574,7 @@ function TopicReader(props: TopicReaderProps) {
   } else if (heroIndex >= 0) {
     sections.splice(lessonIndex + 1, 0, preparation);
   }
-  if (heroIndex >= 0) sections.splice(heroIndex + 1, 0, <ChapterNavigator key={`chapter-nav-${props.topicNumber}`} topicNumber={props.topicNumber} />);
   return cloneElement(chapter, undefined, ...sections);
-}
-
-function ChapterNavigator({ topicNumber }: { topicNumber: number }) {
-  const [items,setItems]=useState<Array<{id:string;title:string}>>([]);
-  useEffect(()=>{const frame=requestAnimationFrame(()=>{const root=document.querySelector(".topic-reader");if(!root)return;const headings=Array.from(root.querySelectorAll<HTMLElement>(".lesson-section h2, .legal-section h2, .study-finale h2"));const seen=new Set<string>();const next=headings.map((heading,index)=>{const base=(heading.textContent||`Abschnitt ${index+1}`).toLocaleLowerCase("de").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");let id=`abschnitt-${base||index+1}`;while(seen.has(id))id=`${id}-${index+1}`;seen.add(id);const target=heading.closest<HTMLElement>(".lesson-section, .legal-section, .study-finale")||heading;target.id=id;target.style.scrollMarginTop="90px";return{id,title:heading.textContent||`Abschnitt ${index+1}`}});setItems(next)});return()=>cancelAnimationFrame(frame)},[topicNumber]);
-  const jump=(id:string)=>{const target=document.getElementById(id);if(target instanceof HTMLDetailsElement)target.open=true;target?.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});target?.querySelector<HTMLElement>("h2,summary")?.focus({preventScroll:true})};
-  if(!items.length)return null;
-  return <details className="chapter-navigator"><summary>Im Kapitel <span>{items.length} Abschnitte</span></summary><nav aria-label="Abschnitte in diesem Kapitel">{items.map(item=><button type="button" key={item.id} onClick={()=>jump(item.id)}>{item.title}</button>)}</nav></details>;
 }
 
 function useTopicReaderContent({ topicNumber, onBack, onProgressChange, completed, onToggleComplete }: TopicReaderProps) {
