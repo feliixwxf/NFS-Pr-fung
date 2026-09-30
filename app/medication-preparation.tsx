@@ -56,6 +56,7 @@ const topicPreparations: Record<number, Preparation[]> = {
   16: [atropineBradycardia, epinephrineBradyInfusion, epinephrineBradyPerfusor],
   17: trauma,
   18: [...trauma, tranexamic],
+  20: [...trauma, midazolamAnalgesia, tranexamic],
   21: [furosemide, nitroSpray, { ...morphine, name: "Morphin · CPAP-Zweig", source: "Anlage B2A · VFA 06", note: "VFA 06 nennt bei nicht tolerierter CPAP-Therapie 2 mg i.v., entsprechend 2 ml der vorbereiteten 1-mg/ml-Lösung." }],
   22: trauma,
   23: [amiodarone],

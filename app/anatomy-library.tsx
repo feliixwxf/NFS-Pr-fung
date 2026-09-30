@@ -5,7 +5,7 @@ import { anatomyChapters } from "./anatomy-data";
 import { normalizeSearch } from "./lib/contentSearch";
 
 const pathFor = (slug?: string) => slug ? `/anatomie/${slug}` : "/anatomie";
-const relatedTopics: Record<number,{title:string;slug:string}> = { 1:{title:"Myokardinfarkt",slug:"myokardinfarkt"},2:{title:"Angina pectoris",slug:"angina-pectoris"},3:{title:"Akutes Koronarsyndrom",slug:"acs"},10:{title:"COPD",slug:"bronchoobstruktion"},13:{title:"Asthma",slug:"bronchoobstruktion"},22:{title:"Kardiales Lungenödem",slug:"lungenoedem"},24:{title:"Vorhofflimmern",slug:"vorhofflimmern"},40:{title:"Nierensteinkolik",slug:"nierensteinkolik"} };
+const relatedTopics: Record<number,{title:string;slug:string}> = { 1:{title:"Myokardinfarkt",slug:"myokardinfarkt"},2:{title:"Angina pectoris",slug:"angina-pectoris"},3:{title:"Akutes Koronarsyndrom",slug:"acs"},6:{title:"Pneumonie",slug:"pneumonie"},10:{title:"COPD",slug:"bronchoobstruktion"},13:{title:"Asthma",slug:"bronchoobstruktion"},22:{title:"Kardiales Lungenödem",slug:"lungenoedem"},24:{title:"Vorhofflimmern",slug:"vorhofflimmern"},40:{title:"Nierensteinkolik",slug:"nierensteinkolik"} };
 
 export default function AnatomyLibrary() {
   const initialSlug = typeof window === "undefined" ? "" : window.location.pathname.split("/")[2] || "";
