@@ -1397,3 +1397,23 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
   .mc-library-tools{grid-template-columns:1fr}
   .mc-library-tools .topic-search{grid-column:auto}
 }
+
+/* Compact learning quality-of-life controls */
+.chapter-qol { display:flex; flex-wrap:wrap; align-items:center; gap:.55rem; margin:1rem 0 1.5rem; padding:.75rem; border:1px solid var(--line, #ddd8d0); border-radius:14px; background:#fff; position:relative; }
+.chapter-qol button, .mixed-training-controls button, .quiz-open-actions button, .bookmark-question, .oral-advanced-filters select, .oral-advanced-filters button { min-height:44px; border-radius:10px; border:1px solid #d7d2ca; background:#fff; padding:.65rem .85rem; font:inherit; }
+.chapter-primary-actions, .collapse-actions { display:flex; flex-wrap:wrap; gap:.45rem; }
+.chapter-primary-actions button { background:#183d37; color:#fff; border-color:#183d37; }
+.section-picker { position:relative; }
+.section-picker-menu { position:absolute; z-index:20; top:calc(100% + .35rem); left:0; width:min(24rem, calc(100vw - 3rem)); max-height:55vh; overflow:auto; padding:.4rem; border-radius:12px; background:#fff; box-shadow:0 12px 35px #142a2433; }
+.section-picker-menu button { display:block; width:100%; text-align:left; }
+.qol-collapsed > :not(header):not(.chapter-heading):not(summary) { display:none !important; }
+.oral-advanced-filters, .mixed-training-controls, .quiz-open-actions, .quiz-explanation-actions { display:flex; flex-wrap:wrap; align-items:end; gap:.65rem; width:100%; }
+.oral-advanced-filters label { display:grid; gap:.25rem; min-width:min(13rem,100%); font-size:.78rem; font-weight:700; }
+.mixed-training-controls { margin:1rem 0; padding:.8rem; background:#f5f2ec; border-radius:14px; }
+.chapter-choice-grid button[aria-pressed="true"] { outline:3px solid #cf7d35; outline-offset:2px; }
+.bookmark-question.active { background:#fff3cd; border-color:#d69b22; }
+.quiz-open-actions { margin-top:1rem; }
+.quiz-open-actions .check-multiple-answer { margin:0; }
+.quiz-explanation-actions { justify-content:flex-end; }
+@media (max-width: 600px) { .chapter-qol > *, .chapter-primary-actions, .collapse-actions { width:100%; } .chapter-primary-actions button, .collapse-actions button { flex:1 1 9rem; } .section-picker > button { width:100%; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto !important; } }

@@ -60,6 +60,7 @@ import AnatomyLibrary from "./anatomy-library";
 import LearningBackup from "./learning-backup";
 import { topicSearchScore } from "./lib/contentSearch";
 import { dueQuestionIds } from "./lib/questionProgress";
+import { buildBalancedRound, markTopicOpened, readBookmarks, readTopicActivity, stableQuestionKey, writeBookmarks } from "./lib/learningQol";
 
 type View = "start" | "oral" | "written" | "quiz" | "progress" | "medication" | "anatomy";
 type TrainingTopic = "akutes-abdomen" | "opiatintoxikation" | "venenthrombose" | "myokardinfarkt" | "polytrauma" | "bronchoobstruktion" | "pseudokrupp-epiglottitis" | "hypertensiver-notfall" | "vorhofflimmern" | "krampfanfall-kind" | "krampfanfall" | "unterkuehlung" | "rippenfraktur" | "verbrennung" | "lungenoedem" | "eug" | "extremitaetentrauma" | "wirbelsaeulentrauma" | "angina-pectoris" | "acs" | "apoplex" | "sht" | "lae" | "hyperventilation" | "geburt" | "thoraxtrauma" | "abdominaltrauma" | "hypoglykaemie" | "gallensteinkolik" | "nierensteinkolik" | "hodentorsion" | "rechtskunde";
@@ -452,7 +453,7 @@ export default function Home() {
           </div>
         </header>
         {view === "start" && <Dashboard setView={changeView} questionProgress={questionProgress} />}
-        {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={(topic) => { setSelectedTopic(topic); window.history.pushState({}, "", topic === null ? "/muendlich" : `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
+        {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={(topic) => { setSelectedTopic(topic); window.history.pushState({}, "", topic === null ? "/muendlich" : `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onOpenTraining={(topic) => openTraining(topic)} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
         {view === "written" && <WrittenLibrary onProgressChange={handleQuestionProgress} />}
         {view === "quiz" && <QuizTraining onProgressChange={handleQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); window.history.pushState({}, "", topic ? `/mc/${topic}` : "/mc"); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); window.history.pushState({}, "", "/fortschritt"); }} />}
         {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} onStart={() => changeView("quiz")} />}
@@ -487,22 +488,29 @@ function Dashboard({ setView, questionProgress }: { setView: (view: View) => voi
   </section>;
 }
 
-function OralLibrary({ selectedTopic, setSelectedTopic, onProgressChange, completedTopics, onToggleComplete }: { selectedTopic: number | null; setSelectedTopic: (topic: number | null) => void; onProgressChange: (progress: QuestionProgress) => void; completedTopics: number[]; onToggleComplete: (topicNumber: number) => void }) {
-  const [search, setSearch] = useState("");
-  const [availability, setAvailability] = useState<"all" | "ready" | "pending">("all");
-  const filteredGroups = useMemo(() => topicGroups.map((group) => ({
+function OralLibrary({ selectedTopic, setSelectedTopic, onOpenTraining, onProgressChange, completedTopics, onToggleComplete }: { selectedTopic: number | null; setSelectedTopic: (topic: number | null) => void; onOpenTraining: (topic: TrainingTopic) => void; onProgressChange: (progress: QuestionProgress) => void; completedTopics: number[]; onToggleComplete: (topicNumber: number) => void }) {
+  const savedFilters = () => { try { return JSON.parse(sessionStorage.getItem("notsan-oral-filters") || "{}"); } catch { return {}; } };
+  const [search, setSearch] = useState<string>(() => savedFilters().search || "");
+  const [availability, setAvailability] = useState<"all" | "ready" | "pending">(() => savedFilters().availability || "all");
+  const [learning, setLearning] = useState<"all" | "new" | "started" | "completed">(() => savedFilters().learning || "all");
+  const [groupFilter, setGroupFilter] = useState<string>(() => savedFilters().group || "all");
+  const [topicSort, setTopicSort] = useState<"order" | "alpha" | "recent">(() => savedFilters().sort || "order");
+  const activity = readTopicActivity();
+  useEffect(() => { sessionStorage.setItem("notsan-oral-filters", JSON.stringify({ search, availability, learning, group: groupFilter, sort: topicSort })); }, [search, availability, learning, groupFilter, topicSort]);
+  const filteredGroups = useMemo(() => topicGroups.filter(group => groupFilter === "all" || group.name === groupFilter).map((group) => ({
     ...group,
     entries: group.topicNumbers.map((number) => ({ title: topics[number - 1], number })).filter((topic) => {
       const matchesSearch = topicSearchScore(topic.title, search) > 0;
       const isReady = READY_TOPIC_NUMBERS.has(topic.number);
-      return matchesSearch && (availability === "all" || (availability === "ready" ? isReady : !isReady));
-    }).sort((a, b) => topicSearchScore(b.title, search) - topicSearchScore(a.title, search) || a.number - b.number),
-  })).filter((group) => group.entries.length > 0), [search, availability]);
+      const status = completedTopics.includes(topic.number) ? "completed" : activity[topic.number] ? "started" : "new";
+      return matchesSearch && (availability === "all" || (availability === "ready" ? isReady : !isReady)) && (learning === "all" || isReady && learning === status);
+    }).sort((a, b) => search.trim() ? topicSearchScore(b.title, search) - topicSearchScore(a.title, search) : topicSort === "alpha" ? a.title.localeCompare(b.title, "de") : topicSort === "recent" ? (Date.parse(activity[b.number]?.openedAt || "0") - Date.parse(activity[a.number]?.openedAt || "0") || a.number - b.number) : a.number - b.number),
+  })).filter((group) => group.entries.length > 0), [search, availability, learning, groupFilter, topicSort, completedTopics]);
   const resultCount = filteredGroups.reduce((sum, group) => sum + group.entries.length, 0);
-  const resetFilters = () => { setSearch(""); setAvailability("all"); };
-  if (selectedTopic !== null) return <TopicReader topicNumber={selectedTopic} onBack={() => setSelectedTopic(null)} onProgressChange={onProgressChange} completed={completedTopics.includes(selectedTopic + 1)} onToggleComplete={() => onToggleComplete(selectedTopic + 1)} />;
+  const resetFilters = () => { setSearch(""); setAvailability("all"); setLearning("all"); setGroupFilter("all"); setTopicSort("order"); };
+  if (selectedTopic !== null) return <TopicReader topicNumber={selectedTopic} onBack={() => setSelectedTopic(null)} onOpenTraining={onOpenTraining} onProgressChange={onProgressChange} completed={completedTopics.includes(selectedTopic + 1)} onToggleComplete={() => onToggleComplete(selectedTopic + 1)} />;
 
-return <section className="page-section topic-library-page"><div className="section-heading"><div><span className="eyebrow">Mündliche Prüfung</span><h1>Deine Prüfungsthemen</h1><p>Finde Lesekapitel und geplante Inhalte in ihrer fachlichen Reihenfolge.</p></div><div className="source-badge topic-availability-stat" aria-label={`${READY_TOPIC_NUMBERS.size} verfügbar, ${topics.length - READY_TOPIC_NUMBERS.size} in Vorbereitung`}><div><b>{READY_TOPIC_NUMBERS.size}</b><span>verfügbar</span></div><small><b>{topics.length - READY_TOPIC_NUMBERS.size}</b> in Vorbereitung</small></div></div><div className="library-tools"><div className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Thema suchen …" aria-label="Prüfungsthemen durchsuchen" /><small>{resultCount} Ergebnisse</small></div><div className="availability-filters" role="group" aria-label="Nach Verfügbarkeit filtern">{([['all','Alle Themen'],['ready','Verfügbar'],['pending','In Vorbereitung']] as const).map(([value,label]) => <button type="button" key={value} className={availability === value ? "active" : ""} aria-pressed={availability === value} onClick={() => setAvailability(value)}>{label}</button>)}</div></div>{resultCount === 0 ? <div className="library-empty" role="status"><span aria-hidden="true">⌕</span><div><h2>Keine Themen gefunden</h2><p>Prüfe den Suchbegriff oder zeige wieder alle Themen an.</p></div><button type="button" onClick={resetFilters}>Filter zurücksetzen</button></div> : <div className="grouped-topics">{filteredGroups.map((group) => <section className="topic-group" key={group.name}><div className="topic-group-heading"><span>{group.icon}</span><div><h2>{group.name}</h2><p>{group.entries.length} {group.entries.length === 1 ? "Thema" : "Themen"}</p></div></div><div className="topic-name-grid">{group.entries.map((topic) => { const completed = completedTopics.includes(topic.number); const ready = READY_TOPIC_NUMBERS.has(topic.number); const readyLabel = topic.number === 1 ? "VFA 12 · 13 · 14" : topic.number === 31 ? "VFA L2 · 07 · 32 · 35/36/38" : topic.number === 2 ? "VFA 12 · 13 · 14" : topic.number === 10 || topic.number === 13 ? "VFA 21 · 06 · B2A" : topic.number === 49 ? "VFA 24 · B2A" : topic.number === 15 ? "VFA 39 · B2A · Metamizol/Butylscopolamin" : topic.number === 14 ? "VFA 16 · 17 · B2A" : topic.number === 24 ? "VFA 20 · B2A" : topic.number === 30 ? "VFA 30 · B2A" : topic.number === 25 ? "VFA 29 · B2A" : topic.number === 47 ? "ERC 2025 · Hypothermie" : topic.number === 36 ? "VFA 34 · Infusionsrechner" : topic.number === 34 ? "VFA 07 · 35 · 36 · 38" : topic.number === 22 ? "VFA 06 · 15 · B2A" : topic.number === 23 ? "VFA 35 · 36 · 38 · B2A/B2B" : topic.number === 16 ? "VFA 35 · 36 · 38 · B2A/B2B" : topic.number === 3 ? "VFA 12 · 13 · 14" : topic.number === 4 ? "VFA 44" : topic.number === 5 ? "VFA L2 · 35 · 36 · 38 · B2A" : topic.number === 7 ? "Gefäßanatomie · Virchow-Trias" : topic.number === 8 ? "VFA L5 · 01 · B2A" : topic.number === 11 ? "Atemregulation · Säure-Basen-Haushalt" : topic.number === 12 ? "VFA 41 · 42 · 43 · ERC 49" : topic.number === 18 ? "VFA 07 · 35 · 36 · 38" : topic.number === 19 ? "VFA L2 · 35 · 36 · 38 · B2A" : topic.number === 27 ? "VFA 27 · 28 · Medikamentenkarte" : topic.number === 42 ? "VFA L5 · 01" : topic.number === 38 ? "VFA 40 · B2A · Naloxon" : topic.number === 39 || topic.number === 40 ? "VFA 18 · 39" : "VFA 18 · 35 · 36 · 38"; const learningStatus = completed ? "Abgeschlossen" : "Nicht begonnen"; return <button className={`${ready ? "topic-ready" : ""} ${completed ? "topic-completed" : ""}`} key={topic.number} onClick={() => setSelectedTopic(topic.number - 1)} disabled={!ready}><span>{completed ? "✓" : String(topic.number).padStart(2, "0")}</span><div><b>{topic.number === 4 ? "Apoplex (Schlaganfall)" : topic.number === 5 ? "Schädel-Hirn-Trauma (SHT)" : topic.number === 11 ? "Hyperventilationssyndrom" : topic.title}</b><small className="availability-status">{ready ? "Verfügbar" : "In Vorbereitung"}</small><small className="learning-status">{ready ? `${learningStatus} · ${readyLabel}` : "Noch kein Lernstand"}</small></div><i>{ready ? "Öffnen →" : "Geplant"}</i></button>; })}</div></section>)}</div>}<p className="orientation-note">Die Themenübersicht dient zur Orientierung und erhebt keinen Anspruch auf Vollständigkeit.</p></section>;
+return <section className="page-section topic-library-page"><div className="section-heading"><div><span className="eyebrow">Mündliche Prüfung</span><h1>Deine Prüfungsthemen</h1><p>Finde Lesekapitel und geplante Inhalte in ihrer fachlichen Reihenfolge.</p></div><div className="source-badge topic-availability-stat" aria-label={`${READY_TOPIC_NUMBERS.size} verfügbar, ${topics.length - READY_TOPIC_NUMBERS.size} in Vorbereitung`}><div><b>{READY_TOPIC_NUMBERS.size}</b><span>verfügbar</span></div><small><b>{topics.length - READY_TOPIC_NUMBERS.size}</b> in Vorbereitung</small></div></div><div className="library-tools"><div className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Thema suchen …" aria-label="Prüfungsthemen durchsuchen" /><small>{resultCount} Ergebnisse</small></div><div className="availability-filters" role="group" aria-label="Nach Verfügbarkeit filtern">{([['all','Alle Themen'],['ready','Verfügbar'],['pending','In Vorbereitung']] as const).map(([value,label]) => <button type="button" key={value} className={availability === value ? "active" : ""} aria-pressed={availability === value} onClick={() => setAvailability(value)}>{label}</button>)}</div><div className="oral-advanced-filters"><label>Lernstand<select value={learning} onChange={event => setLearning(event.target.value as typeof learning)}><option value="all">Alle</option><option value="new">Nicht begonnen</option><option value="started">Begonnen</option><option value="completed">Absolviert</option></select></label><label>Fachgruppe<select value={groupFilter} onChange={event => setGroupFilter(event.target.value)}><option value="all">Alle Fachgruppen</option>{topicGroups.map(group => <option key={group.name}>{group.name}</option>)}</select></label><label>Sortierung<select value={topicSort} onChange={event => setTopicSort(event.target.value as typeof topicSort)}><option value="order">Fachliche Reihenfolge</option><option value="alpha">Alphabetisch</option><option value="recent">Zuletzt geöffnet</option></select></label><button type="button" onClick={resetFilters}>Filter zurücksetzen</button></div></div>{resultCount === 0 ? <div className="library-empty" role="status"><span aria-hidden="true">⌕</span><div><h2>Keine Themen gefunden</h2><p>Prüfe den Suchbegriff oder zeige wieder alle Themen an.</p></div><button type="button" onClick={resetFilters}>Filter zurücksetzen</button></div> : <div className="grouped-topics">{filteredGroups.map((group) => <section className="topic-group" key={group.name}><div className="topic-group-heading"><span>{group.icon}</span><div><h2>{group.name}</h2><p>{group.entries.length} {group.entries.length === 1 ? "Thema" : "Themen"}</p></div></div><div className="topic-name-grid">{group.entries.map((topic) => { const completed = completedTopics.includes(topic.number); const ready = READY_TOPIC_NUMBERS.has(topic.number); const readyLabel = topic.number === 1 ? "VFA 12 · 13 · 14" : topic.number === 31 ? "VFA L2 · 07 · 32 · 35/36/38" : topic.number === 2 ? "VFA 12 · 13 · 14" : topic.number === 10 || topic.number === 13 ? "VFA 21 · 06 · B2A" : topic.number === 49 ? "VFA 24 · B2A" : topic.number === 15 ? "VFA 39 · B2A · Metamizol/Butylscopolamin" : topic.number === 14 ? "VFA 16 · 17 · B2A" : topic.number === 24 ? "VFA 20 · B2A" : topic.number === 30 ? "VFA 30 · B2A" : topic.number === 25 ? "VFA 29 · B2A" : topic.number === 47 ? "ERC 2025 · Hypothermie" : topic.number === 36 ? "VFA 34 · Infusionsrechner" : topic.number === 34 ? "VFA 07 · 35 · 36 · 38" : topic.number === 22 ? "VFA 06 · 15 · B2A" : topic.number === 23 ? "VFA 35 · 36 · 38 · B2A/B2B" : topic.number === 16 ? "VFA 35 · 36 · 38 · B2A/B2B" : topic.number === 3 ? "VFA 12 · 13 · 14" : topic.number === 4 ? "VFA 44" : topic.number === 5 ? "VFA L2 · 35 · 36 · 38 · B2A" : topic.number === 7 ? "Gefäßanatomie · Virchow-Trias" : topic.number === 8 ? "VFA L5 · 01 · B2A" : topic.number === 11 ? "Atemregulation · Säure-Basen-Haushalt" : topic.number === 12 ? "VFA 41 · 42 · 43 · ERC 49" : topic.number === 18 ? "VFA 07 · 35 · 36 · 38" : topic.number === 19 ? "VFA L2 · 35 · 36 · 38 · B2A" : topic.number === 27 ? "VFA 27 · 28 · Medikamentenkarte" : topic.number === 42 ? "VFA L5 · 01" : topic.number === 38 ? "VFA 40 · B2A · Naloxon" : topic.number === 39 || topic.number === 40 ? "VFA 18 · 39" : "VFA 18 · 35 · 36 · 38"; const learningStatus = completed ? "Abgeschlossen" : activity[topic.number] ? "Begonnen" : "Nicht begonnen"; return <button className={`${ready ? "topic-ready" : ""} ${completed ? "topic-completed" : ""}`} key={topic.number} onClick={() => setSelectedTopic(topic.number - 1)} disabled={!ready}><span>{completed ? "✓" : String(topic.number).padStart(2, "0")}</span><div><b>{topic.number === 4 ? "Apoplex (Schlaganfall)" : topic.number === 5 ? "Schädel-Hirn-Trauma (SHT)" : topic.number === 11 ? "Hyperventilationssyndrom" : topic.title}</b><small className="availability-status">{ready ? "Verfügbar" : "In Vorbereitung"}</small><small className="learning-status">{ready ? `${learningStatus} · ${readyLabel}` : "Noch kein Lernstand"}</small></div><i>{ready ? "Öffnen →" : "Geplant"}</i></button>; })}</div></section>)}</div>}<p className="orientation-note">Die Themenübersicht dient zur Orientierung und erhebt keinen Anspruch auf Vollständigkeit.</p></section>;
 }
 
 function WrittenLibrary({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
@@ -559,24 +567,64 @@ function RechtskundeLesson({ onBack, onProgressChange }: { onBack: () => void; o
   </section>;
 }
 
-type TopicReaderProps = { topicNumber: number; onBack: () => void; onProgressChange: (progress: QuestionProgress) => void; completed: boolean; onToggleComplete: () => void };
+type TopicReaderProps = { topicNumber: number; onBack: () => void; onOpenTraining: (topic: TrainingTopic) => void; onProgressChange: (progress: QuestionProgress) => void; completed: boolean; onToggleComplete: () => void };
 
 function TopicReader(props: TopicReaderProps) {
   const chapter = useTopicReaderContent(props) as ReactElement<{ children?: ReactNode }>;
+  const [sectionLinks, setSectionLinks] = useState<Array<{ id: string; title: string }>>([]);
+  const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const slug = topicSlugByIndex[props.topicNumber] as TrainingTopic | undefined;
+  const storageKey = `notsan-chapter-sections-v1:${props.topicNumber}`;
+
+  useEffect(() => {
+    markTopicOpened(props.topicNumber + 1);
+    const root = rootRef.current;
+    if (!root) return;
+    const sections = [...root.querySelectorAll<HTMLElement>(".lesson-section, .reader-accordion, .legal-section")];
+    const saved: Record<string, boolean> = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    const links = sections.map((section, index) => {
+      const heading = section.querySelector<HTMLElement>("h2");
+      const id = `chapter-${props.topicNumber + 1}-section-${index + 1}`;
+      section.id = id;
+      section.style.scrollMarginTop = "88px";
+      if (section instanceof HTMLDetailsElement && id in saved) section.open = saved[id];
+      return heading ? { id, title: heading.textContent?.trim() || `Abschnitt ${index + 1}` } : null;
+    }).filter((item): item is { id: string; title: string } => !!item);
+    setSectionLinks(links);
+    const persist = () => {
+      const state = Object.fromEntries(sections.filter((item): item is HTMLDetailsElement => item instanceof HTMLDetailsElement).map(item => [item.id, item.open]));
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    };
+    sections.forEach(section => section.addEventListener("toggle", persist));
+    return () => sections.forEach(section => section.removeEventListener("toggle", persist));
+  }, [props.topicNumber, storageKey]);
+
+  const setAll = (open: boolean) => rootRef.current?.querySelectorAll<HTMLElement>(".lesson-section, .reader-accordion, .legal-section").forEach(section => {
+    if (section instanceof HTMLDetailsElement) section.open = open;
+    else section.classList.toggle("qol-collapsed", !open);
+  });
+  const jumpTo = (id: string) => {
+    const target = document.getElementById(id);
+    if (!target) return;
+    if (target instanceof HTMLDetailsElement) target.open = true;
+    target.classList.remove("qol-collapsed");
+    target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    setSectionMenuOpen(false);
+    target.querySelector<HTMLElement>("summary, h2")?.focus({ preventScroll: true });
+  };
+
   const sections = Children.toArray(chapter.props.children);
   const heroIndex = sections.findIndex((section) => isValidElement<{ className?: string }>(section) && section.props.className?.includes("reader-hero"));
-  // Chapters with a finale render their children after the reading material: keep preparation there, ahead of the questions.
   const lessonIndex = heroIndex + 1;
   const lesson = sections[lessonIndex];
   const preparation = <MedicationPreparation key={`medication-preparation-${props.topicNumber}`} topicNumber={props.topicNumber} />;
-  if (heroIndex >= 0 && isValidElement<{ children?: ReactNode }>(lesson) && lesson.props.children) {
-    sections[lessonIndex] = cloneElement(lesson, undefined, preparation, ...Children.toArray(lesson.props.children));
-  } else if (heroIndex >= 0) {
-    sections.splice(lessonIndex + 1, 0, preparation);
-  }
-  return cloneElement(chapter, undefined, ...sections);
+  if (heroIndex >= 0 && isValidElement<{ children?: ReactNode }>(lesson) && lesson.props.children) sections[lessonIndex] = cloneElement(lesson, undefined, preparation, ...Children.toArray(lesson.props.children));
+  else if (heroIndex >= 0) sections.splice(lessonIndex + 1, 0, preparation);
+  const controls = <nav className="chapter-qol" aria-label="Kapitelaktionen">{typeof window !== "undefined" && new URLSearchParams(window.location.search).get("return") === "training" && <button type="button" className="return-training" onClick={() => window.close()}>← Zurück zum Training</button>}<div className="chapter-primary-actions"><button type="button" onClick={() => jumpTo(sectionLinks[0]?.id)}>Lesen</button>{slug && <button type="button" onClick={() => props.onOpenTraining(slug)}>MC üben</button>}<button type="button" onClick={() => document.querySelector<HTMLElement>(".flashcard-section, .flashcard-training")?.scrollIntoView({ block: "start" })}>Karteikarten</button></div>{sectionLinks.length > 1 && <div className="section-picker"><button type="button" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(open => !open)}>Abschnitt wählen <span aria-hidden="true">⌄</span></button>{sectionMenuOpen && <div className="section-picker-menu">{sectionLinks.map(link => <button type="button" key={link.id} onClick={() => jumpTo(link.id)}>{link.title}</button>)}</div>}</div>}<div className="collapse-actions"><button type="button" onClick={() => setAll(false)}>Alles einklappen</button><button type="button" onClick={() => setAll(true)}>Alles ausklappen</button></div></nav>;
+  sections.splice(heroIndex + 1, 0, controls);
+  return <div ref={rootRef}>{cloneElement(chapter, undefined, ...sections)}</div>;
 }
-
 function useTopicReaderContent({ topicNumber, onBack, onProgressChange, completed, onToggleComplete }: TopicReaderProps) {
   const title = topics[topicNumber];
   const [openSections, setOpenSections] = useState<number[]>(chapterSections.map((_, index) => index));
@@ -1370,7 +1418,7 @@ function FlashcardTraining({ sourceCards, condition, onProgressChange }: { sourc
 }
 
 type ChoiceOption = { text: string; correct?: boolean };
-type MultipleChoiceQuestion = { id: string; prompt: string; options: ChoiceOption[]; source: string; difficulty: 1 | 2 | 3; mode?: "single" | "multiple" };
+type MultipleChoiceQuestion = { id: string; prompt: string; options: ChoiceOption[]; source: string; difficulty: 1 | 2 | 3; mode?: "single" | "multiple"; sourceTopic?: TrainingTopic; sourceTitle?: string };
 
 const acsMultipleChoiceQuestions: MultipleChoiceQuestion[] = [
   { id: "acs-sc-01", prompt: "Welche Gruppe beschreibt das akute Koronarsyndrom vollständig?", options: [{ text: "Instabile Angina pectoris, NSTEMI und STEMI", correct: true }, { text: "Stabile Angina pectoris, Perikarditis und STEMI" }, { text: "NSTEMI, Myokarditis und Aortendissektion" }, { text: "STEMI, Lungenödem und stabile Angina pectoris" }], source: "Das ACS umfasst instabile Angina pectoris, NSTEMI und STEMI.", difficulty: 1 },
@@ -1669,69 +1717,60 @@ function shuffledQuestions(questionBank: MultipleChoiceQuestion[], previous: Mul
 function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standalone = false, onTrainingStateChange }: { questionBank: MultipleChoiceQuestion[]; condition: string; onProgressChange: (progress: QuestionProgress) => void; standalone?: boolean; onTrainingStateChange?: (state: { current: number; total: number } | null) => void }) {
   const [questions, setQuestions] = useState<MultipleChoiceQuestion[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [selected, setSelected] = useState<number[]>([]);
-  const [answered, setAnswered] = useState(false);
+  const [selections, setSelections] = useState<Record<string, number[]>>({});
+  const [answeredKeys, setAnsweredKeys] = useState<string[]>([]);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [finished, setFinished] = useState(false);
   const [roundSize, setRoundSize] = useState<5 | 10 | "all">(10);
   const [wrongQuestions, setWrongQuestions] = useState<MultipleChoiceQuestion[]>([]);
+  const [bookmarks, setBookmarks] = useState<string[]>(() => readBookmarks());
+  const [skipStreak, setSkipStreak] = useState(0);
+  const keyOf = (question: MultipleChoiceQuestion) => question.sourceTopic ? stableQuestionKey(question.sourceTopic, question.id) : question.id;
 
   const start = () => {
     const shuffled = shuffledQuestions(questionBank, questions);
     const limit = roundSize === "all" ? shuffled.length : Math.min(roundSize, shuffled.length);
-    setQuestions(shuffled.slice(0, limit));
-    setQuestionIndex(0);
-    setSelected([]);
-    setAnswered(false);
-    setCorrectAnswers(0);
-    setFinished(false);
-    setWrongQuestions([]);
+    setQuestions(shuffled.slice(0, limit)); setQuestionIndex(0); setSelections({}); setAnsweredKeys([]); setCorrectAnswers(0); setFinished(false); setWrongQuestions([]); setSkipStreak(0);
     onTrainingStateChange?.({ current: 1, total: limit });
   };
-
-  const evaluate = (selection: number[]) => {
-    const question = questions[questionIndex];
-    const correct = question.options.map((option, index) => option.correct ? index : -1).filter((index) => index >= 0);
-    const isCorrect = selection.length === correct.length && selection.every((index) => correct.includes(index));
-    setSelected(selection);
-    setAnswered(true);
-    if (isCorrect) setCorrectAnswers((current) => current + 1);
-    else setWrongQuestions((current) => [...current, question]);
-    onProgressChange(recordQuestionAnswer(question.id, isCorrect));
-  };
-
-  const answer = (optionIndex: number) => {
-    if (answered) return;
-    setSelected((current) => current.includes(optionIndex) ? current.filter((index) => index !== optionIndex) : [...current, optionIndex]);
-  };
-
-  const next = () => {
-    if (questionIndex === questions.length - 1) {
-      setFinished(true);
-      onTrainingStateChange?.(null);
-    }
-    else {
-      setQuestionIndex((current) => current + 1);
-      onTrainingStateChange?.({ current: questionIndex + 2, total: questions.length });
-      setSelected([]);
-      setAnswered(false);
-    }
-  };
-
-  if (!questions.length) return <div className={`ai-question-panel quiz-launch ${standalone ? "standalone" : ""}`}><div><span className="eyebrow">{standalone ? "MC-Training" : "Nach dem Lesen"}</span><h2>Schwere Multiple-Choice-Fragen</h2><p>Jede Aufgabe zu {condition} enthält mehrere richtige Antworten. Fragen und Antworten werden bei jedem Neustart neu gemischt.</p><fieldset className="round-size"><legend>Umfang der Runde</legend>{([5, 10, "all"] as const).map((size) => <button type="button" key={size} className={roundSize === size ? "active" : ""} onClick={() => setRoundSize(size)}>{size === "all" ? `Alle (${questionBank.length})` : `${Math.min(size, questionBank.length)} Fragen`}</button>)}</fieldset></div><button className="primary-button" onClick={start}>{standalone ? "Training starten" : "Prüfungsfragen starten"}</button></div>;
-
-  if (finished) return <section className={`chapter-quiz quiz-result ${standalone ? "standalone" : ""}`}><span className="eyebrow">Training abgeschlossen</span><h2>{correctAnswers} von {questions.length} richtig</h2><p>Nur geprüfte Antworten wurden in deiner Fortschrittsstatistik gespeichert.</p><div className="quiz-result-actions">{wrongQuestions.length > 0 && <button onClick={() => { setQuestions(shuffledQuestions(wrongQuestions)); setQuestionIndex(0); setSelected([]); setAnswered(false); setCorrectAnswers(0); setFinished(false); setWrongQuestions([]); onTrainingStateChange?.({ current: 1, total: wrongQuestions.length }); }}>Falsche Fragen erneut üben</button>}<button className="primary-button" onClick={start}>Neue Runde</button></div></section>;
-
   const question = questions[questionIndex];
-  const correctIndices = question.options.map((option, index) => option.correct ? index : -1).filter((index) => index >= 0);
-  const wasCorrect = answered && selected.length === correctIndices.length && selected.every((index) => correctIndices.includes(index));
-  const difficultyLabel = question.difficulty === 1 ? "Grundlage" : question.difficulty === 2 ? "Vertiefung" : "Staatsexamensniveau";
-  return <section className={`chapter-quiz ${standalone ? "standalone" : ""}`}><div className="chapter-quiz-head"><div><span className="choice-type-badge multiple">Multiple Choice · Mehrere Antworten sind richtig</span><small>{standalone ? difficultyLabel : `Frage ${questionIndex + 1} von ${questions.length} · ${difficultyLabel}`}</small></div><div className="quiz-mini-progress"><span style={{ width: `${((questionIndex + (answered ? 1 : 0)) / questions.length) * 100}%` }} /></div></div><h2>{question.prompt}</h2><div className="multiple-choice-actions">{question.options.map((option, optionIndex) => { const chosen = selected.includes(optionIndex); const answerClass = answered ? option.correct ? "correct" : chosen ? "wrong" : "dimmed" : chosen ? "selected" : ""; return <button key={option.text} type="button" className={answerClass} onClick={(event) => {
-    answer(optionIndex);
-    if (event.detail > 0) event.currentTarget.blur();
-  }} disabled={answered} aria-pressed={chosen}><span>{String.fromCharCode(65 + optionIndex)}</span><b>{option.text}</b></button>; })}</div>{!answered && <button className="check-multiple-answer" onClick={() => evaluate(selected)} disabled={!selected.length}>Auswahl prüfen</button>}{answered && <div className={`quiz-source-answer ${wasCorrect ? "correct" : "wrong"}`}><b>{wasCorrect ? "Richtig beantwortet" : "Falsch beantwortet"}</b><p>{question.source}</p><button onClick={next}>{questionIndex === questions.length - 1 ? "Ergebnis anzeigen" : "Nächste Frage"} →</button></div>}</section>;
+  const currentKey = question ? keyOf(question) : "";
+  const selected = selections[currentKey] || [];
+  const answered = answeredKeys.includes(currentKey);
+  const evaluate = () => {
+    if (!question || answered) return;
+    const correct = question.options.flatMap((option, index) => option.correct ? [index] : []);
+    const isCorrect = selected.length === correct.length && selected.every(index => correct.includes(index));
+    setAnsweredKeys(current => [...current, currentKey]); setSkipStreak(0);
+    if (isCorrect) setCorrectAnswers(current => current + 1); else setWrongQuestions(current => [...current, question]);
+    onProgressChange(recordQuestionAnswer(currentKey, isCorrect));
+  };
+  const next = () => {
+    const open = questions.findIndex((item, index) => index > questionIndex && !answeredKeys.includes(keyOf(item)));
+    const wrapped = questions.findIndex(item => !answeredKeys.includes(keyOf(item)));
+    const target = open >= 0 ? open : wrapped;
+    if (target < 0) { setFinished(true); onTrainingStateChange?.(null); return; }
+    setQuestionIndex(target); onTrainingStateChange?.({ current: answeredKeys.length + 1, total: questions.length });
+  };
+  const skip = () => {
+    if (answered) return;
+    const nextStreak = skipStreak + 1; setSkipStreak(nextStreak);
+    if (nextStreak >= questions.length - answeredKeys.length) return;
+    const open = questions.findIndex((item, index) => index > questionIndex && !answeredKeys.includes(keyOf(item)));
+    setQuestionIndex(open >= 0 ? open : questions.findIndex(item => !answeredKeys.includes(keyOf(item))));
+  };
+  const toggleBookmark = () => {
+    const next = bookmarks.includes(currentKey) ? bookmarks.filter(key => key !== currentKey) : [...bookmarks, currentKey];
+    setBookmarks(next); writeBookmarks(next);
+  };
+  if (!questions.length) return <div className={`ai-question-panel quiz-launch ${standalone ? "standalone" : ""}`}><div><span className="eyebrow">{standalone ? "MC-Training" : "Nach dem Lesen"}</span><h2>Multiple-Choice-Runde</h2><p>Fragen und Antworten werden bei jedem Neustart neu gemischt. Dein Lernstand wird erst beim Prüfen einer Antwort verändert.</p><fieldset className="round-size"><legend>Umfang der Runde</legend>{([5,10,"all"] as const).map(size => <button type="button" key={size} className={roundSize === size ? "active" : ""} onClick={() => setRoundSize(size)}>{size === "all" ? `Alle (${questionBank.length})` : `${Math.min(size, questionBank.length)} Fragen`}</button>)}</fieldset></div><button className="primary-button" onClick={start}>Training starten</button></div>;
+  const unanswered = questions.length - answeredKeys.length;
+  if (finished) return <section className={`chapter-quiz quiz-result ${standalone ? "standalone" : ""}`}><span className="eyebrow">Rundenergebnis</span><h2>{correctAnswers} richtig · {wrongQuestions.length} falsch · {unanswered} unbeantwortet</h2><p>Übersprungene Fragen wurden nicht bewertet und haben deinen Lernstand nicht verändert.</p><div className="quiz-result-actions">{unanswered > 0 && <button onClick={() => { setFinished(false); setSkipStreak(0); setQuestionIndex(questions.findIndex(item => !answeredKeys.includes(keyOf(item)))); onTrainingStateChange?.({ current: answeredKeys.length + 1, total: questions.length }); }}>Offene Fragen beantworten</button>}<button className="primary-button" onClick={start}>Neue Runde</button></div></section>;
+  const correctIndices = question.options.flatMap((option,index) => option.correct ? [index] : []);
+  const wasCorrect = answered && selected.length === correctIndices.length && selected.every(index => correctIndices.includes(index));
+  const bookmarked = bookmarks.includes(currentKey);
+  return <section className={`chapter-quiz ${standalone ? "standalone" : ""}`}><div className="chapter-quiz-head"><div><span className="choice-type-badge multiple">Multiple Choice</span><small>{question.sourceTitle || condition} · {answeredKeys.length} bearbeitet · {unanswered} offen · {questions.length} insgesamt</small></div><button className={`bookmark-question ${bookmarked ? "active" : ""}`} type="button" onClick={toggleBookmark} aria-pressed={bookmarked} aria-label={bookmarked ? "Frage nicht mehr merken" : "Frage merken"}>{bookmarked ? "★ Gemerkt" : "☆ Merken"}</button></div><h2>{question.prompt}</h2><div className="multiple-choice-actions">{question.options.map((option,index) => { const chosen=selected.includes(index); const answerClass=answered ? option.correct ? "correct" : chosen ? "wrong" : "dimmed" : chosen ? "selected" : ""; return <button key={option.text} type="button" className={answerClass} disabled={answered} aria-pressed={chosen} onClick={() => setSelections(current => ({...current,[currentKey]:chosen ? selected.filter(item=>item!==index) : [...selected,index]}))}><span>{String.fromCharCode(65+index)}</span><b>{option.text}</b></button>})}</div>{!answered && <div className="quiz-open-actions"><button className="check-multiple-answer" onClick={evaluate} disabled={!selected.length}>Auswahl prüfen</button><button type="button" onClick={skip}>Später beantworten</button>{skipStreak >= unanswered && <button type="button" onClick={() => { setFinished(true); onTrainingStateChange?.(null); }}>Runde mit offenen Fragen beenden</button>}</div>}{answered && <div className={`quiz-source-answer ${wasCorrect ? "correct" : "wrong"}`}><b>{wasCorrect ? "Richtig beantwortet" : "Falsch beantwortet"}</b><p>{question.source}</p><div className="quiz-explanation-actions">{question.sourceTopic && <button type="button" onClick={() => window.open(`/muendlich/${question.sourceTopic}?return=training`, "notsan-reading")}>Kapitel nachlesen</button>}<button onClick={next}>{unanswered ? "Nächste offene Frage" : "Ergebnis anzeigen"} →</button></div></div>}</section>;
 }
-
 function QuestionPanel() {
   return <div className="ai-question-panel"><div><span className="eyebrow">Nach dem Lesen</span><h2>Fragen aus diesem Kapitel erstellen</h2><p>Die KI-Funktion wird später ausschließlich den hinterlegten Kapitelinhalt als Grundlage verwenden.</p></div><button className="primary-button" disabled>KI-Fragen erstellen</button></div>;
 }
@@ -1779,10 +1818,17 @@ const oralTrainingChapters: Array<{ topic: TrainingTopic; number: string; title:
   { topic: "hodentorsion", number: "43", title: "Hodentorsion", text: "Zeitkritik, Anatomie, akutes Skrotum, präklinische Entscheidungen und Schmerz-VFA." },
 ];
 
-function QuizLanding({ track, setTrack, onSelect, progress }: { track: "oral" | "written"; setTrack: (track: "oral" | "written") => void; onSelect: (topic: TrainingTopic) => void; progress: QuestionProgress }) {
+const trainingQuestionBanks: Partial<Record<TrainingTopic, MultipleChoiceQuestion[]>> = {
+  "akutes-abdomen": akutesAbdomenQuestions, opiatintoxikation: opiatintoxikationQuestions, venenthrombose: venenthromboseQuestions, myokardinfarkt: myokardinfarktQuestions, polytrauma: polytraumaQuestions, bronchoobstruktion: bronchoQuestions, "pseudokrupp-epiglottitis": pseudokruppEpiglottitisQuestions, "hypertensiver-notfall": hypertensiverNotfallQuestions, vorhofflimmern: vorhofflimmernQuestions, "krampfanfall-kind": krampfanfallKindQuestions, krampfanfall: krampfanfallQuestions, unterkuehlung: unterkuehlungQuestions, rippenfraktur: rippenfrakturQuestions, verbrennung: verbrennungQuestions, "wirbelsaeulentrauma": wirbelsaeulentraumaQuestions, extremitaetentrauma: extremitaetentraumaQuestions, "angina-pectoris": anginaPectorisQuestions, acs: acsMultipleChoiceQuestions, apoplex: apoplexMultipleChoiceQuestions, sht: shtMultipleChoiceQuestions, lae: laeMultipleChoiceQuestions, lungenoedem: lungenoedemQuestions, hyperventilation: hyperventilationQuestions, geburt: geburtQuestions, eug: eugQuestions, thoraxtrauma: thoraxtraumaQuestions, abdominaltrauma: abdominaltraumaQuestions, hypoglykaemie: hypoglykaemieQuestions, gallensteinkolik: gallensteinkolikQuestions, nierensteinkolik: nierensteinkolikQuestions, hodentorsion: hodentorsionQuestions, rechtskunde: rechtskundeQuestions,
+};
+
+function QuizLanding({ track, setTrack, onSelect, onMixed, progress }: { track: "oral" | "written"; setTrack: (track: "oral" | "written") => void; onSelect: (topic: TrainingTopic) => void; onMixed: (questions: MultipleChoiceQuestion[]) => void; progress: QuestionProgress }) {
   const [search, setSearch] = useState(() => typeof sessionStorage === "undefined" ? "" : sessionStorage.getItem("notsan-mc-search") || "");
   const [group, setGroup] = useState("all");
   const [sort, setSort] = useState<"order" | "alpha" | "recent" | "weak">("order");
+  const [multiMode, setMultiMode] = useState(false);
+  const [selectedTopics, setSelectedTopics] = useState<TrainingTopic[]>([]);
+  const [mixedSize, setMixedSize] = useState<5 | 10 | "all">(10);
   const questionCounts: Partial<Record<TrainingTopic, number>> = {
     "akutes-abdomen": akutesAbdomenQuestions.length,
     opiatintoxikation: opiatintoxikationQuestions.length,
@@ -1819,7 +1865,7 @@ function QuizLanding({ track, setTrack, onSelect, progress }: { track: "oral" | 
   return <section className="quiz-page mc-training-page">
     <div className="section-heading"><div><span className="eyebrow">MC-Training · Prüfungsteil wählen</span><h1>Mündlich oder schriftlich trainieren?</h1><p>Die Fragenpools bleiben nach Prüfungsteil getrennt. {oralTrainingChapters.length} Krankheitsbilder gehören zu Mündlich; Rechtskunde liegt im schriftlichen Bereich.</p></div><div className="source-badge"><b>{totalQuestionCount}</b><span>Fragen</span></div></div>
     <div className="training-track-tabs" role="tablist" aria-label="Prüfungsteil"><button className={track === "oral" ? "active" : ""} onClick={() => setTrack("oral")} role="tab" aria-selected={track === "oral"}><span>◫</span><b>Mündlich</b><small>Krankheitsbilder</small></button><button className={track === "written" ? "active" : ""} onClick={() => setTrack("written")} role="tab" aria-selected={track === "written"}><span>✎</span><b>Schriftlich</b><small>Separate Fragen</small></button></div>
-    {track === "oral" ? <><div className="mc-library-tools"><label className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="MC-Thema suchen …" aria-label="MC-Thema suchen" /><small>{visibleChapters.length} Treffer</small></label><select value={group} onChange={(event) => setGroup(event.target.value)} aria-label="Fachgruppe"><option value="all">Alle Fachgruppen</option>{topicGroups.map((item) => <option key={item.name}>{item.name}</option>)}</select><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} aria-label="Sortierung"><option value="order">Fachliche Reihenfolge</option><option value="alpha">Alphabetisch</option><option value="recent">Zuletzt geübt</option><option value="weak">Niedrigste Fragensicherheit</option></select>{(search || group !== "all" || sort !== "order") && <button onClick={() => { setSearch(""); setGroup("all"); setSort("order"); }}>Zurücksetzen</button>}</div>{visibleChapters.length ? <div className="study-mode-grid chapter-choice-grid">{visibleChapters.map(chapter => <button key={chapter.topic} onClick={() => onSelect(chapter.topic)}><span>{chapter.number}</span><div><small>{questionCounts[chapter.topic] ?? 21} Fragen{chapter.security === null ? " · noch nicht geübt" : ` · ${Math.round(chapter.security * 100)} % Wiederholungsstand`}</small><h3>{chapter.title}</h3><p>{chapter.text}</p><b>Kapitel trainieren →</b></div></button>)}</div> : <div className="mc-no-results"><h2>Keine MC-Themen gefunden</h2><p>Ändere den Suchbegriff oder setze die Filter zurück.</p><button onClick={() => { setSearch(""); setGroup("all"); }}>Filter zurücksetzen</button></div>}</> : <WrittenExamFolders onSelect={onSelect} />}
+    {track === "oral" ? <><div className="mc-library-tools"><label className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="MC-Thema suchen …" aria-label="MC-Thema suchen" /><small>{visibleChapters.length} Treffer</small></label><select value={group} onChange={(event) => setGroup(event.target.value)} aria-label="Fachgruppe"><option value="all">Alle Fachgruppen</option>{topicGroups.map((item) => <option key={item.name}>{item.name}</option>)}</select><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} aria-label="Sortierung"><option value="order">Fachliche Reihenfolge</option><option value="alpha">Alphabetisch</option><option value="recent">Zuletzt geübt</option><option value="weak">Niedrigste Fragensicherheit</option></select>{(search || group !== "all" || sort !== "order") && <button onClick={() => { setSearch(""); setGroup("all"); setSort("order"); }}>Zurücksetzen</button>}</div><div className="mixed-training-controls"><button type="button" onClick={() => { const marked=new Set(readBookmarks()); const rows=oralTrainingChapters.flatMap(chapter => (trainingQuestionBanks[chapter.topic] || []).filter(question => marked.has(question.id) || marked.has(stableQuestionKey(chapter.topic,question.id))).map(question => ({...question,sourceTopic:chapter.topic,sourceTitle:chapter.title}))); if (rows.length) onMixed(rows); else window.alert("Du hast in diesem Prüfungsteil noch keine Fragen gemerkt."); }}>★ Gemerkte Fragen</button><button type="button" aria-pressed={multiMode} onClick={() => setMultiMode(mode => !mode)}>{multiMode ? "Einzelthema wählen" : "Mehrere Themen auswählen"}</button>{multiMode && <><span><b>{selectedTopics.length}</b> Themen · {selectedTopics.reduce((sum,topic) => sum + (trainingQuestionBanks[topic]?.length || 0),0)} Fragen</span><fieldset className="round-size"><legend>Rundengröße</legend>{([5,10,"all"] as const).map(size => <button type="button" key={size} className={mixedSize===size?"active":""} onClick={() => setMixedSize(size)}>{size === "all" ? "Alle" : size}</button>)}</fieldset><button type="button" disabled={!selectedTopics.length} onClick={() => { const available=selectedTopics.reduce((sum,topic)=>sum+(trainingQuestionBanks[topic]?.length||0),0); const limit=mixedSize==="all"?available:Math.min(mixedSize,available); const rows=buildBalancedRound(selectedTopics.map(topic=>({topic,questions:trainingQuestionBanks[topic]||[]})),limit).map(({topic,question})=>({...question,sourceTopic:topic as TrainingTopic,sourceTitle:oralTrainingChapters.find(item=>item.topic===topic)?.title||topic})); onMixed(rows); }}>Gemischte Runde starten</button><button type="button" onClick={() => setSelectedTopics([])}>Auswahl aufheben</button></>}</div>{visibleChapters.length ? <div className="study-mode-grid chapter-choice-grid">{visibleChapters.map(chapter => <button key={chapter.topic} aria-pressed={multiMode ? selectedTopics.includes(chapter.topic) : undefined} onClick={() => multiMode ? setSelectedTopics(current => current.includes(chapter.topic) ? current.filter(topic=>topic!==chapter.topic) : [...current,chapter.topic]) : onSelect(chapter.topic)}><span>{chapter.number}</span><div><small>{questionCounts[chapter.topic] ?? 21} Fragen{chapter.security === null ? " · noch nicht geübt" : ` · ${Math.round(chapter.security * 100)} % Wiederholungsstand`}</small><h3>{chapter.title}</h3><p>{chapter.text}</p><b>Kapitel trainieren →</b></div></button>)}</div> : <div className="mc-no-results"><h2>Keine MC-Themen gefunden</h2><p>Ändere den Suchbegriff oder setze die Filter zurück.</p><button onClick={() => { setSearch(""); setGroup("all"); }}>Filter zurücksetzen</button></div>}</> : <WrittenExamFolders onSelect={onSelect} />}
     <div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf 33 %, 67 % und 100 %. Eine falsche Antwort setzt nur die betreffende Frage auf 0 % zurück.</p></div>
   </section>;
 }
@@ -1827,12 +1873,14 @@ function QuizLanding({ track, setTrack, onSelect, progress }: { track: "oral" | 
 function QuizTraining({ onProgressChange, progress, selectedTopic, reviewMode, setSelectedTopic, onReviewBack }: { onProgressChange: (progress: QuestionProgress) => void; progress: QuestionProgress; selectedTopic: TrainingTopic | null; reviewMode: ReviewMode; setSelectedTopic: (topic: TrainingTopic | null) => void; onReviewBack: () => void }) {
   const [track, setTrack] = useState<"oral" | "written">("oral");
   const [trainingProgress, setTrainingProgress] = useState<{ current: number; total: number } | null>(null);
+  const [mixedQuestions, setMixedQuestions] = useState<MultipleChoiceQuestion[] | null>(null);
   if (selectedTopic === "opiatintoxikation") {
     const questionBank = reviewMode === "wrong" ? opiatintoxikationQuestions.filter((question) => progress[question.id]?.correctCount === 0) : reviewMode === "once" ? opiatintoxikationQuestions.filter((question) => progress[question.id]?.correctCount === 1) : opiatintoxikationQuestions;
     const reviewLabel = reviewMode === "wrong" ? "Falsche Antworten wiederholen" : reviewMode === "once" ? "Einmal richtig beantwortete Fragen festigen" : "Vollständiges Kapitel";
     return <section className={`quiz-page mc-training-page ${trainingProgress ? "is-active" : ""}`}><button className="back-button" onClick={() => { setTrainingProgress(null); if (reviewMode) onReviewBack(); else setSelectedTopic(null); }}>← {reviewMode ? "Zurück zum Fortschritt" : "Anderes Kapitel wählen"}</button>{trainingProgress ? <div className="active-training-heading"><div><span className="eyebrow">MC-Training · Mündlich</span><h1>Opiatintoxikation</h1></div><b>Frage {trainingProgress.current} von {trainingProgress.total}</b></div> : <div className="section-heading"><div><span className="eyebrow">MC-Training · Mündlich · Opiatintoxikation</span><h1>{reviewLabel}</h1><p>Neuroanatomie, Atemphysiologie und VFA-Entscheidungen müssen gemeinsam beurteilt werden.</p></div><div className="source-badge"><b>{questionBank.length}</b><span>Fragen</span></div></div>}{questionBank.length ? <MultipleChoiceQuiz standalone questionBank={questionBank} condition="Opiatintoxikation" onProgressChange={onProgressChange} onTrainingStateChange={setTrainingProgress} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine passenden Fragen mehr offen</h2><p>Durch deine letzten Antworten hat sich dieser Wiederholungsstapel geleert.</p></div></div>}</section>;
   }
-  if (!selectedTopic) return <QuizLanding track={track} setTrack={setTrack} onSelect={setSelectedTopic} progress={progress} />;
+  if (!selectedTopic && !mixedQuestions) return <QuizLanding track={track} setTrack={setTrack} onSelect={setSelectedTopic} onMixed={setMixedQuestions} progress={progress} />;
+  if (mixedQuestions) return <section className={`quiz-page mc-training-page ${trainingProgress ? "is-active" : ""}`}><button className="back-button" onClick={() => { setTrainingProgress(null); setMixedQuestions(null); }}>← Themenauswahl</button><div className="section-heading"><div><span className="eyebrow">MC-Training · Mündlich</span><h1>Gemischte Runde</h1><p>Aus {new Set(mixedQuestions.map(question => question.sourceTopic)).size} ausgewählten Themen, ausgewogen zusammengestellt.</p></div></div><MultipleChoiceQuiz standalone questionBank={mixedQuestions} condition="Gemischte Themen" onProgressChange={onProgressChange} onTrainingStateChange={setTrainingProgress} /></section>;
   if (!selectedTopic) return <section className="quiz-page mc-training-page"><div className="section-heading"><div><span className="eyebrow">MC-Training · Prüfungsteil wählen</span><h1>Mündlich oder schriftlich trainieren?</h1><p>Die Fragenpools bleiben nach Prüfungsteil getrennt. Neunzehn Krankheitsbilder gehören zu Mündlich; Rechtskunde liegt im schriftlichen Bereich.</p></div><div className="source-badge"><b>{totalQuestionCount}</b><span>Fragen</span></div></div><div className="training-track-tabs" role="tablist" aria-label="Prüfungsteil"><button className={track === "oral" ? "active" : ""} onClick={() => setTrack("oral")} role="tab" aria-selected={track === "oral"}><span>◫</span><b>Mündlich</b><small>Krankheitsbilder</small></button><button className={track === "written" ? "active" : ""} onClick={() => setTrack("written")} role="tab" aria-selected={track === "written"}><span>✎</span><b>Schriftlich</b><small>Separate Fragen</small></button></div>{track === "oral" ? <div className="study-mode-grid chapter-choice-grid"><button onClick={() => setSelectedTopic("acs")}><span>03</span><div><small>21 Multiple-Choice-Fragen</small><h3>Akutes Koronarsyndrom</h3><p>Koronaranatomie, Ischämiekaskade, EKG und Thüringer VFA 12 bis 14.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("apoplex")}><span>04</span><div><small>21 Multiple-Choice-Fragen</small><h3>Apoplex (Schlaganfall)</h3><p>Neurologie, Pathophysiologie, Diagnostik und Thüringer VFA 44.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("sht")}><span>05</span><div><small>21 Multiple-Choice-Fragen</small><h3>Schädel-Hirn-Trauma</h3><p>Neuroanatomie, Hirndruck, Trauma, Analgesie und Medikamentenverdünnungen.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("lae")}><span>08</span><div><small>21 Multiple-Choice-Fragen</small><h3>Lungenarterienembolie</h3><p>Gasaustausch, Rechtsherzbelastung, Lyse und Thüringer VFA.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("hyperventilation")}><span>11</span><div><small>21 Multiple-Choice-Fragen</small><h3>Hyperventilationssyndrom</h3><p>Atemphysiologie, Säure-Basen-Haushalt, Red Flags und Differenzialdiagnostik.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("geburt")}><span>12</span><div><small>{geburtQuestions.length} Multiple-Choice-Fragen</small><h3>Geburt und Neugeborenenversorgung</h3><p>Geburtsphasen, Notfälle, Erstversorgung und Thüringer VFA 41 bis 43 sowie ERC 49.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("hypoglykaemie")}><span>27</span><div><small>21 Multiple-Choice-Fragen</small><h3>Hypoglykämie</h3><p>Pankreasphysiologie, neuroglykopenische Zeichen, Differenzialdiagnostik und VFA 27/28.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("hodentorsion")}><span>43</span><div><small>21 Multiple-Choice-Fragen</small><h3>Hodentorsion</h3><p>Zeitkritik, Anatomie, akutes Skrotum, präklinische Entscheidungen und VFA 18/35/36/38.</p><b>Kapitel trainieren →</b></div></button></div> : <WrittenExamFolders onSelect={setSelectedTopic} />}<div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf 33 %, 67 % und 100 %. Eine falsche Antwort setzt nur die betreffende Frage auf 0 % zurück.</p></div></section>;
 const condition = selectedTopic === "akutes-abdomen" ? "Akutes Abdomen" : selectedTopic === "venenthrombose" ? "Venenthrombose" : selectedTopic === "myokardinfarkt" ? "Myokardinfarkt" : selectedTopic === "polytrauma" ? "Polytrauma" : selectedTopic === "angina-pectoris" ? "Angina pectoris" : selectedTopic === "bronchoobstruktion" ? "Asthma bronchiale vs. COPD" : selectedTopic === "pseudokrupp-epiglottitis" ? "Pseudokrupp vs. Epiglottitis" : selectedTopic === "hypertensiver-notfall" ? "Hypertensiver Notfall" : selectedTopic === "vorhofflimmern" ? "Vorhofflimmern" : selectedTopic === "krampfanfall-kind" ? "Krampfanfall Kind" : selectedTopic === "krampfanfall" ? "Krampfanfall Erwachsener" : selectedTopic === "unterkuehlung" ? "Unterkühlung" : selectedTopic === "rippenfraktur" ? "Rippenfraktur" : selectedTopic === "verbrennung" ? "Verbrennung / Verbrühung" : selectedTopic === "lungenoedem" ? "Kardiales Lungenödem" : selectedTopic === "eug" ? "EUG" : selectedTopic === "extremitaetentrauma" ? "Extremitätentrauma" : selectedTopic === "wirbelsaeulentrauma" ? "Wirbelsäulentrauma" : selectedTopic === "rechtskunde" ? "Rechtskunde Thüringen" : selectedTopic === "acs" ? "Akutes Koronarsyndrom" : selectedTopic === "sht" ? "Schädel-Hirn-Trauma" : selectedTopic === "lae" ? "Lungenarterienembolie" : selectedTopic === "hyperventilation" ? "Hyperventilationssyndrom" : selectedTopic === "geburt" ? "Geburt und Neugeborenenversorgung" : selectedTopic === "thoraxtrauma" ? "Thoraxtrauma" : selectedTopic === "abdominaltrauma" ? "Abdominaltrauma" : selectedTopic === "hypoglykaemie" ? "Hypoglykämie" : selectedTopic === "gallensteinkolik" ? "Gallensteinkolik" : selectedTopic === "nierensteinkolik" ? "Nierensteinkolik" : selectedTopic === "hodentorsion" ? "Hodentorsion" : "Schlaganfall";
 const completeBank = selectedTopic === "akutes-abdomen" ? akutesAbdomenQuestions : selectedTopic === "venenthrombose" ? venenthromboseQuestions : selectedTopic === "myokardinfarkt" ? myokardinfarktQuestions : selectedTopic === "polytrauma" ? polytraumaQuestions : selectedTopic === "angina-pectoris" ? anginaPectorisQuestions : selectedTopic === "bronchoobstruktion" ? bronchoQuestions : selectedTopic === "pseudokrupp-epiglottitis" ? pseudokruppEpiglottitisQuestions : selectedTopic === "hypertensiver-notfall" ? hypertensiverNotfallQuestions : selectedTopic === "vorhofflimmern" ? vorhofflimmernQuestions : selectedTopic === "krampfanfall-kind" ? krampfanfallKindQuestions : selectedTopic === "krampfanfall" ? krampfanfallQuestions : selectedTopic === "unterkuehlung" ? unterkuehlungQuestions : selectedTopic === "rippenfraktur" ? rippenfrakturQuestions : selectedTopic === "verbrennung" ? verbrennungQuestions : selectedTopic === "lungenoedem" ? lungenoedemQuestions : selectedTopic === "eug" ? eugQuestions : selectedTopic === "extremitaetentrauma" ? extremitaetentraumaQuestions : selectedTopic === "wirbelsaeulentrauma" ? wirbelsaeulentraumaQuestions : selectedTopic === "rechtskunde" ? rechtskundeQuestions : selectedTopic === "acs" ? acsMultipleChoiceQuestions : selectedTopic === "sht" ? shtMultipleChoiceQuestions : selectedTopic === "lae" ? laeMultipleChoiceQuestions : selectedTopic === "hyperventilation" ? hyperventilationQuestions : selectedTopic === "geburt" ? geburtQuestions : selectedTopic === "thoraxtrauma" ? thoraxtraumaQuestions : selectedTopic === "abdominaltrauma" ? abdominaltraumaQuestions : selectedTopic === "hypoglykaemie" ? hypoglykaemieQuestions : selectedTopic === "gallensteinkolik" ? gallensteinkolikQuestions : selectedTopic === "nierensteinkolik" ? nierensteinkolikQuestions : selectedTopic === "hodentorsion" ? hodentorsionQuestions : apoplexMultipleChoiceQuestions;
