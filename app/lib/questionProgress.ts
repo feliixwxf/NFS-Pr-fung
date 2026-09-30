@@ -2,11 +2,18 @@ export type QuestionLearningRecord = {
   correctCount: 0 | 1 | 2 | 3;
   lastResult: "correct" | "wrong";
   updatedAt: string;
+  /** Optional v2 scheduling fields. Old records remain valid without them. */
+  nextDueAt?: string;
+  intervalLevel?: number;
+  lastAdvancedLocalDay?: string;
+  attempts?: number;
+  correctAttempts?: number;
 };
 
 export type QuestionProgress = Record<string, QuestionLearningRecord>;
 
 export const QUESTION_PROGRESS_KEY = "notsan-question-progress-v1";
+export const REVIEW_INTERVAL_DAYS = [1, 3, 7, 14, 30] as const;
 let activeProgressUserId: string | null = null;
 
 export function setActiveProgressUser(userId: string | null) {
@@ -30,16 +37,60 @@ export function recordQuestionAnswer(questionId: string, isCorrect: boolean): Qu
   const progress = readQuestionProgress();
   const previous = progress[questionId]?.correctCount || 0;
   const correctCount = (isCorrect ? Math.min(3, previous + 1) : 0) as 0 | 1 | 2 | 3;
+  const now = new Date();
+  const localDay = localDateKey(now);
+  const priorLevel = progress[questionId]?.intervalLevel ?? -1;
+  // A question can only advance once per local calendar day. This prevents
+  // rapid retries from inflating its long-term interval.
+  const intervalLevel = isCorrect
+    ? (progress[questionId]?.lastAdvancedLocalDay === localDay ? priorLevel : Math.min(REVIEW_INTERVAL_DAYS.length - 1, priorLevel + 1))
+    : 0;
+  const due = new Date(now);
+  due.setDate(due.getDate() + (isCorrect ? REVIEW_INTERVAL_DAYS[intervalLevel] : 0));
+  due.setHours(0, 0, 0, 0);
   const next = {
     ...progress,
     [questionId]: {
       correctCount,
       lastResult: isCorrect ? "correct" as const : "wrong" as const,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now.toISOString(),
+      nextDueAt: due.toISOString(),
+      intervalLevel,
+      lastAdvancedLocalDay: isCorrect ? localDay : progress[questionId]?.lastAdvancedLocalDay,
+      attempts: (progress[questionId]?.attempts ?? 0) + 1,
+      correctAttempts: (progress[questionId]?.correctAttempts ?? 0) + (isCorrect ? 1 : 0),
     },
   };
   localStorage.setItem(questionProgressStorageKey(), JSON.stringify(next));
   return next;
+}
+
+export function localDateKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+export function dueQuestionIds(progress: QuestionProgress, now = new Date()) {
+  const today = new Date(now);
+  today.setHours(23, 59, 59, 999);
+  return Object.entries(progress)
+    .filter(([, record]) => record.nextDueAt && new Date(record.nextDueAt) <= today)
+    .sort((a, b) => (a[1].nextDueAt || "").localeCompare(b[1].nextDueAt || ""))
+    .map(([id]) => id);
+}
+
+export function progressMetrics(progress: QuestionProgress, availableQuestionIds: readonly string[]) {
+  const uniqueIds = [...new Set(availableQuestionIds)];
+  const records = uniqueIds.map((id) => progress[id]).filter(Boolean);
+  const attempts = records.reduce((sum, record) => sum + (record.attempts ?? 0), 0);
+  const correctAttempts = records.reduce((sum, record) => sum + (record.correctAttempts ?? 0), 0);
+  return {
+    answered: records.length,
+    available: uniqueIds.length,
+    completionPercent: uniqueIds.length ? Math.round(records.length / uniqueIds.length * 100) : 0,
+    repetitionPercent: uniqueIds.length ? Math.round(records.reduce((sum, record) => sum + record.correctCount / 3, 0) / uniqueIds.length * 100) : 0,
+    hitRate: attempts >= 5 ? Math.round(correctAttempts / attempts * 100) : null,
+    attempts,
+  };
 }
 
 /** Restores one record after an immediately undone self-assessment. */

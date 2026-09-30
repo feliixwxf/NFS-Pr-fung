@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { anatomyChapters } from "./anatomy-data";
+import { normalizeSearch } from "./lib/contentSearch";
 
 const pathFor = (slug?: string) => slug ? `/anatomie/${slug}` : "/anatomie";
+const relatedTopics: Record<number,{title:string;slug:string}> = { 1:{title:"Myokardinfarkt",slug:"myokardinfarkt"},2:{title:"Angina pectoris",slug:"angina-pectoris"},3:{title:"Akutes Koronarsyndrom",slug:"acs"},10:{title:"COPD",slug:"bronchoobstruktion"},13:{title:"Asthma",slug:"bronchoobstruktion"},22:{title:"Kardiales Lungenödem",slug:"lungenoedem"},24:{title:"Vorhofflimmern",slug:"vorhofflimmern"},40:{title:"Nierensteinkolik",slug:"nierensteinkolik"} };
 
 export default function AnatomyLibrary() {
   const initialSlug = typeof window === "undefined" ? "" : window.location.pathname.split("/")[2] || "";
@@ -11,6 +13,7 @@ export default function AnatomyLibrary() {
   const [selectedPage, setSelectedPage] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [loadError, setLoadError] = useState(false);
+  const [search, setSearch] = useState("");
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const pageButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
   const selected = anatomyChapters.find((chapter) => chapter.slug === selectedSlug);
@@ -68,7 +71,8 @@ export default function AnatomyLibrary() {
         <span className="anatomy-roman">{selected.roman}</span>
         <div><span className="eyebrow light">ANATOMIE · KAPITEL {selected.roman}</span><h1 id="anatomy-title">{selected.title}</h1><p>{selected.summary}</p></div>
       </header>
-      <section className="anatomy-chapter-intro"><div><span className="eyebrow">Kapitelüberblick</span><h2>{pages.length} Lernseiten direkt eingebettet</h2><p>Alle Texte, Beschriftungen und Abbildungen stammen aus dem bereitgestellten Anatomie-Skriptum. Tippe eine Seite an, um sie scharf im Vollbild zu lesen.</p></div><ul>{selected.topics.map((topic) => <li key={topic}>{topic}</li>)}</ul></section>
+      <section className="anatomy-chapter-intro"><div><span className="eyebrow">Kapitelüberblick</span><h2>{selected.summary}</h2><p>{pages.length} Lernseiten aus dem bereitgestellten Skript. Tippe eine Seite an, um sie im Vollbild zu lesen.</p></div><ul>{selected.topics.map((topic) => <li key={topic}>{topic}</li>)}</ul></section>
+      {selected.relatedTopicNumbers?.length ? <aside className="anatomy-related"><b>Passende Krankheitsbilder</b><p>{selected.relatedTopicNumbers.map(number => relatedTopics[number] && <a key={number} href={`/muendlich/${relatedTopics[number].slug}`}>{relatedTopics[number].title}</a>)}</p></aside> : null}
       <div className="anatomy-page-stack">
         {pages.map((pdfPage) => <figure key={pdfPage} className="anatomy-script-page">
           <button ref={(node) => { pageButtonRefs.current[pdfPage] = node; }} type="button" onClick={() => setSelectedPage(pdfPage)} aria-label={`Skriptseite ${pdfPage - 1} im Vollbild öffnen`}>
@@ -105,11 +109,13 @@ export default function AnatomyLibrary() {
       <div><span className="eyebrow light">DIGITALER LERNBEREICH</span><h1 id="anatomy-title">Anatomie</h1><p>Das vollständige Skript ist in 13 Lernkapitel gegliedert. Texte und Abbildungen lassen sich direkt auf der Seite lesen und vergrößern.</p></div>
       <div className="anatomy-count" aria-label="13 Kapitel"><b>13</b><span>Kapitel</span></div>
     </header>
-    <div className="anatomy-source-ready"><span aria-hidden="true">✓</span><div><b>Anatomie-Skript vollständig eingebunden</b><p>70 fachliche Lernseiten mit den originalen Abbildungen und Beschriftungen stehen direkt in den Kapiteln zur Verfügung.</p></div></div>
+    <div className="anatomy-source-ready"><span aria-hidden="true">✓</span><div><b>Anatomie-Skript als Lernseiten eingebunden</b><p>Die Suche umfasst geprüfte Kapitel-, Zusammenfassungs- und Schlagwortdaten. Sie ist keine Volltextsuche aller Skriptseiten.</p></div></div>
+    <label className="anatomy-search"><span>Kapitel und Schlagwörter suchen</span><input type="search" value={search} onChange={event=>setSearch(event.target.value)} placeholder="z. B. Herzklappen oder Niere" /></label>
     <div className="anatomy-grid">
-      {anatomyChapters.map((chapter) => <button key={chapter.slug} type="button" onClick={() => openChapter(chapter.slug)}>
+      {anatomyChapters.filter(chapter=>!normalizeSearch(search)||normalizeSearch(`${chapter.title} ${chapter.summary} ${chapter.topics.join(" ")}`).includes(normalizeSearch(search))).map((chapter) => <button key={chapter.slug} type="button" onClick={() => openChapter(chapter.slug)}>
         <span className="anatomy-card-number">{chapter.roman}</span><h2>{chapter.title}</h2><p>{chapter.summary}</p><small>{chapter.lastPdfPage - chapter.firstPdfPage + 1} Lernseiten</small><span className="anatomy-card-action">Kapitel öffnen <i aria-hidden="true">→</i></span>
       </button>)}
     </div>
+    {search && !anatomyChapters.some(chapter=>normalizeSearch(`${chapter.title} ${chapter.summary} ${chapter.topics.join(" ")}`).includes(normalizeSearch(search))) && <div className="library-empty" role="status"><h2>Kein geprüfter Suchtreffer</h2><p>Versuche einen Kapitelbegriff oder setze die Suche zurück.</p><button onClick={()=>setSearch("")}>Suche zurücksetzen</button></div>}
   </section>;
 }
