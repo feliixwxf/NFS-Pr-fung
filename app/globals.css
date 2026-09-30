@@ -1348,3 +1348,28 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-display)!important;font-weight:700}
   .brady-med-source{align-items:flex-start}
 }
 @media(max-width:420px){.brady-med-row>div{grid-template-columns:1fr}.brady-med-row>div small,.brady-med-row>div p{grid-column:1;grid-row:auto}.brady-med-row>div small{margin-bottom:2px}}
+
+/* Luft zwischen dem letzten Rechtskunde-Kapitel und dem Prüfungstraining */
+.legal-reading-flow { margin-bottom: 28px; }
+
+.medication-effects-page { max-width:1180px; }
+.medication-effects-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.medication-effect-card { display:grid; gap:14px; padding:22px; border:1px solid #dce6e3; border-radius:18px; background:linear-gradient(145deg,#fff 70%,#f0f7f4); box-shadow:0 8px 24px #102b3508; }
+.medication-effect-card header { display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid #e6edeb; }
+.medication-effect-icon { display:grid; place-items:center; width:42px; height:42px; border-radius:13px; background:#e88968; color:#fff; font-size:20px; }
+.medication-effect-card small { color:var(--orange); font-size:8px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+.medication-effect-card h2 { margin:3px 0 0; font-family:Georgia,"Times New Roman",serif; font-size:22px; }
+.medication-effect-card p { margin:5px 0 0; color:#5a6c72; font-size:11px; line-height:1.6; }
+.medication-effect-card > div > b,.medication-effect-card aside > b { color:var(--navy); font-size:10px; text-transform:uppercase; letter-spacing:.08em; }
+.medication-effect-card aside { padding:13px 15px; border-left:3px solid #e58b6b; border-radius:9px; background:#fff4ef; }
+.medication-effect-card aside p { color:#79584b; }
+.medication-effect-card aside > b + p + b { display:block; margin-top:12px; }
+.medication-side-effect-label { display:block; margin-top:12px; }
+@media(max-width:720px){.medication-effects-grid{grid-template-columns:1fr}.medication-effect-card{padding:18px}.medication-effect-card h2{font-size:20px}}
+.medication-search { display:flex; align-items:center; gap:10px; max-width:620px; margin:0 auto 22px; padding:13px 15px; border:1px solid #cfdeda; border-radius:14px; background:#fff; box-shadow:0 6px 20px #102b3508; color:var(--navy); }
+.medication-search > span { font-size:22px; color:var(--orange); line-height:1; }
+.medication-search input { min-width:0; flex:1; border:0; outline:0; background:transparent; color:var(--ink); font:inherit; font-size:14px; }
+.medication-search input::placeholder { color:#91a0a3; }
+.medication-search button { display:grid; place-items:center; width:25px; height:25px; border:0; border-radius:50%; background:#edf3f1; color:var(--navy); cursor:pointer; font-size:18px; }
+.medication-search-empty { display:grid; gap:5px; place-items:center; padding:44px 20px; border:1px dashed #cbdad6; border-radius:16px; color:#65777b; text-align:center; }
+.medication-search-empty b { color:var(--navy); }
