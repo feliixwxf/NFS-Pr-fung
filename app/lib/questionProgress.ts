@@ -42,6 +42,16 @@ export function recordQuestionAnswer(questionId: string, isCorrect: boolean): Qu
   return next;
 }
 
+/** Restores one record after an immediately undone self-assessment. */
+export function restoreQuestionAnswer(questionId: string, record?: QuestionLearningRecord): QuestionProgress {
+  const progress = readQuestionProgress();
+  const next = { ...progress };
+  if (record) next[questionId] = record;
+  else delete next[questionId];
+  localStorage.setItem(questionProgressStorageKey(), JSON.stringify(next));
+  return next;
+}
+
 export function masteryPercent(record?: QuestionLearningRecord): number {
   return record ? Math.round((record.correctCount / 3) * 100) : 0;
 }
