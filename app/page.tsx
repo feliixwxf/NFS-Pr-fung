@@ -651,12 +651,14 @@ function TopicReader(props: TopicReaderProps) {
   };
 
   const toggleReading = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    if (typeof window === "undefined") return;
+    const speechSynthesis = window.speechSynthesis;
+    if (!speechSynthesis) {
       window.alert("Die Vorlesefunktion wird von diesem Browser nicht unterstützt.");
       return;
     }
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      speechSynthesis.cancel();
       setIsSpeaking(false);
       return;
     }
@@ -685,7 +687,7 @@ function TopicReader(props: TopicReaderProps) {
     if (!text) return;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "de-DE";
-    const germanVoices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith("de"));
+    const germanVoices = speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith("de"));
     const voiceQuality = (voice: SpeechSynthesisVoice) => {
       const name = `${voice.name} ${voice.voiceURI}`.toLowerCase();
       let score = voice.lang.toLowerCase() === "de-de" ? 30 : 15;
@@ -702,8 +704,8 @@ function TopicReader(props: TopicReaderProps) {
     utterance.volume = 1;
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
     setIsSpeaking(true);
   };
 
