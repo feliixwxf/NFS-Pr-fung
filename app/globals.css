@@ -1331,3 +1331,23 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-display)!important;font-weight:700}
 @media(min-width:768px) and (max-width:1100px){.anatomy-page{width:calc(100% - 64px)}.anatomy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:767px){.anatomy-page{width:calc(100% - 30px);margin-top:22px}.anatomy-hero{min-height:220px;padding:29px 24px}.anatomy-count{width:76px;height:76px}.anatomy-grid{grid-template-columns:1fr;gap:11px}.anatomy-grid>button{min-height:210px}.anatomy-hero.compact{align-items:flex-start;flex-direction:column;gap:18px}.anatomy-chapter-intro{grid-template-columns:1fr}.anatomy-page-stack{gap:15px}.anatomy-chapter-switcher{grid-template-columns:1fr}.anatomy-chapter-switcher button,.anatomy-chapter-switcher button:last-child{text-align:left}.anatomy-chapter-switcher button.overview{order:-1;text-align:left}}
 @media(max-width:480px){.anatomy-hero:not(.compact){display:block}.anatomy-count{margin-top:25px}.anatomy-source-warning,.anatomy-source-ready{grid-template-columns:1fr}.anatomy-grid h2{font-size:18px}.anatomy-script-page figcaption{align-items:flex-start;flex-direction:column;gap:3px}.anatomy-script-page button>span{right:8px;bottom:8px}.anatomy-lightbox{padding-inline:8px}.anatomy-lightbox img{max-width:calc(100vw - 16px)}}
+
+/* Learning workflow and accessibility refinements */
+.continue-learning{margin:24px 0;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 26px;border:1px solid var(--border,#ddd8cf);border-radius:18px;background:#fff}
+.continue-learning h2{margin:4px 0 6px;font-size:clamp(1.25rem,2.5vw,1.7rem)}
+.continue-learning p{margin:0;color:#585c60}
+.continue-learning button,.learning-backup button,.learning-backup label,.anatomy-search input{min-height:44px}
+.continue-learning button{border:0;border-radius:12px;padding:0 18px;background:#315c4a;color:#fff;font-weight:700}
+.field-error{margin:7px 0 0!important;color:#9b2f2a!important;font-size:.82rem!important;line-height:1.35}
+.answer-grid input[aria-invalid="true"]{border-color:#a43e38!important;box-shadow:0 0 0 2px rgba(164,62,56,.12)}
+.anatomy-search{display:grid;gap:7px;max-width:680px;margin:24px auto;padding:0 20px;font-weight:700}
+.anatomy-search input{width:100%;border:1px solid #d6d1c8;border-radius:12px;padding:0 14px;font:inherit}
+.anatomy-related{margin:20px 0;padding:18px 22px;border-radius:14px;background:#f3f0e9}
+.anatomy-related p{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}.anatomy-related a{padding:9px 12px;border-radius:999px;background:#fff;color:#315c4a;font-weight:700}
+.learning-backup{padding:16px;margin:12px 0;border:1px solid #ddd8cf;border-radius:12px;background:#faf9f6}.learning-backup>p{margin:5px 0 10px!important}.learning-backup>div{display:flex;flex-wrap:wrap;gap:8px}.learning-backup button,.learning-backup label{display:inline-flex;align-items:center;justify-content:center;padding:0 12px;border:1px solid #c8c2b8;border-radius:9px;background:#fff;font-weight:700;cursor:pointer}.learning-backup input{position:absolute;width:1px;height:1px;opacity:0}.backup-preview{display:block!important;margin-top:12px;padding:12px;background:#fff;border-radius:9px}.backup-preview button{margin:5px 5px 0 0}
+.availability-status,.learning-status,.lesson-source,.orientation-note{font-size:max(.75rem,12px)!important;line-height:1.4!important}
+.lesson-section{scroll-margin-top:90px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #d58b3d!important;outline-offset:3px}
+@media(max-width:700px){.continue-learning{align-items:stretch;flex-direction:column;margin:16px 0;padding:18px}.continue-learning button{width:100%}.anatomy-related{margin-inline:12px}}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.chapter-navigator{position:sticky;top:8px;z-index:20;margin:14px 0 22px;border:1px solid #d9d4ca;border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 5px 18px rgba(34,40,37,.08)}.chapter-navigator summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;cursor:pointer;font-weight:800}.chapter-navigator summary span{font-size:.78rem;color:#6d716f}.chapter-navigator nav{display:flex;flex-wrap:wrap;gap:7px;padding:0 12px 12px}.chapter-navigator nav button{min-height:44px;padding:7px 12px;border:1px solid #ded9cf;border-radius:9px;background:#f8f6f1;text-align:left;color:#263b32;font-weight:650}.chapter-navigator+*{scroll-margin-top:90px}@media(max-width:700px){.chapter-navigator nav{max-height:48vh;overflow:auto}.chapter-navigator nav button{width:100%}}

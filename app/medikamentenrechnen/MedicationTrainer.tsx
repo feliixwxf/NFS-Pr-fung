@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { isCorrect, parseGermanNumber } from "../lib/medicationCalculations";
 import { medicationCases, medicationRules, sourceIssues, type Category } from "../lib/medicationData";
 import { readMedicationProgress, recordMedicationAnswer, type MedicationProgress } from "../lib/medicationProgress";
@@ -12,20 +12,34 @@ export default function MedicationTrainer({ accountUserId, onSyncError }: { acco
  const [mode,setMode]=useState<Mode>("learn"), [group,setGroup]=useState("Alle"), [category,setCategory]=useState("Alle"), [drug,setDrug]=useState("Alle");
  const [length,setLength]=useState("10"), [index,setIndex]=useState(0), [inputs,setInputs]=useState<Record<string,string>>({}), [results,setResults]=useState<Record<string,Result>>({});
  const [revealed,setRevealed]=useState(false), [hintStep,setHintStep]=useState(0), [progress,setProgress]=useState<MedicationProgress>(readMedicationProgress), [wrongOnly,setWrongOnly]=useState(false);
+ const [errors,setErrors]=useState<Record<string,string>>({});
+ const inputRefs=useRef<Record<string,HTMLInputElement|null>>({});
+ const submitting=useRef(false);
  const ruleGroups=useMemo(()=>Array.from(new Set(medicationRules.map(r=>r.drug))),[]);
  const pool=useMemo(()=>medicationCases.filter(c=>(group==="Alle"||c.group===group)&&(category==="Alle"||c.category===category)&&(drug==="Alle"||medicationRules.find(r=>r.id===c.ruleId)?.drug===drug)&&(!wrongOnly||progress[c.id]?.correct<progress[c.id]?.attempts)),[group,category,drug,wrongOnly,progress]);
  const session=useMemo(()=>length==="frei"?pool:pool.slice(0,Number(length)),[pool,length]);
  const current=session[index];
  const evaluated= current ? results[current.id] : undefined;
- const submit=()=>{ if(!current||current.answers.some(answer=>parseGermanNumber(inputs[answer.id]||"")===null)) return;
+ const submit=()=>{ if(!current||submitting.current) return;
+   const validation=Object.fromEntries(current.answers.flatMap(answer=>{
+     const raw=inputs[answer.id]||"";
+     if(!raw.trim()) return [[answer.id,"Bitte gib einen Wert ein."]];
+     if(parseGermanNumber(raw)===null) return [[answer.id,"Bitte gib eine vollständige, nicht negative Zahl ein (Komma oder Punkt sind möglich)."]];
+     return [];
+   }));
+   setErrors(validation);
+   const firstInvalid=current.answers.find(answer=>validation[answer.id]);
+   if(firstInvalid){requestAnimationFrame(()=>inputRefs.current[firstInvalid.id]?.focus());return;}
+   submitting.current=true;
    const correct=current.answers.every(answer=>isCorrect(inputs[answer.id],answer.value,answer.decimals,answer.unit));
    const next={...results,[current.id]:{answers:{...inputs},correct}}; setResults(next);
    const {progress:updated,record}=recordMedicationAnswer(current.id,correct); setProgress(updated);
    if(accountUserId) void saveMedicationProgress(accountUserId,current.id,record).catch(onSyncError);
    if(mode==="learn") setRevealed(true); else if(index<session.length-1){setIndex(index+1);setInputs({});setHintStep(0);}
+   queueMicrotask(()=>{submitting.current=false});
  };
- const next=()=>{setIndex(Math.min(index+1,session.length-1));setInputs({});setRevealed(false);setHintStep(0)};
- const reset=()=>{setIndex(0);setInputs({});setResults({});setRevealed(false);setHintStep(0)};
+ const next=()=>{setIndex(Math.min(index+1,session.length-1));setInputs({});setErrors({});setRevealed(false);setHintStep(0)};
+ const reset=()=>{setIndex(0);setInputs({});setErrors({});setResults({});setRevealed(false);setHintStep(0)};
  const finished=mode==="exam"&&session.length>0&&Object.keys(results).length===session.length;
  const solved=Object.keys(progress).length, correctTotal=Object.values(progress).filter(x=>x.correct===x.attempts&&x.attempts>0).length;
  return <section className="page-section medication-page">
@@ -44,7 +58,7 @@ export default function MedicationTrainer({ accountUserId, onSyncError }: { acco
     <header><div><span>Fall {index+1} von {session.length}</span><h2>{current.title}</h2></div><div className="case-tags"><span>{current.age} Jahre</span><span>{current.weight} kg</span><span>{current.phase}</span></div></header>
     <div className="case-progress"><i style={{width:`${((index+1)/session.length)*100}%`}}/></div><p className="case-text">{current.text}</p><h3>{current.question}</h3>
     {mode==="learn"&&<details className="rule-details"><summary>Dosierregel anzeigen</summary><p>{medicationRules.find(r=>r.id===current.ruleId)?.parameter} · {medicationRules.find(r=>r.id===current.ruleId)?.concentration}</p></details>}
-    <div className="answer-grid">{current.answers.map(answer=><label key={answer.id}>{answer.label}<small>{evaluated && answer.unit==="ml"&&answer.value>=1?`Exakt: ${String(answer.value).replace(".",",")} ml · ganze ml werden toleriert`:`Rundung: ${answer.decimals} Nachkommastellen`}</small><div><input inputMode="decimal" disabled={!!evaluated} value={inputs[answer.id]||""} onChange={e=>setInputs({...inputs,[answer.id]:e.target.value})} aria-label={`${answer.label} in ${answer.unit}`}/><span>{answer.unit}</span></div></label>)}</div>
+    <div className="answer-grid">{current.answers.map(answer=>{const errorId=`med-error-${current.id}-${answer.id}`;return <label key={answer.id}>{answer.label}<small>{evaluated && answer.unit==="ml"&&answer.value>=1?`Exakt: ${String(answer.value).replace(".",",")} ml · ganze ml werden toleriert`:`Rundung: ${answer.decimals} Nachkommastellen`}</small><div><input ref={node=>{inputRefs.current[answer.id]=node}} inputMode="decimal" disabled={!!evaluated} value={inputs[answer.id]||""} onChange={e=>{setInputs({...inputs,[answer.id]:e.target.value});setErrors(previous=>({...previous,[answer.id]:""}))}} aria-label={`${answer.label} in ${answer.unit}`} aria-invalid={!!errors[answer.id]} aria-describedby={errors[answer.id]?errorId:undefined}/><span>{answer.unit}</span></div>{errors[answer.id]&&<p id={errorId} className="field-error" role="alert"><span aria-hidden="true">⚠</span> {errors[answer.id]}</p>}</label>})}</div>
     {mode==="learn"&&!evaluated&&<div className="hint-row"><button onClick={()=>setHintStep(Math.min(2,hintStep+1))}>Hinweis {hintStep+1}/2</button>{hintStep>0&&<p>{hintStep===1?current.hint:`Rechenweg: ${current.answers[0].calculation}`}</p>}</div>}
     {evaluated&&revealed&&<Feedback current={current} result={evaluated}/>}
     <div className="case-actions">{!evaluated?<button className="primary-button" onClick={submit}>Antwort prüfen</button>:<button className="primary-button" onClick={next} disabled={index===session.length-1}>Nächster Fall →</button>}</div>
