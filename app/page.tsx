@@ -1,7 +1,7 @@
 "use client";
 
 import { Children, cloneElement, FormEvent, isValidElement, ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { QuestionProgress, readQuestionProgress, recordQuestionAnswer, summarizeQuestionProgress } from "./lib/questionProgress";
+import { QuestionLearningRecord, QuestionProgress, readQuestionProgress, recordQuestionAnswer, restoreQuestionAnswer, summarizeQuestionProgress } from "./lib/questionProgress";
 import { readCompletedTopics, writeTopicCompletion } from "./lib/topicProgress";
 import { activateLocalUser, saveQuestionProgress, saveTopicProgress, syncLearningProgress } from "./lib/cloudProgress";
 import { getSupabaseClient } from "./lib/supabaseClient";
@@ -112,6 +112,8 @@ const nav = [
   { id: "medication" as View, label: "Medikamentenrechnen", icon: "💉" },
   { id: "progress" as View, label: "Fortschritt", icon: "↗" },
 ];
+const topicSlugByIndex: Record<number, string> = { 0: "myokardinfarkt", 1: "angina-pectoris", 2: "acs", 3: "apoplex", 4: "sht", 6: "venenthrombose", 7: "lae", 10: "hyperventilation", 11: "geburt", 14: "akutes-abdomen", 17: "thoraxtrauma", 18: "abdominaltrauma", 21: "lungenoedem", 22: "extremitaetentrauma", 23: "vorhofflimmern", 24: "krampfanfall", 26: "hypoglykaemie", 29: "krampfanfall-kind", 30: "polytrauma", 33: "rippenfraktur", 35: "verbrennung", 37: "opiatintoxikation", 38: "gallensteinkolik", 39: "nierensteinkolik", 42: "hodentorsion", 46: "unterkuehlung", 48: "pseudokrupp-epiglottitis" };
+const topicIndexBySlug = Object.fromEntries(Object.entries(topicSlugByIndex).map(([index, slug]) => [slug, Number(index)]));
 
 const ACCESS_STORAGE_KEY = "notsan-access";
 const ACCESS_COOKIE_KEY = "notsan_access";
@@ -190,8 +192,15 @@ export default function Home() {
     localStorage.removeItem("notsan-learned");
     localStorage.removeItem("notsan-last-score");
     setReady(true);
-    if (window.location.pathname === "/medikamentenrechnen") setView("medication");
-    else if (window.location.pathname.startsWith("/anatomie")) setView("anatomy");
+    const path = window.location.pathname;
+    if (path === "/medikamentenrechnen") setView("medication");
+    else if (path.startsWith("/anatomie")) setView("anatomy");
+    else if (path.startsWith("/muendlich/")) { setView("oral"); setSelectedTopic(topicIndexBySlug[path.split("/")[2]] ?? null); }
+    else if (path === "/muendlich") setView("oral");
+    else if (path === "/schriftlich") setView("written");
+    else if (path.startsWith("/mc/")) { setView("quiz"); setTrainingTopic(path.split("/")[2] as TrainingTopic); }
+    else if (path === "/mc") setView("quiz");
+    else if (path === "/fortschritt") setView("progress");
   }, []);
 
   useEffect(() => {
@@ -323,6 +332,12 @@ export default function Home() {
     const restoreViewFromPath = () => {
       if (window.location.pathname.startsWith("/anatomie")) setView("anatomy");
       else if (window.location.pathname === "/medikamentenrechnen") setView("medication");
+      else if (window.location.pathname.startsWith("/muendlich/")) { setView("oral"); setSelectedTopic(topicIndexBySlug[window.location.pathname.split("/")[2]] ?? null); }
+      else if (window.location.pathname === "/muendlich") setView("oral");
+      else if (window.location.pathname === "/schriftlich") setView("written");
+      else if (window.location.pathname.startsWith("/mc/")) { setView("quiz"); setTrainingTopic(window.location.pathname.split("/")[2] as TrainingTopic); }
+      else if (window.location.pathname === "/mc") { setView("quiz"); setTrainingTopic(null); }
+      else if (window.location.pathname === "/fortschritt") setView("progress");
       else setView("start");
     };
     window.addEventListener("popstate", restoreViewFromPath);
@@ -345,8 +360,8 @@ export default function Home() {
     } else setError(true);
   };
 
-  const changeView = (nextView: View) => { setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); window.history.pushState({}, "", nextView === "medication" ? "/medikamentenrechnen" : nextView === "anatomy" ? "/anatomie" : "/"); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
-  const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); };
+  const changeView = (nextView: View) => { setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); const paths: Record<View, string> = { start: "/", oral: "/muendlich", written: "/schriftlich", quiz: "/mc", progress: "/fortschritt", medication: "/medikamentenrechnen", anatomy: "/anatomie" }; window.history.pushState({}, "", paths[nextView]); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
+  const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", `/mc/${topic}`); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
       const completed = !current.includes(topicNumber);
@@ -433,10 +448,10 @@ export default function Home() {
           </div>
         </header>
         {view === "start" && <Dashboard setView={changeView} questionProgress={questionProgress} />}
-        {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={setSelectedTopic} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
+        {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={(topic) => { setSelectedTopic(topic); window.history.pushState({}, "", topic === null ? "/muendlich" : `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
         {view === "written" && <WrittenLibrary onProgressChange={handleQuestionProgress} />}
-        {view === "quiz" && <QuizTraining onProgressChange={handleQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); }} />}
-        {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} />}
+        {view === "quiz" && <QuizTraining onProgressChange={handleQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); window.history.pushState({}, "", topic ? `/mc/${topic}` : "/mc"); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); window.history.pushState({}, "", "/fortschritt"); }} />}
+        {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} onStart={() => changeView("quiz")} />}
         {view === "medication" && <MedicationTrainer key={accountUserId || "guest"} accountUserId={accountUserId} onSyncError={() => setSyncStatus("error")} />}
         {view === "anatomy" && <AnatomyLibrary />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
@@ -1312,13 +1327,26 @@ function FlashcardTraining({ sourceCards, condition, onProgressChange }: { sourc
   const [revealed, setRevealed] = useState(false);
   const [known, setKnown] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [lastAssessment, setLastAssessment] = useState<{ index: number; known: boolean; previous?: QuestionLearningRecord } | null>(null);
   const card = cards[index];
 
   const assess = (isKnown: boolean) => {
+    setLastAssessment({ index, known: isKnown, previous: readQuestionProgress()[card.id] });
     onProgressChange(recordQuestionAnswer(card.id, isKnown));
     if (isKnown) setKnown((current) => current + 1);
     if (index === cards.length - 1) setFinished(true);
     else { setIndex((current) => current + 1); setRevealed(false); }
+  };
+
+  const undoAssessment = () => {
+    if (!lastAssessment) return;
+    const restoredCard = cards[lastAssessment.index];
+    onProgressChange(restoreQuestionAnswer(restoredCard.id, lastAssessment.previous));
+    setIndex(lastAssessment.index);
+    setKnown((current) => lastAssessment.known ? Math.max(0, current - 1) : current);
+    setFinished(false);
+    setRevealed(true);
+    setLastAssessment(null);
   };
 
   const restart = () => {
@@ -1327,11 +1355,12 @@ function FlashcardTraining({ sourceCards, condition, onProgressChange }: { sourc
     setRevealed(false);
     setKnown(0);
     setFinished(false);
+    setLastAssessment(null);
   };
 
-  if (finished) return <section className="flashcard-training flashcard-result"><span className="eyebrow">Karteikarten abgeschlossen</span><h2>{known} von {cards.length} gewusst</h2><p>Deine Selbsteinschätzung wurde in der Lernstatistik gespeichert. „Noch üben“ setzt die betreffende Karte auf 0 % zurück.</p><button className="primary-button" onClick={restart}>Neu starten und mischen</button></section>;
+  if (finished) return <section className="flashcard-training flashcard-result"><span className="eyebrow">Karteikarten abgeschlossen</span><h2>{known} von {cards.length} gewusst</h2><p>Deine Selbsteinschätzung wurde in der Lernstatistik gespeichert. „Noch üben“ setzt die betreffende Karte auf 0 % zurück.</p><div className="flashcard-result-actions"><button className="secondary-button" onClick={undoAssessment}>Letzte Bewertung rückgängig</button><button className="primary-button" onClick={restart}>Neu starten und mischen</button></div></section>;
 
-  return <section className="flashcard-training"><div className="flashcard-training-head"><span>Karte {index + 1} von {cards.length}</span><small>{condition} · Notfallsanitäter-Staatsexamen Thüringen</small></div><div className={`exam-flashcard ${revealed ? "revealed" : ""}`}><small>{revealed ? "Musterantwort aus dem Kapitel" : "Mündliche Prüfungsaufgabe"}</small><h2>{revealed ? card.answer : card.question}</h2>{!revealed && <p>Formuliere deine Antwort zunächst vollständig, bevor du die Musterantwort aufdeckst.</p>}</div>{!revealed ? <button className="primary-button reveal-card" onClick={() => setRevealed(true)}>Musterantwort aufdecken</button> : <div className="flashcard-assessment"><button className="known" onClick={() => assess(true)}>✓ Gewusst</button><button className="practice" onClick={() => assess(false)}>↺ Noch üben</button></div>}</section>;
+  return <section className="flashcard-training"><div className="flashcard-training-head"><span>Karte {index + 1} von {cards.length}</span><small>{condition} · Notfallsanitäter-Staatsexamen Thüringen</small></div><div className={`exam-flashcard ${revealed ? "revealed" : ""}`}><small>Prüfungsfrage</small><h2>{card.question}</h2>{revealed ? <div className="flashcard-answer"><small>Musterantwort aus dem Kapitel</small><p>{card.answer}</p></div> : <p>Formuliere deine Antwort zunächst vollständig, bevor du die Musterantwort aufdeckst.</p>}</div>{!revealed ? <button className="primary-button reveal-card" onClick={() => setRevealed(true)}>Musterantwort aufdecken</button> : <div className="flashcard-assessment"><button className="known" onClick={() => assess(true)}>✓ Gewusst</button><button className="practice" onClick={() => assess(false)}>↺ Noch üben</button></div>}{lastAssessment && <button className="undo-assessment" onClick={undoAssessment}>↶ Letzte Bewertung rückgängig</button>}</section>;
 }
 
 type ChoiceOption = { text: string; correct?: boolean };
@@ -1638,15 +1667,20 @@ function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standal
   const [answered, setAnswered] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [roundSize, setRoundSize] = useState<5 | 10 | "all">(10);
+  const [wrongQuestions, setWrongQuestions] = useState<MultipleChoiceQuestion[]>([]);
 
   const start = () => {
-    setQuestions((current) => shuffledQuestions(questionBank, current));
+    const shuffled = shuffledQuestions(questionBank, questions);
+    const limit = roundSize === "all" ? shuffled.length : Math.min(roundSize, shuffled.length);
+    setQuestions(shuffled.slice(0, limit));
     setQuestionIndex(0);
     setSelected([]);
     setAnswered(false);
     setCorrectAnswers(0);
     setFinished(false);
-    onTrainingStateChange?.({ current: 1, total: questionBank.length });
+    setWrongQuestions([]);
+    onTrainingStateChange?.({ current: 1, total: limit });
   };
 
   const evaluate = (selection: number[]) => {
@@ -1656,6 +1690,7 @@ function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standal
     setSelected(selection);
     setAnswered(true);
     if (isCorrect) setCorrectAnswers((current) => current + 1);
+    else setWrongQuestions((current) => [...current, question]);
     onProgressChange(recordQuestionAnswer(question.id, isCorrect));
   };
 
@@ -1677,9 +1712,9 @@ function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standal
     }
   };
 
-  if (!questions.length) return <div className={`ai-question-panel quiz-launch ${standalone ? "standalone" : ""}`}><div><span className="eyebrow">{standalone ? "MC-Training" : "Nach dem Lesen"}</span><h2>Schwere Multiple-Choice-Fragen</h2><p>Jede Aufgabe zu {condition} enthält mehrere richtige Antworten. Die Aufgaben prüfen medizinische Zusammenhänge sowie die im Kapitel genannten Leitlinien und Verfahrensanweisungen; Fragen und Antworten werden bei jedem Neustart neu gemischt.</p></div><button className="primary-button" onClick={start}>{standalone ? "Training starten" : "Prüfungsfragen starten"}</button></div>;
+  if (!questions.length) return <div className={`ai-question-panel quiz-launch ${standalone ? "standalone" : ""}`}><div><span className="eyebrow">{standalone ? "MC-Training" : "Nach dem Lesen"}</span><h2>Schwere Multiple-Choice-Fragen</h2><p>Jede Aufgabe zu {condition} enthält mehrere richtige Antworten. Fragen und Antworten werden bei jedem Neustart neu gemischt.</p><fieldset className="round-size"><legend>Umfang der Runde</legend>{([5, 10, "all"] as const).map((size) => <button type="button" key={size} className={roundSize === size ? "active" : ""} onClick={() => setRoundSize(size)}>{size === "all" ? `Alle (${questionBank.length})` : `${Math.min(size, questionBank.length)} Fragen`}</button>)}</fieldset></div><button className="primary-button" onClick={start}>{standalone ? "Training starten" : "Prüfungsfragen starten"}</button></div>;
 
-  if (finished) return <section className={`chapter-quiz quiz-result ${standalone ? "standalone" : ""}`}><span className="eyebrow">Training abgeschlossen</span><h2>{correctAnswers} von {questions.length} richtig</h2><p>Jede Antwort wurde in deiner Fortschrittsstatistik gespeichert. Falsche Antworten setzen die jeweilige Frage wieder auf 0 %.</p><button className="primary-button" onClick={start}>Neu starten und mischen</button></section>;
+  if (finished) return <section className={`chapter-quiz quiz-result ${standalone ? "standalone" : ""}`}><span className="eyebrow">Training abgeschlossen</span><h2>{correctAnswers} von {questions.length} richtig</h2><p>Nur geprüfte Antworten wurden in deiner Fortschrittsstatistik gespeichert.</p><div className="quiz-result-actions">{wrongQuestions.length > 0 && <button onClick={() => { setQuestions(shuffledQuestions(wrongQuestions)); setQuestionIndex(0); setSelected([]); setAnswered(false); setCorrectAnswers(0); setFinished(false); setWrongQuestions([]); onTrainingStateChange?.({ current: 1, total: wrongQuestions.length }); }}>Falsche Fragen erneut üben</button>}<button className="primary-button" onClick={start}>Neue Runde</button></div></section>;
 
   const question = questions[questionIndex];
   const correctIndices = question.options.map((option, index) => option.correct ? index : -1).filter((index) => index >= 0);
@@ -1738,7 +1773,10 @@ const oralTrainingChapters: Array<{ topic: TrainingTopic; number: string; title:
   { topic: "hodentorsion", number: "43", title: "Hodentorsion", text: "Zeitkritik, Anatomie, akutes Skrotum, präklinische Entscheidungen und Schmerz-VFA." },
 ];
 
-function QuizLanding({ track, setTrack, onSelect }: { track: "oral" | "written"; setTrack: (track: "oral" | "written") => void; onSelect: (topic: TrainingTopic) => void }) {
+function QuizLanding({ track, setTrack, onSelect, progress }: { track: "oral" | "written"; setTrack: (track: "oral" | "written") => void; onSelect: (topic: TrainingTopic) => void; progress: QuestionProgress }) {
+  const [search, setSearch] = useState(() => typeof sessionStorage === "undefined" ? "" : sessionStorage.getItem("notsan-mc-search") || "");
+  const [group, setGroup] = useState("all");
+  const [sort, setSort] = useState<"order" | "alpha" | "recent" | "weak">("order");
   const questionCounts: Partial<Record<TrainingTopic, number>> = {
     "akutes-abdomen": akutesAbdomenQuestions.length,
     opiatintoxikation: opiatintoxikationQuestions.length,
@@ -1758,10 +1796,24 @@ function QuizLanding({ track, setTrack, onSelect }: { track: "oral" | "written";
     geburt: geburtQuestions.length,
     lungenoedem: lungenoedemQuestions.length,
   };
+  const visibleChapters = useMemo(() => {
+    const normalized = search.trim().toLocaleLowerCase("de");
+    const rows = oralTrainingChapters.map((chapter, order) => {
+      const number = Number.parseInt(chapter.number, 10);
+      const category = topicGroups.find((candidate) => (candidate.topicNumbers as readonly number[]).includes(number))?.name || "Weitere";
+      const ids = Object.keys(progress).filter((id) => id.startsWith(chapter.topic));
+      const records = ids.map((id) => progress[id]);
+      const security = records.length ? records.reduce((sum, record) => sum + record.correctCount / 3, 0) / records.length : null;
+      const recent = records.reduce((latest, record) => Math.max(latest, Date.parse(record.updatedAt)), 0);
+      return { ...chapter, order, category, security, recent };
+    }).filter((chapter) => (!normalized || `${chapter.title} ${chapter.text}`.toLocaleLowerCase("de").includes(normalized)) && (group === "all" || chapter.category === group));
+    return rows.sort((a, b) => sort === "alpha" ? a.title.localeCompare(b.title, "de") : sort === "recent" ? b.recent - a.recent || a.order - b.order : sort === "weak" ? (a.security === null ? 1 : b.security === null ? -1 : a.security - b.security) : a.order - b.order);
+  }, [group, progress, search, sort]);
+  useEffect(() => { sessionStorage.setItem("notsan-mc-search", search); }, [search]);
   return <section className="quiz-page mc-training-page">
     <div className="section-heading"><div><span className="eyebrow">MC-Training · Prüfungsteil wählen</span><h1>Mündlich oder schriftlich trainieren?</h1><p>Die Fragenpools bleiben nach Prüfungsteil getrennt. {oralTrainingChapters.length} Krankheitsbilder gehören zu Mündlich; Rechtskunde liegt im schriftlichen Bereich.</p></div><div className="source-badge"><b>{totalQuestionCount}</b><span>Fragen</span></div></div>
     <div className="training-track-tabs" role="tablist" aria-label="Prüfungsteil"><button className={track === "oral" ? "active" : ""} onClick={() => setTrack("oral")} role="tab" aria-selected={track === "oral"}><span>◫</span><b>Mündlich</b><small>Krankheitsbilder</small></button><button className={track === "written" ? "active" : ""} onClick={() => setTrack("written")} role="tab" aria-selected={track === "written"}><span>✎</span><b>Schriftlich</b><small>Separate Fragen</small></button></div>
-    {track === "oral" ? <div className="study-mode-grid chapter-choice-grid">{oralTrainingChapters.map(chapter => <button key={chapter.topic} onClick={() => onSelect(chapter.topic)}><span>{chapter.number}</span><div><small>{questionCounts[chapter.topic] ?? 21} Multiple-Choice-Fragen</small><h3>{chapter.title}</h3><p>{chapter.text}</p><b>Kapitel trainieren →</b></div></button>)}</div> : <WrittenExamFolders onSelect={onSelect} />}
+    {track === "oral" ? <><div className="mc-library-tools"><label className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="MC-Thema suchen …" aria-label="MC-Thema suchen" /><small>{visibleChapters.length} Treffer</small></label><select value={group} onChange={(event) => setGroup(event.target.value)} aria-label="Fachgruppe"><option value="all">Alle Fachgruppen</option>{topicGroups.map((item) => <option key={item.name}>{item.name}</option>)}</select><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} aria-label="Sortierung"><option value="order">Fachliche Reihenfolge</option><option value="alpha">Alphabetisch</option><option value="recent">Zuletzt geübt</option><option value="weak">Niedrigste Fragensicherheit</option></select>{(search || group !== "all" || sort !== "order") && <button onClick={() => { setSearch(""); setGroup("all"); setSort("order"); }}>Zurücksetzen</button>}</div>{visibleChapters.length ? <div className="study-mode-grid chapter-choice-grid">{visibleChapters.map(chapter => <button key={chapter.topic} onClick={() => onSelect(chapter.topic)}><span>{chapter.number}</span><div><small>{questionCounts[chapter.topic] ?? 21} Fragen{chapter.security === null ? " · noch nicht geübt" : ` · ${Math.round(chapter.security * 100)} % sicher`}</small><h3>{chapter.title}</h3><p>{chapter.text}</p><b>Kapitel trainieren →</b></div></button>)}</div> : <div className="mc-no-results"><h2>Keine MC-Themen gefunden</h2><p>Ändere den Suchbegriff oder setze die Filter zurück.</p><button onClick={() => { setSearch(""); setGroup("all"); }}>Filter zurücksetzen</button></div>}</> : <WrittenExamFolders onSelect={onSelect} />}
     <div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf 33 %, 67 % und 100 %. Eine falsche Antwort setzt nur die betreffende Frage auf 0 % zurück.</p></div>
   </section>;
 }
@@ -1774,7 +1826,7 @@ function QuizTraining({ onProgressChange, progress, selectedTopic, reviewMode, s
     const reviewLabel = reviewMode === "wrong" ? "Falsche Antworten wiederholen" : reviewMode === "once" ? "Einmal richtig beantwortete Fragen festigen" : "Vollständiges Kapitel";
     return <section className={`quiz-page mc-training-page ${trainingProgress ? "is-active" : ""}`}><button className="back-button" onClick={() => { setTrainingProgress(null); if (reviewMode) onReviewBack(); else setSelectedTopic(null); }}>← {reviewMode ? "Zurück zum Fortschritt" : "Anderes Kapitel wählen"}</button>{trainingProgress ? <div className="active-training-heading"><div><span className="eyebrow">MC-Training · Mündlich</span><h1>Opiatintoxikation</h1></div><b>Frage {trainingProgress.current} von {trainingProgress.total}</b></div> : <div className="section-heading"><div><span className="eyebrow">MC-Training · Mündlich · Opiatintoxikation</span><h1>{reviewLabel}</h1><p>Neuroanatomie, Atemphysiologie und VFA-Entscheidungen müssen gemeinsam beurteilt werden.</p></div><div className="source-badge"><b>{questionBank.length}</b><span>Fragen</span></div></div>}{questionBank.length ? <MultipleChoiceQuiz standalone questionBank={questionBank} condition="Opiatintoxikation" onProgressChange={onProgressChange} onTrainingStateChange={setTrainingProgress} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine passenden Fragen mehr offen</h2><p>Durch deine letzten Antworten hat sich dieser Wiederholungsstapel geleert.</p></div></div>}</section>;
   }
-  if (!selectedTopic) return <QuizLanding track={track} setTrack={setTrack} onSelect={setSelectedTopic} />;
+  if (!selectedTopic) return <QuizLanding track={track} setTrack={setTrack} onSelect={setSelectedTopic} progress={progress} />;
   if (!selectedTopic) return <section className="quiz-page mc-training-page"><div className="section-heading"><div><span className="eyebrow">MC-Training · Prüfungsteil wählen</span><h1>Mündlich oder schriftlich trainieren?</h1><p>Die Fragenpools bleiben nach Prüfungsteil getrennt. Neunzehn Krankheitsbilder gehören zu Mündlich; Rechtskunde liegt im schriftlichen Bereich.</p></div><div className="source-badge"><b>{totalQuestionCount}</b><span>Fragen</span></div></div><div className="training-track-tabs" role="tablist" aria-label="Prüfungsteil"><button className={track === "oral" ? "active" : ""} onClick={() => setTrack("oral")} role="tab" aria-selected={track === "oral"}><span>◫</span><b>Mündlich</b><small>Krankheitsbilder</small></button><button className={track === "written" ? "active" : ""} onClick={() => setTrack("written")} role="tab" aria-selected={track === "written"}><span>✎</span><b>Schriftlich</b><small>Separate Fragen</small></button></div>{track === "oral" ? <div className="study-mode-grid chapter-choice-grid"><button onClick={() => setSelectedTopic("acs")}><span>03</span><div><small>21 Multiple-Choice-Fragen</small><h3>Akutes Koronarsyndrom</h3><p>Koronaranatomie, Ischämiekaskade, EKG und Thüringer VFA 12 bis 14.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("apoplex")}><span>04</span><div><small>21 Multiple-Choice-Fragen</small><h3>Apoplex (Schlaganfall)</h3><p>Neurologie, Pathophysiologie, Diagnostik und Thüringer VFA 44.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("sht")}><span>05</span><div><small>21 Multiple-Choice-Fragen</small><h3>Schädel-Hirn-Trauma</h3><p>Neuroanatomie, Hirndruck, Trauma, Analgesie und Medikamentenverdünnungen.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("lae")}><span>08</span><div><small>21 Multiple-Choice-Fragen</small><h3>Lungenarterienembolie</h3><p>Gasaustausch, Rechtsherzbelastung, Lyse und Thüringer VFA.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("hyperventilation")}><span>11</span><div><small>21 Multiple-Choice-Fragen</small><h3>Hyperventilationssyndrom</h3><p>Atemphysiologie, Säure-Basen-Haushalt, Red Flags und Differenzialdiagnostik.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("geburt")}><span>12</span><div><small>{geburtQuestions.length} Multiple-Choice-Fragen</small><h3>Geburt und Neugeborenenversorgung</h3><p>Geburtsphasen, Notfälle, Erstversorgung und Thüringer VFA 41 bis 43 sowie ERC 49.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("hypoglykaemie")}><span>27</span><div><small>21 Multiple-Choice-Fragen</small><h3>Hypoglykämie</h3><p>Pankreasphysiologie, neuroglykopenische Zeichen, Differenzialdiagnostik und VFA 27/28.</p><b>Kapitel trainieren →</b></div></button><button onClick={() => setSelectedTopic("hodentorsion")}><span>43</span><div><small>21 Multiple-Choice-Fragen</small><h3>Hodentorsion</h3><p>Zeitkritik, Anatomie, akutes Skrotum, präklinische Entscheidungen und VFA 18/35/36/38.</p><b>Kapitel trainieren →</b></div></button></div> : <WrittenExamFolders onSelect={setSelectedTopic} />}<div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf 33 %, 67 % und 100 %. Eine falsche Antwort setzt nur die betreffende Frage auf 0 % zurück.</p></div></section>;
 const condition = selectedTopic === "akutes-abdomen" ? "Akutes Abdomen" : selectedTopic === "venenthrombose" ? "Venenthrombose" : selectedTopic === "myokardinfarkt" ? "Myokardinfarkt" : selectedTopic === "polytrauma" ? "Polytrauma" : selectedTopic === "angina-pectoris" ? "Angina pectoris" : selectedTopic === "bronchoobstruktion" ? "Asthma bronchiale vs. COPD" : selectedTopic === "pseudokrupp-epiglottitis" ? "Pseudokrupp vs. Epiglottitis" : selectedTopic === "hypertensiver-notfall" ? "Hypertensiver Notfall" : selectedTopic === "vorhofflimmern" ? "Vorhofflimmern" : selectedTopic === "krampfanfall-kind" ? "Krampfanfall Kind" : selectedTopic === "krampfanfall" ? "Krampfanfall Erwachsener" : selectedTopic === "unterkuehlung" ? "Unterkühlung" : selectedTopic === "rippenfraktur" ? "Rippenfraktur" : selectedTopic === "verbrennung" ? "Verbrennung / Verbrühung" : selectedTopic === "lungenoedem" ? "Kardiales Lungenödem" : selectedTopic === "eug" ? "EUG" : selectedTopic === "extremitaetentrauma" ? "Extremitätentrauma" : selectedTopic === "wirbelsaeulentrauma" ? "Wirbelsäulentrauma" : selectedTopic === "rechtskunde" ? "Rechtskunde Thüringen" : selectedTopic === "acs" ? "Akutes Koronarsyndrom" : selectedTopic === "sht" ? "Schädel-Hirn-Trauma" : selectedTopic === "lae" ? "Lungenarterienembolie" : selectedTopic === "hyperventilation" ? "Hyperventilationssyndrom" : selectedTopic === "geburt" ? "Geburt und Neugeborenenversorgung" : selectedTopic === "thoraxtrauma" ? "Thoraxtrauma" : selectedTopic === "abdominaltrauma" ? "Abdominaltrauma" : selectedTopic === "hypoglykaemie" ? "Hypoglykämie" : selectedTopic === "gallensteinkolik" ? "Gallensteinkolik" : selectedTopic === "nierensteinkolik" ? "Nierensteinkolik" : selectedTopic === "hodentorsion" ? "Hodentorsion" : "Schlaganfall";
 const completeBank = selectedTopic === "akutes-abdomen" ? akutesAbdomenQuestions : selectedTopic === "venenthrombose" ? venenthromboseQuestions : selectedTopic === "myokardinfarkt" ? myokardinfarktQuestions : selectedTopic === "polytrauma" ? polytraumaQuestions : selectedTopic === "angina-pectoris" ? anginaPectorisQuestions : selectedTopic === "bronchoobstruktion" ? bronchoQuestions : selectedTopic === "pseudokrupp-epiglottitis" ? pseudokruppEpiglottitisQuestions : selectedTopic === "hypertensiver-notfall" ? hypertensiverNotfallQuestions : selectedTopic === "vorhofflimmern" ? vorhofflimmernQuestions : selectedTopic === "krampfanfall-kind" ? krampfanfallKindQuestions : selectedTopic === "krampfanfall" ? krampfanfallQuestions : selectedTopic === "unterkuehlung" ? unterkuehlungQuestions : selectedTopic === "rippenfraktur" ? rippenfrakturQuestions : selectedTopic === "verbrennung" ? verbrennungQuestions : selectedTopic === "lungenoedem" ? lungenoedemQuestions : selectedTopic === "eug" ? eugQuestions : selectedTopic === "extremitaetentrauma" ? extremitaetentraumaQuestions : selectedTopic === "wirbelsaeulentrauma" ? wirbelsaeulentraumaQuestions : selectedTopic === "rechtskunde" ? rechtskundeQuestions : selectedTopic === "acs" ? acsMultipleChoiceQuestions : selectedTopic === "sht" ? shtMultipleChoiceQuestions : selectedTopic === "lae" ? laeMultipleChoiceQuestions : selectedTopic === "hyperventilation" ? hyperventilationQuestions : selectedTopic === "geburt" ? geburtQuestions : selectedTopic === "thoraxtrauma" ? thoraxtraumaQuestions : selectedTopic === "abdominaltrauma" ? abdominaltraumaQuestions : selectedTopic === "hypoglykaemie" ? hypoglykaemieQuestions : selectedTopic === "gallensteinkolik" ? gallensteinkolikQuestions : selectedTopic === "nierensteinkolik" ? nierensteinkolikQuestions : selectedTopic === "hodentorsion" ? hodentorsionQuestions : apoplexMultipleChoiceQuestions;
@@ -1797,7 +1849,7 @@ function ChapterProgressCard({ title, category, questions, progress, onTrain }: 
   return <section className="chapter-progress-card"><div className="chapter-progress-main"><div className="chapter-progress-title"><span>{category}</span><h2>{title}</h2><p>{answered.length} von {questions.length} Fragen begonnen. Hier erscheinen nur gezielte Wiederholungsstapel.</p></div><div className="chapter-score"><b>{average}%</b><span>Kapitelstand</span></div></div><div className="chapter-progress-track"><span style={{ width: `${average}%` }} /></div><div className="review-action-grid"><button className="wrong" onClick={() => onTrain("wrong")} disabled={!wrong}><span>✕</span><div><b>{wrong} falsche</b><small>{wrong ? "Jetzt wiederholen" : "Keine offen"}</small></div></button><button className="once" onClick={() => onTrain("once")} disabled={!once}><span>1×</span><div><b>{once} einmal richtig</b><small>{once ? "Jetzt festigen" : "Keine offen"}</small></div></button></div></section>;
 }
 
-function ProgressView({ progress, onTrain }: { progress: QuestionProgress; onTrain: (topic: TrainingTopic, mode?: ReviewMode) => void }) {
+function ProgressView({ progress, onTrain, onStart }: { progress: QuestionProgress; onTrain: (topic: TrainingTopic, mode?: ReviewMode) => void; onStart: () => void }) {
   const chapters: Array<{ topic: TrainingTopic; title: string; category: string; questions: MultipleChoiceQuestion[] }> = [{ topic: "acs", title: "Akutes Koronarsyndrom", category: "Mündlich · Herz & Kreislauf · Thema 03", questions: acsMultipleChoiceQuestions }, { topic: "apoplex", title: "Schlaganfall", category: "Mündlich · Neurologie · Thema 04", questions: apoplexMultipleChoiceQuestions }, { topic: "sht", title: "Schädel-Hirn-Trauma", category: "Mündlich · Trauma · Thema 05", questions: shtMultipleChoiceQuestions }, { topic: "lae", title: "Lungenarterienembolie", category: "Mündlich · Herz & Kreislauf · Thema 08", questions: laeMultipleChoiceQuestions }, { topic: "hyperventilation", title: "Hyperventilationssyndrom", category: "Mündlich · Atmung & Atemwege · Thema 11", questions: hyperventilationQuestions }, { topic: "geburt", title: "Geburt und Neugeborenenversorgung", category: "Mündlich · Gynäkologie & Geburt · Thema 12", questions: geburtQuestions }, { topic: "hypoglykaemie", title: "Hypoglykämie", category: "Mündlich · Stoffwechsel · Thema 27", questions: hypoglykaemieQuestions }, { topic: "hodentorsion", title: "Hodentorsion", category: "Mündlich · Urologie · Thema 43", questions: hodentorsionQuestions }, { topic: "rechtskunde", title: "Rechtskunde", category: "Schriftlich · Rechtskunde", questions: rechtskundeQuestions }];
   chapters.unshift({ topic: "angina-pectoris", title: "Angina pectoris", category: "Mündlich · Herz & Kreislauf · Thema 02", questions: anginaPectorisQuestions });
   chapters.unshift({ topic: "venenthrombose", title: "Venenthrombose", category: "Mündlich · Herz & Kreislauf · Thema 07", questions: venenthromboseQuestions });
@@ -1831,7 +1883,7 @@ function ProgressView({ progress, onTrain }: { progress: QuestionProgress; onTra
   const summary = summarizeQuestionProgress(startedProgress);
   const wrong = Object.values(startedProgress).filter((item) => item.correctCount === 0).length;
   const once = Object.values(startedProgress).filter((item) => item.correctCount === 1).length;
-  return <section className="page-section progress-page"><div className="section-heading"><div><span className="eyebrow">GEZIELT WIEDERHOLEN</span><h1>Hier geht’s weiter.</h1><p>Konzentriere dich auf die Fragen, die du noch nicht sicher beantwortest.</p></div></div><div className="progress-overview"><div className="progress-ring" style={{ "--progress": `${summary.average * 3.6}deg` } as React.CSSProperties}><div><b>{summary.average}%</b><span>Begonnen</span></div></div><div><span className="eyebrow">DEIN LERNSTAND</span><h2>{summary.total ? `${wrong + once} Fragen warten auf Wiederholung` : "Dein Fortschritt beginnt hier."}</h2><p>{summary.total ? `${wrong} falsch beantwortet · ${once} einmal richtig beantwortet` : "Starte dein erstes MC-Kapitel. Anschließend findest du hier deine Fragen zum Wiederholen."}</p><div className="progress-track large"><span style={{ width: `${summary.average}%` }} /></div></div></div>{startedChapters.length ? <div className="chapter-progress-list">{startedChapters.map((chapter) => <ChapterProgressCard key={chapter.topic} title={chapter.title} category={chapter.category} questions={chapter.questions} progress={progress} onTrain={(mode) => onTrain(chapter.topic, mode)} />)}</div> : <div className="progress-empty"><span>↗</span><div><h2>Deine Wiederholungsliste</h2><p>Hier erscheinen deine begonnenen MC-Kapitel mit Fragen zum Wiederholen.</p></div></div>}<div className="progress-rule"><span>↺</span><div><b>Gezielte Wiederholung</b><p>Wiederholt werden Fragen, die du falsch oder erst einmal richtig beantwortet hast.</p></div></div></section>;
+  return <section className="page-section progress-page"><div className="section-heading"><div><span className="eyebrow">GEZIELT WIEDERHOLEN</span><h1>Hier geht’s weiter.</h1><p>Konzentriere dich auf die Fragen, die du noch nicht sicher beantwortest.</p></div></div><div className="progress-overview"><div className="progress-ring" style={{ "--progress": `${summary.average * 3.6}deg` } as React.CSSProperties}><div><b>{summary.average}%</b><span>Begonnen</span></div></div><div><span className="eyebrow">DEIN LERNSTAND</span><h2>{summary.total ? `${wrong + once} Fragen warten auf Wiederholung` : "Dein Fortschritt beginnt hier."}</h2><p>{summary.total ? `${wrong} falsch beantwortet · ${once} einmal richtig beantwortet` : "Du hast noch keine Fragen beantwortet. Starte jetzt dein erstes MC-Training; danach findest du hier gezielte Wiederholungen."}</p><div className="progress-track large"><span style={{ width: `${summary.average}%` }} /></div>{!summary.total && <button className="primary-button progress-start" onClick={onStart}>Erstes MC-Training starten</button>}</div></div>{startedChapters.length ? <div className="chapter-progress-list">{startedChapters.map((chapter) => <ChapterProgressCard key={chapter.topic} title={chapter.title} category={chapter.category} questions={chapter.questions} progress={progress} onTrain={(mode) => onTrain(chapter.topic, mode)} />)}</div> : <div className="progress-empty"><span>↗</span><div><h2>Noch keine Fragen beantwortet</h2><p>Deine begonnenen MC-Kapitel erscheinen nach dem ersten Training automatisch hier.</p></div></div>}<div className="progress-rule"><span>↺</span><div><b>Gezielte Wiederholung</b><p>Wiederholt werden Fragen, die du falsch oder erst einmal richtig beantwortet hast.</p></div></div></section>;
 /* Dustin branch version retained temporarily during merge resolution.
   return <section className="page-section progress-page"><div className="section-heading"><div><span className="eyebrow">Gezielt wiederholen</span><h1>Nur das, was noch nicht sitzt.</h1><p>Hier erscheinen ausschließlich bereits begonnene mündliche MC-Kapitel. Wiederholt werden nur falsche oder genau einmal richtig beantwortete Fragen.</p></div></div><div className="progress-overview"><div className="progress-ring" style={{ "--progress": `${summary.average * 3.6}deg` } as React.CSSProperties}><div><b>{summary.average}%</b><span>Begonnen</span></div></div><div><span className="eyebrow">Wiederholungsbedarf</span><h2>{summary.total ? `${wrong + once} Fragen warten auf Wiederholung` : "Noch kein MC-Kapitel begonnen"}</h2><p>{summary.total ? `${wrong} falsch beantwortet · ${once} einmal richtig beantwortet` : "Starte ein mündliches Thema im MC-Training. Erst danach wird es hier angezeigt."}</p><div className="progress-track large"><span style={{ width: `${summary.average}%` }} /></div></div></div>{startedChapters.length ? <div className="chapter-progress-list">{startedChapters.map((chapter) => <ChapterProgressCard key={chapter.topic} title={chapter.title} category={chapter.category} questions={chapter.questions} progress={progress} onTrain={(mode) => onTrain(chapter.topic, mode)} />)}</div> : <div className="progress-empty"><span>↗</span><div><h2>Noch keine begonnenen Themen</h2><p>Unbearbeitete Themen bleiben hier ausgeblendet. Du findest ACS, Schlaganfall, SHT, LAE, Hypoglykämie und Nierensteinkolik unter MC-Training → Mündlich.</p></div></div>}<div className="progress-rule"><span>↺</span><div><b>Gezielte Wiederholung</b><p>Falsche Antworten fallen auf 0 %. Einmal richtig beantwortete Fragen stehen bei 33 %. Nur diese beiden Stapel lassen sich von hier aus erneut starten.</p></div></div></section>;
 */
