@@ -34,13 +34,16 @@ test("accepts decimal comma, rejects invalid values and uses strict rounding tol
   assert.equal(isCorrect("0,2", .15, 2), false);
 });
 
-test("accepts rounded whole millilitres but keeps medication amounts and small volumes exact", () => {
-  assert.equal(isCorrect("3", 3.2, 1, "ml"), true);
+test("applies the displayed decimal rule without a blanket whole-millilitre tolerance", () => {
+  assert.equal(isCorrect("3", 3.2, 1, "ml"), false);
   assert.equal(isCorrect("3,2", 3.2, 1, "ml"), true);
   assert.equal(isCorrect("4", 3.2, 1, "ml"), false);
   assert.equal(isCorrect("3", 3.2, 1, "mg"), false);
   assert.equal(isCorrect("1", .96, 2, "ml"), false);
   assert.equal(isCorrect("0,96", .96, 2, "ml"), true);
+  assert.equal(isCorrect("13", 13, 1, "mg"), true);
+  assert.equal(isCorrect("2,6", 13 / 5, 1, "ml"), true);
+  assert.equal(isCorrect("3", 13 / 5, 1, "ml"), false);
 });
 
 test("keeps all 66 reference cases and excludes ambiguous rules", async () => {

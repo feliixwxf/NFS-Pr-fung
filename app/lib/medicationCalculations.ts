@@ -25,11 +25,12 @@ export function parseGermanNumber(input: string) {
 }
 
 export function isCorrect(input: string, expected: number, decimals: number, unit?: Unit) {
+  void unit; // Kept for call-site compatibility; rounding is deliberately unit-independent.
   const value = parseGermanNumber(input);
   if (value === null) return false;
-  const exact = Math.abs(value - expected) <= Math.max(1e-9, 0.5 * 10 ** -(decimals + 2));
-  // Wirkstoffmengen bleiben strikt. Bei praktisch aufzuziehenden Volumina ab 1 ml
-  // wird zusätzlich die kaufmännisch gerundete ganze Milliliterangabe akzeptiert.
-  const roundedVolume = unit === "ml" && expected >= 1 && value === Math.round(expected);
-  return exact || roundedVolume;
+  // `decimals` is the displayed clinical rounding rule, not a tolerance band.
+  // Only compensate for binary floating-point noise around that one target.
+  const target = Number(expected.toFixed(decimals));
+  const technicalEpsilon = Math.max(Number.EPSILON * Math.max(1, Math.abs(target)) * 8, 1e-12);
+  return Math.abs(value - target) <= technicalEpsilon;
 }
