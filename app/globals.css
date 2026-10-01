@@ -1444,3 +1444,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 @media (max-width: 760px) {
   .stats-grid.menu-shortcuts { grid-template-columns:1fr; }
 }
+
+/* Revealed flashcards keep AA contrast across all shared chapter decks. */
+.exam-flashcard.revealed,.exam-flashcard.revealed h2,.exam-flashcard.revealed p,.exam-flashcard.revealed li,.exam-flashcard.revealed a,.exam-flashcard.revealed strong,.exam-flashcard.revealed b{color:#f7fbfc}
+.exam-flashcard.revealed small{color:#ffbea7}
+.exam-flashcard.revealed a{text-decoration-color:#ffbea7}
