@@ -26,7 +26,7 @@ Die Website soll Lernenden eine moderne, übersichtliche und mobil nutzbare Prü
 
 1. Vom Nutzer bereitgestelltes Skript, DOCX oder PDF.
 2. Thüringer Verfahrensanweisungen Rettungsdienst 2026/2027 einschließlich B2A/B2B-Anlagen.
-3. Vom Nutzer ausdrücklich genannte Zusatzquelle, meistens RD-Factsheets oder Notfallguru.
+3. Vom Nutzer ausdrücklich genannte Zusatzquelle.
 4. Aktuelle offizielle Leitlinien oder Primärquellen für eine fachliche Kontrolle.
 5. Eigenes Modellwissen nur zum Verbinden oder verständlichen Erklären bereits belegter Inhalte.
 

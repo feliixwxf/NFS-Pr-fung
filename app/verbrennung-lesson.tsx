@@ -31,6 +31,6 @@ export default function VerbrennungLesson({ Figure, Vfa, children }: Props) {
     {section("10", "VFA Thüringen 2026/2027", <><p>Die Original-VFA ist einklappbar und im Vollbild lesbar. Therapieentscheidungen richten sich nach Indikation, klinischem Verlauf, lokaler Freigabe und der jeweils gültigen Originalfassung.</p><Vfa src="/lessons/verbrennung/vfa-34-print14.png" alt="VFA 34 Verbrennungen aus Print 14, Seite 5, mit Maßnahmen, Zentrumskriterien und maximaler Infusionsrate" caption="VFA 34 · Verbrennungen · Print 14, Seite 5" /><BurnInfusionCalculator /></>)}
 
     {children}
-    <p className="lesson-source">Grundlage und Abbildungen: „Print 14.pdf“. Ergänzende fachliche Grundlage: „36 - Verbrennung/Verbrühung.pdf“. Maßnahmen und Grenzwerte: <a href="https://www.aelrd-thueringen.de/download/verfahrensanweisungen-2026-27/" target="_blank" rel="noreferrer">Thüringer VFA 2026/27, Nr. 34</a>. Kurze Ergänzungen: <a href="https://rd-factsheets.de/fs/co-intoxikation/" target="_blank" rel="noreferrer">CO-Intoxikation</a> und <a href="https://rd-factsheets.de/fs/inhalationstrauma/" target="_blank" rel="noreferrer">Inhalationstrauma</a>.</p>
+    <p className="lesson-source">Grundlage und Abbildungen: „Print 14.pdf“. Ergänzende fachliche Grundlage: „36 - Verbrennung/Verbrühung.pdf“. Maßnahmen und Grenzwerte: <a href="https://www.aelrd-thueringen.de/download/verfahrensanweisungen-2026-27/" target="_blank" rel="noreferrer">Thüringer VFA 2026/27, Nr. 34</a>.</p>
   </article>;
 }

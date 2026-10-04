@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-type MedicationEffect = {
+export type MedicationEffect = {
   name: string;
   group: string;
   effect: string;
@@ -11,7 +11,7 @@ type MedicationEffect = {
   sideEffects: string;
 };
 
-const medications: MedicationEffect[] = [
+export const medications: MedicationEffect[] = [
   { name: "Acetylsalicylsäure (ASS)", group: "Thrombozytenaggregationshemmer", effect: "Hemmt irreversibel COX-1 und COX-2. Über COX-1 sinkt in den Thrombozyten die Thromboxanbildung und damit die Aggregation; zugleich werden protektive Prostaglandine der Magenschleimhaut vermindert. Über COX-2 werden Entzündung, Schmerz und Fieber beeinflusst.", interactions: "Antikoagulanzien, andere Thrombozytenhemmer und NSAR können Blutungs- beziehungsweise Magen-Darm-Risiken erhöhen.", contraindications: "Asthma oder bekannte ASS-Unverträglichkeit, erhöhte Blutungsneigung sowie aktives Magen- oder Darmulkus.", sideEffects: "Bronchospasmus, Blutungen, Magen-Darm-Beschwerden, Kopfschmerzen und Schwindel." },
   { name: "Heparin", group: "Antikoagulanz", effect: "Verstärkt die Wirkung von Antithrombin III. Dadurch werden vor allem Thrombin (Faktor IIa), Faktor Xa und weitere Gerinnungsfaktoren indirekt gehemmt; die Bildung und Ausbreitung von Fibrinthromben wird gebremst.", interactions: "Andere Antikoagulanzien, Thrombozytenhemmer und NSAR können die Blutungsgefahr erhöhen.", contraindications: "Akute zerebrale Blutung, relevante Blutungsneigung, Heparinallergie, aktive Blutung, aktives Magen- oder Darmulkus sowie eine bestehende oder anamnestisch bekannte heparininduzierte Thrombozytopenie (HIT). Bei HIT darf Heparin nicht erneut gegeben werden.", sideEffects: "Blutungen, besonders an Haut, Schleimhäuten und Wunden; außerdem Thrombozytopenie und Überempfindlichkeitsreaktionen." },
   { name: "Atrovent (Ipratropium)", group: "Parasympatholytikum · Anticholinergikum", effect: "Blockiert muskarinische Rezeptoren (M1–M3) an der Bronchialmuskulatur. Die M3-Blockade löst die vagal vermittelte Bronchokonstriktion, M2 gehört zur muskarinischen Rezeptorfamilie und beeinflusst die cholinerge Rückkopplung.", interactions: "Andere anticholinerge Wirkstoffe können Mundtrockenheit, Tachykardie und Harnverhalt verstärken.", contraindications: "Miktionsstörung, Schwangerschaft und Stillzeit im jeweiligen VFA-/Fachinformationskontext sowie Überempfindlichkeit gegen Ipratropium oder Atropin-Derivate; Aerosolkontakt mit den Augen bei Engwinkelglaukom vermeiden.", sideEffects: "Mundtrockenheit, Husten, Kopfschmerz, Mydriasis, Tachykardie und selten paradoxer Bronchospasmus." },
@@ -21,8 +21,8 @@ const medications: MedicationEffect[] = [
   { name: "Midazolam", group: "Benzodiazepin", effect: "Verstärkt die GABA-A-vermittelte Hemmung und wirkt anxiolytisch, sedierend, amnestisch, muskelrelaxierend und antikonvulsiv.", interactions: "Opioide, Alkohol und andere Sedativa verstärken Atemdepression, Sedierung und Hypotonie.", contraindications: "Ateminsuffizienz, Schwangerschaft, ungesicherter Atemweg, Schock und bekannte Überempfindlichkeit erfordern besondere Vorsicht.", sideEffects: "Atemdepression, Hypotonie, Sedierung, anterograde Amnesie, Bradykardie, paradoxe Reaktionen und bei älteren Menschen verlängerte Wirkung." },
   { name: "Tranexamsäure", group: "Antifibrinolytikum", effect: "Hemmt die Aktivierung von Plasminogen zu Plasmin und stabilisiert dadurch bestehende Fibringerinnsel.", interactions: "Andere prothrombotische Wirkstoffe können das Thromboserisiko erhöhen; die Gerinnungssituation muss im Gesamtkontext bewertet werden.", contraindications: "Aktive thromboembolische Erkrankung, schwere Nierenfunktionsstörung und relevante Überempfindlichkeit beachten.", sideEffects: "Übelkeit, Erbrechen, Durchfall, Blutdruckabfall bei zu schneller Gabe, Sehstörungen und selten Krampfanfälle." },
   { name: "Furosemid", group: "Schleifendiuretikum", effect: "Hemmt den Na⁺-K⁺-2Cl⁻-Cotransporter im aufsteigenden Teil der Henle-Schleife und steigert die Natrium- und Wasserausscheidung.", interactions: "Andere Antihypertensiva oder ototoxische Arzneimittel können Risiken verstärken; NSAR können die Diurese abschwächen.", contraindications: "Anurie, schwere Hypovolämie, ausgeprägte Elektrolytstörungen und unbehandelter Harnabflussstau.", sideEffects: "Hypotonie, Dehydratation, Hypokaliämie, Hyponatriämie, metabolische Alkalose und selten Ototoxizität." },
-  { name: "Urapidil", group: "α₁-Blocker / zentral wirksames Antihypertensivum", effect: "Senkt den peripheren Gefäßwiderstand über α₁-Blockade und vermindert zentral den sympathischen Blutdruckreflex.", interactions: "Andere Antihypertensiva, Nitrate, PDE-5-Hemmer und Alkohol können die Blutdrucksenkung verstärken.", contraindications: "Überempfindlichkeit, ausgeprägte Hypotonie, arteriovenöser Shunt sowie hämodynamisch relevante Aortenisthmus- oder Klappenstenose berücksichtigen.", sideEffects: "Schwindel, Kopfschmerz, Übelkeit, Hypotonie und gelegentlich Bradykardie oder Palpitationen." },
-  { name: "Nifedipin", group: "Dihydropyridin-Calciumantagonist", effect: "Blockiert L-Typ-Calciumkanäle in der Gefäßmuskulatur und führt vor allem zu arterieller Vasodilatation und Nachlastsenkung.", interactions: "CYP3A4-Hemmer, andere Antihypertensiva und Grapefruitsaft können die Wirkung verändern oder verstärken.", contraindications: "Kardiogener Schock, schwere Hypotonie und relevante akute Kreislaufinstabilität.", sideEffects: "Kopfschmerz, Flush, Schwindel, Knöchelödeme, Hypotonie und reflektorische Tachykardie." },
+  { name: "Urapidil", group: "α₁-Blocker / zentral wirksames Antihypertensivum", effect: "Senkt den peripheren Gefäßwiderstand über α₁-Blockade und vermindert zentral den sympathischen Blutdruckreflex.", interactions: "Andere α-Rezeptorenblocker, Vasodilatatoren und Antihypertensiva können die Blutdrucksenkung verstärken; auch Volumenmangel und Alkohol erhöhen das Hypotonierisiko.", contraindications: "Aortenisthmusstenose, hämodynamisch wirksamer arteriovenöser Shunt und Stillzeit. Ein hämodynamisch nicht wirksamer Dialyse-Shunt ist ausgenommen. Schwangerschaft wird in der neuen Unterrichtsunterlage nicht als Kontraindikation genannt; Präeklampsie und Eklampsie sind besondere Einsatzsituationen.", sideEffects: "Übelkeit, Schwindel, Kopfschmerz, Bradykardie, Druckgefühl in der Brust, Müdigkeit, Schweißausbruch, Ruhelosigkeit, Hautreaktion und selten Priapismus." },
+  { name: "Nifedipin", group: "Dihydropyridin-Calciumantagonist", effect: "Blockiert L-Typ-Calciumkanäle in der Gefäßmuskulatur und führt vor allem zu arterieller Vasodilatation und Nachlastsenkung.", interactions: "CYP3A4-Hemmer, andere Antihypertensiva und Grapefruitsaft können die Wirkung verändern oder verstärken.", contraindications: "Schwangerschaft, akutes Koronarsyndrom, Hypotonie, kardiogener Schock, höhergradige Aortenklappenstenose und hypertroph-obstruktive Kardiomyopathie.", sideEffects: "Kopfschmerz, Flush, Schwindel, Knöchelödeme, Hypotonie und reflektorische Tachykardie." },
   { name: "Amiodaron", group: "Antiarrhythmikum Klasse III", effect: "Verlängert über Kaliumkanalblockade die Repolarisation und Refraktärzeit; zusätzlich werden Natrium- und Calciumkanäle sowie β-Rezeptoren beeinflusst.", interactions: "QT-verlängernde Arzneimittel, Digoxin, bestimmte Statine und orale Antikoagulanzien können relevante Wechselwirkungen zeigen.", contraindications: "Ausgeprägte Bradykardie oder höhergradiger AV-Block ohne Schrittmacher sowie bekannte Überempfindlichkeit.", sideEffects: "Bradykardie, Hypotonie, QT-Verlängerung, Übelkeit und bei Langzeitgabe Schilddrüsen-, Lungen- oder Lebertoxizität." },
   { name: "Partusisten (Fenoterol)", group: "β₂-Sympathomimetikum / Tokolytikum", effect: "Stimuliert β₂-Rezeptoren der Uterusmuskulatur und vermindert dadurch vorübergehend die Wehentätigkeit.", interactions: "Andere Sympathomimetika können Tachykardie und Hypokaliämie verstärken; Betablocker können die Wirkung abschwächen.", contraindications: "Relevante maternale Tachyarrhythmie, schwere kardiale Erkrankung und Situationen, in denen eine Wehenhemmung nicht vertretbar ist.", sideEffects: "Tachykardie, Palpitationen, Tremor, Unruhe, Hyperglykämie und Hypokaliämie." },
   { name: "Atropin", group: "Anticholinergikum", effect: "Blockiert muskarinische Acetylcholinrezeptoren und hebt vagale Bremsen am Herzen auf.", interactions: "Andere anticholinerge Wirkstoffe können Mundtrockenheit, Tachykardie und Verwirrtheit verstärken.", contraindications: "Relevante Tachykardie, Engwinkelglaukom und höhergradiger infra-Hisärer AV-Block erfordern besondere Vorsicht.", sideEffects: "Tachykardie, Mundtrockenheit, Mydriasis, Akkommodationsstörung und Harnverhalt." },
@@ -37,14 +37,43 @@ const medications: MedicationEffect[] = [
   { name: "Prednisolon", group: "Glukokortikoid", effect: "Bindet intrazellulär an den Glukokortikoidrezeptor und verändert die Genexpression. Dadurch werden proinflammatorische Mediatoren, Schleimhautödem und entzündliche Sekretbildung gedämpft; der Wirkungseintritt ist verzögert und ersetzt keine Akutbronchodilatation.", interactions: "Blutzucker und Infektionszeichen können beeinflusst werden; die Wirkung ersetzt keine Akutbronchodilatation.", contraindications: "Schwere unbehandelte Infektionen und bekannte Überempfindlichkeit im jeweiligen VFA-Kontext beachten.", sideEffects: "Hyperglykämie, Dyspepsie, Schlaf- oder Stimmungsschwankungen und erhöhte Infektanfälligkeit." },
 ];
 
+export function MedicationEffectCard({ item, headingLevel = 2, onExpand }: { item: MedicationEffect; headingLevel?: 2 | 3; onExpand?: (item: MedicationEffect) => void }) {
+  const Heading = `h${headingLevel}` as "h2" | "h3";
+  return <article className="medication-effect-card"><header><span className="medication-effect-icon">✦</span><div><small>{item.group}</small><Heading>{item.name}</Heading></div>{onExpand && <button type="button" className="medication-card-expand" onClick={() => onExpand(item)} aria-label={`${item.name} groß anzeigen`}><span aria-hidden="true">⤢</span><b>Großansicht</b></button>}</header><div><b>Wirkung</b><p>{item.effect}</p><b className="medication-side-effect-label">Nebenwirkungen</b><p>{item.sideEffects}</p></div><div><b>Wechselwirkungen</b><p>{item.interactions}</p></div><aside><b>Kontraindikationen</b><p>{item.contraindications}</p></aside></article>;
+}
+
 export default function MedicationEffectsLibrary() {
   const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<MedicationEffect | null>(null);
+  useEffect(() => {
+    if (!expanded) return;
+    const scrollY = window.scrollY;
+    const previousBody = { overflow: document.body.style.overflow, position: document.body.style.position, top: document.body.style.top, width: document.body.style.width };
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setExpanded(null); };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBody.overflow;
+      document.body.style.position = previousBody.position;
+      document.body.style.top = previousBody.top;
+      document.body.style.width = previousBody.width;
+      window.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
+    };
+  }, [expanded]);
   const query = search.trim().toLocaleLowerCase("de-DE");
   const filtered = medications.filter((item) => `${item.name} ${item.group} ${item.effect}`.toLocaleLowerCase("de-DE").includes(query));
   return <section className="page-section medication-effects-page">
     <div className="section-heading"><div><span className="eyebrow">Pharmakologie · Lernübersicht</span><h1>Wirkung der Medikamente</h1><p>Rettungsdienstliche Wirkprofile zum Wiederholen. Dosierungen bleiben an die gültige Thüringer VFA gebunden.</p></div><div className="source-badge"><b>{filtered.length}</b><span>Treffer</span></div></div>
     <label className="medication-search"><span aria-hidden="true">⌕</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Medikament suchen …" aria-label="Medikament suchen" />{search && <button type="button" onClick={() => setSearch("")} aria-label="Suche löschen">×</button>}</label>
-    <div className="medication-effects-grid">{filtered.map((item) => <article key={item.name} className="medication-effect-card"><header><span className="medication-effect-icon">✦</span><div><small>{item.group}</small><h2>{item.name}</h2></div></header><div><b>Wirkung</b><p>{item.effect}</p><b className="medication-side-effect-label">Nebenwirkungen</b><p>{item.sideEffects}</p></div><div><b>Wechselwirkungen</b><p>{item.interactions}</p></div><aside><b>Kontraindikationen</b><p>{item.contraindications}</p></aside></article>)}</div>
+    <div className="medication-effects-grid">{filtered.map((item) => <MedicationEffectCard key={item.name} item={item} onExpand={setExpanded} />)}</div>
     {!filtered.length && <div className="medication-search-empty"><b>Kein Medikament gefunden.</b><span>Prüfe die Schreibweise oder suche nach einem Wirkstoff.</span></div>}
+    {expanded && <div className="medication-card-modal" role="dialog" aria-modal="true" aria-label={`${expanded.name} Großansicht`} onClick={() => setExpanded(null)}><div className="medication-card-modal-panel" onClick={(event) => event.stopPropagation()}><button type="button" className="medication-card-modal-close" onClick={() => setExpanded(null)} aria-label="Großansicht schließen">×</button><MedicationEffectCard item={expanded} /></div></div>}
   </section>;
 }

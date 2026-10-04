@@ -13,21 +13,19 @@ Die Quelldatei bleibt unverändert und wird nicht direkt öffentlich ausgeliefer
 ## Quellenregel für das Thema Schlaganfall
 
 - Primäre Lernunterlage: `Apoplexie_Schlaganfall.pdf`
-- Ergänzende Quelle: [Rettungsdienst FactSheets – Schlaganfall](https://rd-factsheets.de/fs/schlaganfall-2/), zuletzt auf der Website ausgewiesen als aktualisiert am 20.12.2024
 - Fachliche Gegenprüfung: einschlägige AWMF-Leitlinien zum Schlaganfall
 - Verbindliche Therapiequelle: `Verfahrensanweisungen_2026_2027.pdf`
 
-Aus dem Rettungsdienst-Factsheet dürfen nützliche Ergänzungen zu Ursachen, Pathophysiologie, Symptomen, Diagnostik und Differenzialdiagnosen übernommen werden. Angaben zu Behandlungen, Medikamenten, Sauerstoffgabe, Glukosegabe, Volumentherapie und Blutdrucksenkung werden daraus **nicht** übernommen. Für Therapie, Medikamente, Dosierungen, Grenzwerte und Blutdruckziele gilt ausschließlich die passende Thüringer VFA 2026/2027. Bestehende Inhalte werden nur gezielt ergänzt und nicht pauschal durch das Factsheet ersetzt.
+Für Therapie, Medikamente, Dosierungen, Grenzwerte und Blutdruckziele gilt ausschließlich die passende Thüringer VFA 2026/2027. Bestehende Inhalte werden nur gezielt ergänzt und nicht pauschal ersetzt.
 
 ## Quellenregel für das Thema Lungenarterienembolie
 
 - Primäre Lernunterlage: `Lungenarterienembolie_2.pdf`
 - SHA-256: `5ead7b60ea56ec14e9cc63b6e1adacafe1cd5c61a19b6d4b444d202ffb678c78`
-- Ergänzende Quelle: [Rettungsdienst FactSheets – Lungenarterienembolie](https://rd-factsheets.de/fs/lungenarterienembolie/)
 - Fachliche Gegenprüfung: AWMF-S2k-Leitlinie „Diagnostik und Therapie der Venenthrombose und Lungenembolie“
 - Verbindliche Therapiequellen: Leitalgorithmus L5, VFA 01 und Anlage B2A aus `Verfahrensanweisungen_2026_2027.pdf`
 
-Aus dem Factsheet werden nur präklinisch relevante Ergänzungen zu Risikofaktoren, Anamnese, Symptomen, Diagnostik und Differenzialdiagnosen genutzt. Dosierungen, klinische Behandlungsschritte und medikamentöse Therapieangaben aus dem Factsheet werden nicht übernommen. Die schwere Lungenarterienembolie wird fachlich als Ursache eines obstruktiven Schocks eingeordnet. Das Wirkprinzip der Lyse folgt der primären Lernunterlage. Anlage B2A kennzeichnet Alteplase zur Thrombolyse bei Lungenembolie als NEF-Medikament und Tenecteplase bei LAE als erprobt, aber nicht zugelassen.
+Die schwere Lungenarterienembolie wird fachlich als Ursache eines obstruktiven Schocks eingeordnet. Das Wirkprinzip der Lyse folgt der primären Lernunterlage. Anlage B2A kennzeichnet Alteplase zur Thrombolyse bei Lungenembolie als NEF-Medikament und Tenecteplase bei LAE als erprobt, aber nicht zugelassen.
 
 ## Aufbau jedes mündlichen Themas
 
