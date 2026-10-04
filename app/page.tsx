@@ -1,7 +1,7 @@
 "use client";
 
 import { Children, cloneElement, FormEvent, isValidElement, ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { QuestionLearningRecord, QuestionProgress, readQuestionProgress, recordQuestionAnswer, restoreQuestionAnswer, summarizeQuestionProgress, progressMetrics } from "./lib/questionProgress";
+import { QuestionLearningRecord, QuestionProgress, readQuestionProgress, recordQuestionAnswer, restoreQuestionAnswer, summarizeQuestionProgress, progressMetrics, formatProgressPercent } from "./lib/questionProgress";
 import { readCompletedTopics, writeTopicCompletion } from "./lib/topicProgress";
 import { activateLocalUser, saveQuestionProgress, saveTopicProgress, syncLearningProgress } from "./lib/cloudProgress";
 import { getSupabaseClient } from "./lib/supabaseClient";
@@ -455,7 +455,7 @@ export default function Home() {
     </main>
   );
 
-  const profileSummary = summarizeQuestionProgress(questionProgress);
+  const profileMetrics = progressMetrics(questionProgress, getAvailableQuestionIds());
   const accountInitials = accountEmail?.split("@")[0].replace(/[^a-z0-9äöüß]/gi, "").slice(0, 2).toUpperCase() || "NP";
   const accountAvatar = accountAvatarUrl ? <img src={accountAvatarUrl} alt="Dein Profilbild" /> : accountInitials;
   return (
@@ -473,7 +473,7 @@ export default function Home() {
               {profileOpen && <section className="profile-popover" role="dialog" aria-label="Profil und Lernstand">
                 <header><div className="profile-avatar">{accountAvatar}</div><div><small>Profil</small><h2>Dein Lernbereich</h2></div><button onClick={() => setProfileOpen(false)} aria-label="Profil schließen">×</button></header>
                 <div className="profile-local-status"><span>✓</span><div><b>{accountUserId ? accountEmail : "Lernstand auf diesem Gerät gespeichert"}</b><p>{accountUserId ? syncStatus === "synced" ? "Dein Lernstand ist mit deinem Konto synchronisiert." : "Synchronisierung nicht verfügbar. Der lokale Stand bleibt erhalten." : "Fragen, Kapitelstatus und Fortschritt bleiben im Browser erhalten."}</p></div></div>
-                <div className="profile-stat-grid"><div><b>{profileSummary.average}%</b><span>Wiederholungsstand</span></div><div><b>{profileSummary.total}</b><span>Fragen begonnen</span></div><div><b>{completedTopics.length}</b><span>Kapitel absolviert</span></div></div>
+                <div className="profile-stat-grid"><div><b>{formatProgressPercent(profileMetrics.completionPercent)}</b><span>Bearbeitungsfortschritt</span></div><div><b>{profileMetrics.answered} / {profileMetrics.available}</b><span>Fragen bearbeitet</span></div><div><b>{completedTopics.length}</b><span>Kapitel absolviert</span></div></div>
                 <div className="profile-account-preview">{accountUserId && accountEmail ? <>
                   <span className="eyebrow">Lernkonto aktiv</span>
                   <AccountProfileSettings userId={accountUserId} email={accountEmail} onAvatarChange={setAccountAvatarUrl} />
@@ -509,14 +509,15 @@ function Dashboard({ setView, questionProgress }: { setView: (view: View) => voi
   const once = records.filter((record) => record.correctCount === 1).length;
   const twice = records.filter((record) => record.correctCount === 2).length;
   const mastered = records.filter((record) => record.correctCount === 3).length;
-  const progress = summarizeQuestionProgress(questionProgress).average;
+  const metrics = progressMetrics(questionProgress, getAvailableQuestionIds());
+  const progress = metrics.completionPercent;
   const degrees = (count: number) => total ? count / total * 360 : 0;
   const wrongEnd = degrees(wrong);
   const onceEnd = wrongEnd + degrees(once);
   const twiceEnd = onceEnd + degrees(twice);
   const due = dueQuestionIds(questionProgress).length;
   const ringStyle = { background: total ? `conic-gradient(#c9574f 0deg ${wrongEnd}deg,#dc9344 ${wrongEnd}deg ${onceEnd}deg,#4f84a5 ${onceEnd}deg ${twiceEnd}deg,#4f8668 ${twiceEnd}deg 360deg)` : "#e8e5df" } as React.CSSProperties;
-  return <section className="dashboard"><div className="welcome"><div><span className="eyebrow light">ABSCHLUSSPRÜFUNG NOTFALLSANITÄTER</span><h1>Wissen vertiefen. Sicherheit gewinnen.</h1><p>Die Abschlussprüfung im Blick, den Beruf vor Augen: Wiederhole Fachwissen, entdecke Zusammenhänge und bereite dich Schritt für Schritt auf deinen Abschluss vor.</p><div className="hero-actions"><button className="light-button" onClick={() => setView("oral")}>Vorbereitung starten <span>→</span></button></div></div><div className="hero-drk-badge" aria-label={`${topics.length} Prüfungsthemen, ${progress} Prozent Wiederholungsstand`}><div className="drk-cross" aria-hidden="true"><i /><i /></div><div><b>{topics.length}</b><span>Themen</span><small>{progress}% Wiederholungsstand</small></div></div></div>
+  return <section className="dashboard"><div className="welcome"><div><span className="eyebrow light">ABSCHLUSSPRÜFUNG NOTFALLSANITÄTER</span><h1>Wissen vertiefen. Sicherheit gewinnen.</h1><p>Die Abschlussprüfung im Blick, den Beruf vor Augen: Wiederhole Fachwissen, entdecke Zusammenhänge und bereite dich Schritt für Schritt auf deinen Abschluss vor.</p><div className="hero-actions"><button className="light-button" onClick={() => setView("oral")}>Vorbereitung starten <span>→</span></button></div></div><div className="hero-drk-badge" aria-label={`${formatProgressPercent(progress)} Bearbeitungsfortschritt`}><div className="drk-cross" aria-hidden="true"><i /><i /></div><div><b>{formatProgressPercent(progress)}</b><span>Bearbeitungsfortschritt</span><small>{metrics.answered} von {metrics.available} Fragen bearbeitet</small></div></div></div>
     <section className="continue-learning" aria-labelledby="continue-title"><div><span className="eyebrow">Hier weitermachen</span><h2 id="continue-title">Dein nächster Lernschritt</h2><p>{due ? `${due} Fragen sind heute zur Wiederholung fällig.` : total ? "Heute ist keine zeitgesteuerte Wiederholung fällig. Eine kurze Runde hält dich im Thema." : "Starte mit einem verfügbaren Kapitel oder einer kurzen MC-Runde."}</p></div><button onClick={() => setView(due ? "progress" : "quiz")}>{due ? `${Math.min(10, due)} fällige Fragen ansehen` : "Kurze Lernrunde starten"} <span>→</span></button></section>
     <section className="dashboard-grid" aria-labelledby="preparation-title"><div className="block-title"><span className="eyebrow">Deine Bereiche</span><h2 id="preparation-title">Prüfungsvorbereitung</h2></div><div className="action-cards"><button type="button" onClick={() => setView("oral")}><span className="action-icon" aria-hidden="true">◫</span><div><h3>Mündlich</h3><p>Fachwissen strukturiert wiederholen und Zusammenhänge verstehen.</p><b>Themen öffnen →</b></div></button><button type="button" onClick={() => setView("written")}><span className="action-icon dark" aria-hidden="true">✎</span><div><h3>Schriftlich</h3><p>Gezielt auf die schriftliche Abschlussprüfung vorbereiten.</p><b>Vorbereitung öffnen →</b></div></button><button type="button" onClick={() => setView("quiz")}><span className="action-icon green" aria-hidden="true">✓</span><div><h3>MC-Training</h3><p>Prüfungsfragen beantworten und dein Wissen überprüfen.</p><b>Training starten →</b></div></button></div><div className="stats-grid menu-shortcuts"><button type="button" onClick={() => setView("medication-effects")}><span className="stat-icon blue">✦</span><div><small>Medikamentenwirkung</small><b>Wirkung <em>lernen</em></b></div><span className="menu-shortcut-arrow">→</span></button><button type="button" onClick={() => setView("medication")}><span className="stat-icon green">💉</span><div><small>Medikamentenrechnen</small><b>Dosen <em>berechnen</em></b></div><span className="menu-shortcut-arrow">→</span></button></div></section>
     <section className="dashboard-learning-stat" aria-labelledby="learning-stat-title"><div className="dashboard-learning-copy"><span className="eyebrow">Deine Lernstatistik</span><h2 id="learning-stat-title">Auf einen Blick</h2><p>{total ? `${total} Fragen wurden bereits bearbeitet. Der Wiederholungsstand zeigt die aktuelle Stufe, nicht eine Prüfungsgarantie.` : "Sobald du die ersten MC-Fragen beantwortest, erscheint hier die Verteilung deines Lernstands."}</p><button type="button" onClick={() => setView("progress")}>Fortschritt im Detail <span>→</span></button></div><div className="dashboard-learning-chart"><div className="dashboard-learning-ring" style={ringStyle} role="img" aria-label={`${wrong} falsch, ${once} einmal richtig, ${twice} zweimal richtig, ${mastered} dreimal richtig`}><div><b>{total}</b><span>bearbeitet</span></div></div><div className="dashboard-learning-legend"><div><i className="wrong" /><span><b>{wrong}</b> Falsch</span></div><div><i className="once" /><span><b>{once}</b> 1× richtig</span></div><div><i className="twice" /><span><b>{twice}</b> 2× richtig</span></div><div><i className="mastered" /><span><b>{mastered}</b> 3× richtig</span></div></div></div></section>
@@ -814,6 +815,10 @@ function ChapterHeading({ number, title, kicker }: { number: string; title: stri
 function ExpandableImage({ src, alt }: { src: string; alt: string }) {
   const [fullscreen, setFullscreen] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   const closeFullscreen = () => {
     setFullscreen(false);
@@ -822,28 +827,47 @@ function ExpandableImage({ src, alt }: { src: string; alt: string }) {
 
   useEffect(() => {
     if (!fullscreen) return;
+    const scrollY = window.scrollY;
+    const previous = { overflow: document.body.style.overflow, position: document.body.style.position, top: document.body.style.top, width: document.body.style.width };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setFullscreen(false);
         setZoomed(false);
       }
+      if (event.key === "Tab") {
+        const controls = dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]),[href],[tabindex]:not([tabindex="-1"])');
+        if (!controls?.length) return;
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
     };
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
     window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    closeRef.current?.focus({ preventScroll: true });
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      Object.assign(document.body.style, previous);
+      window.scrollTo(0, scrollY);
+      triggerRef.current?.focus({ preventScroll: true });
+    };
   }, [fullscreen]);
 
   return <>
-    <button className="image-open-button" type="button" onClick={() => setFullscreen(true)} aria-label={`${alt} im Vollbild öffnen`}>
+    <button ref={triggerRef} className="image-open-button" type="button" onClick={() => { setLoadError(false); setFullscreen(true); }} aria-label={`${alt} im Vollbild öffnen`}>
       <img src={src} alt={alt} />
       <span>⤢ Vollbild</span>
     </button>
-    {fullscreen && <div className="image-lightbox" role="dialog" aria-modal="true" aria-label={`Vollbild: ${alt}`}>
+    {fullscreen && <div ref={dialogRef} className="image-lightbox" role="dialog" aria-modal="true" aria-label={`Vollbild: ${alt}`}>
       <div className="image-lightbox-controls">
         <button className="image-lightbox-zoom" type="button" aria-pressed={zoomed} onClick={() => setZoomed(!zoomed)}>{zoomed ? "⊟ Ganzes Bild" : "⊞ Originalgröße"}</button>
-        <button className="image-lightbox-close" type="button" onClick={closeFullscreen}>× Schließen</button>
+        <button ref={closeRef} className="image-lightbox-close" type="button" onClick={closeFullscreen}>× Schließen</button>
       </div>
       <div className={`image-lightbox-stage ${zoomed ? "is-zoomed" : ""}`}>
-        <img src={src} alt={alt} />
+        {loadError ? <div className="image-load-error" role="alert"><b>Die Abbildung konnte nicht geladen werden.</b><button type="button" onClick={() => setLoadError(false)}>Erneut laden</button></div> : <img key={`${src}-${loadError}`} src={src} alt={alt} onError={() => setLoadError(true)} />}
       </div>
     </div>}
   </>;
@@ -1952,7 +1976,9 @@ function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standal
   const [wrongQuestions, setWrongQuestions] = useState<MultipleChoiceQuestion[]>([]);
   const [bookmarks, setBookmarks] = useState<string[]>(() => readBookmarks());
   const [skipStreak, setSkipStreak] = useState(0);
-  const keyOf = (question: MultipleChoiceQuestion) => question.sourceTopic ? stableQuestionKey(question.sourceTopic, question.id) : question.id;
+  // Question ids are repository-wide identities. Mixed rounds must not invent a
+  // second progress/bookmark identity for the same question.
+  const keyOf = (question: MultipleChoiceQuestion) => question.id;
 
   const start = () => {
     const shuffled = shuffledQuestions(questionBank, questions);
@@ -2078,6 +2104,10 @@ const trainingQuestionBanks: Partial<Record<TrainingTopic, MultipleChoiceQuestio
   "akutes-abdomen": akutesAbdomenQuestions, opiatintoxikation: opiatintoxikationQuestions, venenthrombose: venenthromboseQuestions, pavk: pavkQuestions, myokardinfarkt: myokardinfarktQuestions, polytrauma: polytraumaQuestions, bronchoobstruktion: bronchoQuestions, pneumonie: pneumonieQuestions, "pseudokrupp-epiglottitis": pseudokruppEpiglottitisQuestions, "hypertensiver-notfall": hypertensiverNotfallQuestions, vorhofflimmern: vorhofflimmernQuestions, "krampfanfall-kind": krampfanfallKindQuestions, krampfanfall: krampfanfallQuestions, unterkuehlung: unterkuehlungQuestions, rippenfraktur: rippenfrakturQuestions, verbrennung: verbrennungQuestions, "wirbelsaeulentrauma": wirbelsaeulentraumaQuestions, extremitaetentrauma: extremitaetentraumaQuestions, "angina-pectoris": anginaPectorisQuestions, acs: acsMultipleChoiceQuestions, apoplex: apoplexMultipleChoiceQuestions, sht: shtMultipleChoiceQuestions, lae: laeMultipleChoiceQuestions, lungenoedem: lungenoedemQuestions, hyperventilation: hyperventilationQuestions, geburt: geburtQuestions, eug: eugQuestions, thoraxtrauma: thoraxtraumaQuestions, abdominaltrauma: abdominaltraumaQuestions, hypoglykaemie: hypoglykaemieQuestions, gallensteinkolik: gallensteinkolikQuestions, nierensteinkolik: nierensteinkolikQuestions, hodentorsion: hodentorsionQuestions, rechtskunde: rechtskundeQuestions,
 };
 
+function getAvailableQuestionIds() {
+  return [...new Set(Object.values(trainingQuestionBanks).flatMap((questions) => (questions || []).map((question) => question.id)))];
+}
+
 function QuizLanding({ track, setTrack, onSelect, onMixed, progress }: { track: "oral" | "written"; setTrack: (track: "oral" | "written") => void; onSelect: (topic: TrainingTopic) => void; onMixed: (questions: MultipleChoiceQuestion[]) => void; progress: QuestionProgress }) {
   const [search, setSearch] = useState(() => typeof sessionStorage === "undefined" ? "" : sessionStorage.getItem("notsan-mc-search") || "");
   const [group, setGroup] = useState("all");
@@ -2177,7 +2207,8 @@ function ChapterProgressCard({ title, category, questions, progress, onTrain }: 
   const twice = answered.filter((record) => record.correctCount === 2).length;
   const mastered = answered.filter((record) => record.correctCount === 3).length;
   const average = Math.round(records.reduce((sum, record) => sum + (record ? record.correctCount / 3 : 0), 0) / questions.length * 100);
-  return <section className="chapter-progress-card"><div className="chapter-progress-main"><div className="chapter-progress-title"><span>{category}</span><h2>{title}</h2><p>{answered.length} von {questions.length} Fragen begonnen. Hier erscheinen nur gezielte Wiederholungsstapel.</p></div><div className="chapter-score"><b>{answered.length}/{questions.length}</b><span>bearbeitet · Festigung {average}% von allen verfügbaren Stufen</span></div></div><div className="chapter-progress-track"><span style={{ width: `${average}%` }} /></div><div className="review-action-grid"><button className="wrong" onClick={() => onTrain("wrong")} disabled={!wrong}><span>✕</span><div><b>{wrong} falsche</b><small>{wrong ? "Jetzt wiederholen" : "Keine offen"}</small></div></button><button className="once" onClick={() => onTrain("once")} disabled={!once}><span>1×</span><div><b>{once} einmal richtig</b><small>{once ? "Jetzt festigen" : "Keine offen"}</small></div></button><button className="twice" onClick={() => onTrain("twice")} disabled={!twice}><span>2×</span><div><b>{twice} zweimal richtig</b><small>{twice ? "Freiwillig festigen" : "Keine offen"}</small></div></button><div className="mastered-count"><span>3×</span><div><b>{mastered} gefestigt</b><small>Weiterhin freiwillig im vollständigen Kapitel übbar</small></div></div></div></section>;
+  const completion = progressMetrics(progress, questions.map((question) => question.id));
+  return <section className="chapter-progress-card"><div className="chapter-progress-main"><div className="chapter-progress-title"><span>{category}</span><h2>{title}</h2><p>{answered.length} von {questions.length} Fragen bearbeitet. Hier erscheinen nur gezielte Wiederholungsstapel.</p></div><div className="chapter-score"><b>{formatProgressPercent(completion.completionPercent)}</b><span>Bearbeitungsfortschritt · Festigung {average} % separat</span></div></div><div className="chapter-progress-track"><span style={{ width: `${completion.completionPercent}%` }} /></div><div className="review-action-grid"><button className="wrong" onClick={() => onTrain("wrong")} disabled={!wrong}><span>✕</span><div><b>{wrong} falsche</b><small>{wrong ? "Jetzt wiederholen" : "Keine offen"}</small></div></button><button className="once" onClick={() => onTrain("once")} disabled={!once}><span>1×</span><div><b>{once} einmal richtig</b><small>{once ? "Jetzt festigen" : "Keine offen"}</small></div></button><button className="twice" onClick={() => onTrain("twice")} disabled={!twice}><span>2×</span><div><b>{twice} zweimal richtig</b><small>{twice ? "Freiwillig festigen" : "Keine offen"}</small></div></button><div className="mastered-count"><span>3×</span><div><b>{mastered} gefestigt</b><small>Weiterhin freiwillig im vollständigen Kapitel übbar</small></div></div></div></section>;
 }
 
 function ProgressView({ progress, onTrain, onStart }: { progress: QuestionProgress; onTrain: (topic: TrainingTopic, mode?: ReviewMode) => void; onStart: () => void }) {
@@ -2235,7 +2266,7 @@ function ProgressView({ progress, onTrain, onStart }: { progress: QuestionProgre
   const metrics = progressMetrics(progress, availableQuestionIds);
   const due = dueQuestionIds(startedProgress).length;
   const stale = Object.values(startedProgress).filter((item) => Date.now() - Date.parse(item.updatedAt) >= 30 * 86400000).length;
-  return <section className="page-section progress-page"><div className="section-heading"><div><span className="eyebrow">GEZIELT WIEDERHOLEN</span><h1>Hier geht’s weiter.</h1><p>Konzentriere dich auf die Fragen, die du noch nicht sicher beantwortest.</p></div></div><div className="progress-overview"><div className="progress-ring-stat"><div className="progress-ring" style={{ "--progress": `${summary.average * 3.6}deg` } as React.CSSProperties}><div><b>{summary.average}%</b></div></div><span>Wiederholungsstand</span></div><div><span className="eyebrow">DEIN LERNSTAND</span><h2>{summary.total ? `${wrong + once + twice} Fragen können gezielt wiederholt werden` : "Dein Fortschritt beginnt hier."}</h2><p>{summary.total ? `${metrics.answered} von ${metrics.available} verfügbaren Fragen bearbeitet · ${wrong} falsch · ${once} einmal · ${twice} zweimal · ${mastered} dreimal richtig` : "Du hast noch keine Fragen beantwortet. Starte jetzt dein erstes MC-Training; danach findest du hier gezielte Wiederholungen."}</p><div className="progress-track large"><span style={{ width: `${summary.average}%` }} /></div>{summary.total ? <p className="due-summary"><b>{due} heute fällig</b> (getrennt vom Lernstand) · {stale} länger als 30 Tage nicht geübt. Intervalle: 1, 3, 7, 14 und 30 Tage; sie sind eine einfache Produktlogik.</p> : null}{!summary.total && <button className="primary-button progress-start" onClick={onStart}>Erstes MC-Training starten</button>}</div></div>{startedChapters.length ? <div className="chapter-progress-list">{startedChapters.map((chapter) => <ChapterProgressCard key={chapter.topic} title={chapter.title} category={chapter.category} questions={chapter.questions} progress={progress} onTrain={(mode) => onTrain(chapter.topic, mode)} />)}</div> : <div className="progress-empty"><span>↗</span><div><h2>Noch keine Fragen beantwortet</h2><p>Deine begonnenen MC-Kapitel erscheinen nach dem ersten Training automatisch hier.</p></div></div>}<div className="progress-rule"><span>↺</span><div><b>Gezielte Wiederholung</b><p>Fälligkeit und Lernstufe sind getrennt. Falsche sowie ein- oder zweimal richtige Fragen lassen sich jederzeit freiwillig wiederholen.</p></div></div></section>;
+  return <section className="page-section progress-page"><div className="section-heading"><div><span className="eyebrow">GEZIELT WIEDERHOLEN</span><h1>Hier geht’s weiter.</h1><p>Konzentriere dich auf die Fragen, die du noch nicht sicher beantwortest.</p></div></div><div className="progress-overview"><div className="progress-ring-stat"><div className="progress-ring" style={{ "--progress": `${metrics.completionPercent * 3.6}deg` } as React.CSSProperties}><div><b>{formatProgressPercent(metrics.completionPercent)}</b></div></div><span>Bearbeitungsfortschritt</span></div><div><span className="eyebrow">DEIN LERNSTAND</span><h2>{summary.total ? `${wrong + once + twice} Fragen können gezielt wiederholt werden` : "Dein Fortschritt beginnt hier."}</h2><p>{metrics.answered} von {metrics.available} Fragen bearbeitet · {wrong} falsch · {once} einmal · {twice} zweimal · {mastered} dreimal richtig</p><div className="progress-track large" aria-label={`${formatProgressPercent(metrics.completionPercent)} Bearbeitungsfortschritt`}><span style={{ width: `${metrics.completionPercent}%` }} /></div>{summary.total ? <p className="due-summary"><b>Festigung: {summary.average} %</b> · {due} heute fällig · {stale} länger als 30 Tage nicht geübt. Festigung und Wiederholungsintervalle sind vom Bearbeitungsfortschritt getrennt.</p> : null}{!summary.total && <button className="primary-button progress-start" onClick={onStart}>Erstes MC-Training starten</button>}</div></div>{startedChapters.length ? <div className="chapter-progress-list">{startedChapters.map((chapter) => <ChapterProgressCard key={chapter.topic} title={chapter.title} category={chapter.category} questions={chapter.questions} progress={progress} onTrain={(mode) => onTrain(chapter.topic, mode)} />)}</div> : <div className="progress-empty"><span>↗</span><div><h2>Noch keine Fragen beantwortet</h2><p>Deine begonnenen MC-Kapitel erscheinen nach dem ersten Training automatisch hier.</p></div></div>}<div className="progress-rule"><span>↺</span><div><b>Gezielte Wiederholung</b><p>Fälligkeit und Lernstufe sind getrennt. Falsche sowie ein- oder zweimal richtige Fragen lassen sich jederzeit freiwillig wiederholen.</p></div></div></section>;
 /* Dustin branch version retained temporarily during merge resolution.
   return <section className="page-section progress-page"><div className="section-heading"><div><span className="eyebrow">Gezielt wiederholen</span><h1>Nur das, was noch nicht sitzt.</h1><p>Hier erscheinen ausschließlich bereits begonnene mündliche MC-Kapitel. Wiederholt werden nur falsche oder genau einmal richtig beantwortete Fragen.</p></div></div><div className="progress-overview"><div className="progress-ring" style={{ "--progress": `${summary.average * 3.6}deg` } as React.CSSProperties}><div><b>{summary.average}%</b><span>Begonnen</span></div></div><div><span className="eyebrow">Wiederholungsbedarf</span><h2>{summary.total ? `${wrong + once + twice} Fragen können gezielt wiederholt werden` : "Noch kein MC-Kapitel begonnen"}</h2><p>{summary.total ? `${metrics.answered} von ${metrics.available} verfügbaren Fragen bearbeitet · ${wrong} falsch · ${once} einmal · ${twice} zweimal · ${mastered} dreimal richtig` : "Starte ein mündliches Thema im MC-Training. Erst danach wird es hier angezeigt."}</p><div className="progress-track large"><span style={{ width: `${summary.average}%` }} /></div></div></div>{startedChapters.length ? <div className="chapter-progress-list">{startedChapters.map((chapter) => <ChapterProgressCard key={chapter.topic} title={chapter.title} category={chapter.category} questions={chapter.questions} progress={progress} onTrain={(mode) => onTrain(chapter.topic, mode)} />)}</div> : <div className="progress-empty"><span>↗</span><div><h2>Noch keine begonnenen Themen</h2><p>Unbearbeitete Themen bleiben hier ausgeblendet. Du findest ACS, Schlaganfall, SHT, LAE, Hypoglykämie und Nierensteinkolik unter MC-Training → Mündlich.</p></div></div>}<div className="progress-rule"><span>↺</span><div><b>Gezielte Wiederholung</b><p>Falsche Antworten fallen auf 0 %. Einmal richtig beantwortete Fragen stehen bei 33 %. Nur diese beiden Stapel lassen sich von hier aus erneut starten.</p></div></div></section>;
 */
