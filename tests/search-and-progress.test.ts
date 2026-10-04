@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalizeSearch, topicSearchScore } from "../app/lib/contentSearch.ts";
-import { dueQuestionIds, progressMetrics } from "../app/lib/questionProgress.ts";
+import { dueQuestionIds, formatProgressPercent, progressMetrics } from "../app/lib/questionProgress.ts";
 
 test("topic aliases ignore case, whitespace, hyphens and umlaut spellings",()=>{
  assert.equal(topicSearchScore("Myokardinfarkt","  HERZINFARKT  "),90);
@@ -18,6 +18,17 @@ test("progress metrics keep old records and only show substantiated hit rates",(
  assert.deepEqual(progressMetrics(old,["q1","q2"]),{answered:1,available:2,completionPercent:50,repetitionPercent:17,hitRate:null,attempts:0});
  const tracked={q1:{...old.q1,attempts:5,correctAttempts:4}};
  assert.equal(progressMetrics(tracked,["q1"]).hitRate,80);
+});
+
+test("processing progress is unique, bounded and formatted in German",()=>{
+ const wrong={correctCount:0 as const,lastResult:"wrong" as const,updatedAt:"2026-10-04"};
+ const right={correctCount:1 as const,lastResult:"correct" as const,updatedAt:"2026-10-04"};
+ assert.equal(progressMetrics({q1:wrong,q2:right,removed:right},["q1","q1","q2",...Array.from({length:806},(_,i)=>`new-${i}`)]).answered,2);
+ assert.equal(formatProgressPercent(progressMetrics({q1:wrong,q2:right},["q1","q2",...Array.from({length:806},(_,i)=>`new-${i}`)]).completionPercent),"0,25 %");
+ assert.equal(formatProgressPercent(progressMetrics({},Array.from({length:808},(_,i)=>`q${i}`)).completionPercent),"0,00 %");
+ assert.equal(formatProgressPercent(progressMetrics({q1:right},["q1",...Array.from({length:807},(_,i)=>`q${i+2}`)]).completionPercent),"0,12 %");
+ assert.equal(formatProgressPercent(progressMetrics(Object.fromEntries(Array.from({length:404},(_,i)=>[`q${i}`,right])),Array.from({length:808},(_,i)=>`q${i}`)).completionPercent),"50,00 %");
+ assert.equal(formatProgressPercent(progressMetrics(Object.fromEntries(Array.from({length:808},(_,i)=>[`q${i}`,right])),Array.from({length:808},(_,i)=>`q${i}`)).completionPercent),"100,00 %");
 });
 
 test("due dates include the local day and ignore legacy records without dates",()=>{

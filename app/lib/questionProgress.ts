@@ -86,11 +86,19 @@ export function progressMetrics(progress: QuestionProgress, availableQuestionIds
   return {
     answered: records.length,
     available: uniqueIds.length,
-    completionPercent: uniqueIds.length ? Math.round(records.length / uniqueIds.length * 100) : 0,
+    // Keep the exact value for visualizations and only round while formatting.
+    // A record exists only after an answer was actually assessed; wrong answers
+    // therefore count as processed as well, while opened/bookmarked/skipped items do not.
+    completionPercent: uniqueIds.length ? Math.min(100, Math.max(0, records.length / uniqueIds.length * 100)) : 0,
     repetitionPercent: uniqueIds.length ? Math.round(records.reduce((sum, record) => sum + record.correctCount / 3, 0) / uniqueIds.length * 100) : 0,
     hitRate: attempts >= 5 ? Math.round(correctAttempts / attempts * 100) : null,
     attempts,
   };
+}
+
+export function formatProgressPercent(value: number) {
+  const bounded = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
+  return `${new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(bounded)} %`;
 }
 
 /** Restores one record after an immediately undone self-assessment. */
