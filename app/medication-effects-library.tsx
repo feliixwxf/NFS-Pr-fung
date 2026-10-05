@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 
 export type MedicationEffect = {
+  id: string;
+  areas: MedicationAreaId[];
   name: string;
   aliases?: string[];
   group: string;
@@ -14,7 +16,46 @@ export type MedicationEffect = {
   sideEffects: string;
 };
 
-export const medications: MedicationEffect[] = [
+export const medicationAreas = [
+  { id: "cardiovascular", label: "Herz und Kreislauf" },
+  { id: "airways", label: "Bronchien und Atemwege" },
+  { id: "pain", label: "Schmerz und Fieber" },
+  { id: "sedation", label: "Sedierung und Krampfanfälle" },
+  { id: "coagulation", label: "Blutgerinnung" },
+  { id: "allergy", label: "Allergie und Anaphylaxie" },
+  { id: "gastrointestinal", label: "Übelkeit und Magen-Darm" },
+  { id: "metabolism", label: "Stoffwechsel und Elektrolyte" },
+  { id: "obstetrics", label: "Schwangerschaft und Geburt" },
+] as const;
+export type MedicationAreaId = typeof medicationAreas[number]["id"];
+
+const medicationAreaAssignments: Record<string, { id: string; areas: MedicationAreaId[] }> = {
+  "Acetylsalicylsäure (ASS)": { id: "ass", areas: ["cardiovascular", "coagulation", "pain"] },
+  Heparin: { id: "heparin", areas: ["cardiovascular", "coagulation"] },
+  "Atrovent (Ipratropium)": { id: "ipratropium", areas: ["airways"] },
+  "Histakut (Dimetinden)": { id: "dimetinden-histakut", areas: ["allergy"] },
+  "Fenistil (Dimetinden)": { id: "dimetinden-fenistil", areas: ["allergy"] },
+  "Vomex (Dimenhydrinat)": { id: "dimenhydrinat", areas: ["gastrointestinal", "sedation"] },
+  Midazolam: { id: "midazolam", areas: ["sedation"] },
+  Tranexamsäure: { id: "tranexamsaeure", areas: ["coagulation"] },
+  Furosemid: { id: "furosemid", areas: ["cardiovascular", "metabolism"] },
+  Urapidil: { id: "urapidil", areas: ["cardiovascular"] },
+  Nifedipin: { id: "nifedipin", areas: ["cardiovascular"] },
+  Amiodaron: { id: "amiodaron", areas: ["cardiovascular"] },
+  "Partusisten (Fenoterol)": { id: "fenoterol", areas: ["obstetrics"] },
+  Atropin: { id: "atropin", areas: ["cardiovascular"] },
+  "Epinephrin / Adrenalin": { id: "adrenalin", areas: ["cardiovascular", "airways", "allergy"] },
+  Morphin: { id: "morphin", areas: ["pain", "sedation"] },
+  Esketamin: { id: "esketamin", areas: ["pain", "sedation"] },
+  Naloxon: { id: "naloxon", areas: ["sedation"] },
+  "Metamizol (Novalgin)": { id: "metamizol", areas: ["pain", "gastrointestinal"] },
+  "Butylscopolamin (Buscopan)": { id: "butylscopolamin", areas: ["gastrointestinal", "pain"] },
+  "Glyceroltrinitrat (Nitro)": { id: "glyceroltrinitrat", areas: ["cardiovascular"] },
+  Salbutamol: { id: "salbutamol", areas: ["airways"] },
+  Prednisolon: { id: "prednisolon", areas: ["airways", "allergy", "metabolism"] },
+};
+
+const medicationRecords: Omit<MedicationEffect, "id" | "areas">[] = [
   { name: "Acetylsalicylsäure (ASS)", group: "Thrombozytenaggregationshemmer", effect: "Hemmt irreversibel COX-1 und COX-2. Über COX-1 sinkt in den Thrombozyten die Thromboxanbildung und damit die Aggregation; zugleich werden protektive Prostaglandine der Magenschleimhaut vermindert. Über COX-2 werden Entzündung, Schmerz und Fieber beeinflusst.", interactions: "Antikoagulanzien, andere Thrombozytenhemmer und NSAR können Blutungs- beziehungsweise Magen-Darm-Risiken erhöhen.", contraindications: "Asthma oder bekannte ASS-Unverträglichkeit, erhöhte Blutungsneigung sowie aktives Magen- oder Darmulkus.", sideEffects: "Bronchospasmus, Blutungen, Magen-Darm-Beschwerden, Kopfschmerzen und Schwindel." },
   { name: "Heparin", group: "Antikoagulanz", effect: "Verstärkt die Wirkung von Antithrombin III. Dadurch werden vor allem Thrombin (Faktor IIa), Faktor Xa und weitere Gerinnungsfaktoren indirekt gehemmt; die Bildung und Ausbreitung von Fibrinthromben wird gebremst.", interactions: "Andere Antikoagulanzien, Thrombozytenhemmer und NSAR können die Blutungsgefahr erhöhen.", contraindications: "Akute zerebrale Blutung, relevante Blutungsneigung, Heparinallergie, aktive Blutung, aktives Magen- oder Darmulkus sowie eine bestehende oder anamnestisch bekannte heparininduzierte Thrombozytopenie (HIT). Bei HIT darf Heparin nicht erneut gegeben werden.", sideEffects: "Blutungen, besonders an Haut, Schleimhäuten und Wunden; außerdem Thrombozytopenie und Überempfindlichkeitsreaktionen." },
   { name: "Atrovent (Ipratropium)", group: "Parasympatholytikum · Anticholinergikum", effect: "Blockiert muskarinische Rezeptoren (M1–M3) an der Bronchialmuskulatur. Die M3-Blockade löst die vagal vermittelte Bronchokonstriktion, M2 gehört zur muskarinischen Rezeptorfamilie und beeinflusst die cholinerge Rückkopplung.", interactions: "Andere anticholinerge Wirkstoffe können Mundtrockenheit, Tachykardie und Harnverhalt verstärken.", contraindications: "Atrovent LS: Überempfindlichkeit gegen Ipratropium, Atropin, Atropinderivate oder einen sonstigen Bestandteil.", precautions: "Inhalationsnebel nicht in die Augen gelangen lassen, insbesondere bei Engwinkelglaukom. In Schwangerschaft und Stillzeit verlangt die Fachinformation eine ärztliche Nutzen-Risiko-Abwägung; dies ist keine pauschale Gegenanzeige.", sideEffects: "Mundtrockenheit, Husten, Kopfschmerz, Mydriasis, Tachykardie und selten paradoxer Bronchospasmus." },
@@ -40,6 +81,13 @@ export const medications: MedicationEffect[] = [
   { name: "Prednisolon", group: "Glukokortikoid", effect: "Bindet intrazellulär an den Glukokortikoidrezeptor und verändert die Genexpression. Dadurch werden proinflammatorische Mediatoren, Schleimhautödem und entzündliche Sekretbildung gedämpft; der Wirkungseintritt ist verzögert und ersetzt keine Akutbronchodilatation.", interactions: "Für diese Übersicht sind keine konkreten Wechselwirkungen hinterlegt.", monitoring: "Blutzucker und Infektionszeichen im klinischen Kontext beachten. Der verzögerte Wirkungseintritt ersetzt keine Akutbronchodilatation.", contraindications: "Schwere unbehandelte Infektionen und bekannte Überempfindlichkeit im jeweiligen VFA-Kontext beachten.", sideEffects: "Hyperglykämie, Dyspepsie, Schlaf- oder Stimmungsschwankungen und erhöhte Infektanfälligkeit." },
 ];
 
+export const medications: MedicationEffect[] = medicationRecords.map(item => ({ ...item, ...medicationAreaAssignments[item.name] }));
+const medicationCollator = new Intl.Collator("de-DE", { sensitivity: "base" });
+export function filterMedications(search: string, area: "all" | MedicationAreaId) {
+  const query = search.trim().toLocaleLowerCase("de-DE");
+  return medications.filter(item => (area === "all" || item.areas.includes(area)) && `${item.name} ${(item.aliases || []).join(" ")} ${item.group} ${item.effect}`.toLocaleLowerCase("de-DE").includes(query)).sort((a, b) => medicationCollator.compare(a.name, b.name));
+}
+
 export function MedicationEffectCard({ item, headingLevel = 2, onExpand }: { item: MedicationEffect; headingLevel?: 2 | 3; onExpand?: (item: MedicationEffect) => void }) {
   const Heading = `h${headingLevel}` as "h2" | "h3";
   return <article className="medication-effect-card"><header><span className="medication-effect-icon">✦</span><div><small>{item.group}</small><Heading>{item.name}</Heading></div>{onExpand && <button type="button" className="medication-card-expand" onClick={() => onExpand(item)} aria-label={`${item.name} groß anzeigen`}><span aria-hidden="true">⤢</span><b>Großansicht</b></button>}</header><div><b>Wirkung</b><p>{item.effect}</p><b className="medication-side-effect-label">Nebenwirkungen</b><p>{item.sideEffects}</p></div><div><b>Wechselwirkungen</b><p>{item.interactions}</p>{item.monitoring && <><b className="medication-side-effect-label">Besonderheiten / Überwachung</b><p>{item.monitoring}</p></>}</div><aside><b>Kontraindikationen</b><p>{item.contraindications}</p>{item.precautions && <><b>Warnhinweise / Vorsicht</b><p>{item.precautions}</p></>}</aside></article>;
@@ -47,6 +95,8 @@ export function MedicationEffectCard({ item, headingLevel = 2, onExpand }: { ite
 
 export default function MedicationEffectsLibrary() {
   const [search, setSearch] = useState("");
+  const [area, setArea] = useState<"all" | MedicationAreaId>("all");
+  const [view, setView] = useState<"alphabetical" | "areas">("alphabetical");
   const [expanded, setExpanded] = useState<MedicationEffect | null>(null);
   useEffect(() => {
     if (!expanded) return;
@@ -70,13 +120,13 @@ export default function MedicationEffectsLibrary() {
       window.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
     };
   }, [expanded]);
-  const query = search.trim().toLocaleLowerCase("de-DE");
-  const filtered = medications.filter((item) => `${item.name} ${(item.aliases || []).join(" ")} ${item.group} ${item.effect}`.toLocaleLowerCase("de-DE").includes(query));
+  const filtered = filterMedications(search, area);
+  const resetFilters = () => { setSearch(""); setArea("all"); };
   return <section className="page-section medication-effects-page">
     <div className="section-heading"><div><span className="eyebrow">Pharmakologie · Lernübersicht</span><h1>Wirkung der Medikamente</h1><p>Rettungsdienstliche Wirkprofile zum Wiederholen. Dosierungen bleiben an die gültige Thüringer VFA gebunden.</p></div><div className="source-badge"><b>{filtered.length}</b><span>Treffer</span></div></div>
-    <label className="medication-search"><span aria-hidden="true">⌕</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Medikament suchen …" aria-label="Medikament suchen" />{search && <button type="button" onClick={() => setSearch("")} aria-label="Suche löschen">×</button>}</label>
-    <div className="medication-effects-grid">{filtered.map((item) => <MedicationEffectCard key={item.name} item={item} onExpand={setExpanded} />)}</div>
-    {!filtered.length && <div className="medication-search-empty"><b>Kein Medikament gefunden.</b><span>Prüfe die Schreibweise oder suche nach einem Wirkstoff.</span></div>}
+    <div className="medication-library-tools"><label className="medication-search"><span aria-hidden="true">⌕</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Medikament suchen …" aria-label="Medikament suchen" />{search && <button type="button" onClick={() => setSearch("")} aria-label="Suche löschen">×</button>}</label><label className="medication-area-filter"><span>Wirkbereich</span><select value={area} onChange={event => setArea(event.target.value as "all" | MedicationAreaId)}><option value="all">Alle Wirkbereiche</option>{medicationAreas.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label><div className="medication-view-switch" role="group" aria-label="Ansicht"><button type="button" className={view === "alphabetical" ? "active" : ""} aria-pressed={view === "alphabetical"} onClick={() => setView("alphabetical")}>Alphabetisch</button><button type="button" className={view === "areas" ? "active" : ""} aria-pressed={view === "areas"} onClick={() => setView("areas")}>Nach Wirkbereich</button></div>{(search || area !== "all") && <button type="button" className="medication-reset" onClick={resetFilters}>Suche und Filter zurücksetzen</button>}</div>
+    {view === "alphabetical" ? <div className="medication-effects-grid">{filtered.map(item => <MedicationEffectCard key={item.id} item={item} onExpand={setExpanded} />)}</div> : <div className="medication-area-groups">{medicationAreas.map(group => { const entries = filtered.filter(item => item.areas.includes(group.id)); return entries.length ? <section key={group.id}><h2>{group.label}</h2><div className="medication-effects-grid">{entries.map(item => <MedicationEffectCard key={`${group.id}-${item.id}`} item={item} headingLevel={3} onExpand={setExpanded} />)}</div></section> : null; })}</div>}
+    {!filtered.length && <div className="medication-search-empty" role="status"><b>Keine passenden Medikamente gefunden.</b><span>Ändere Suchtext oder Wirkbereich.</span><button type="button" onClick={resetFilters}>Suche und Filter zurücksetzen</button></div>}
     {expanded && <div className="medication-card-modal" role="dialog" aria-modal="true" aria-label={`${expanded.name} Großansicht`} onClick={() => setExpanded(null)}><div className="medication-card-modal-panel" onClick={(event) => event.stopPropagation()}><button type="button" className="medication-card-modal-close" onClick={() => setExpanded(null)} aria-label="Großansicht schließen">×</button><MedicationEffectCard item={expanded} /></div></div>}
   </section>;
 }

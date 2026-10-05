@@ -15,6 +15,8 @@ export default function AnatomyLibrary() {
   const [loadError, setLoadError] = useState(false);
   const [search, setSearch] = useState("");
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const pinchRef = useRef<{ distance: number; zoom: number; x: number; y: number } | null>(null);
   const pageButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
   const selected = anatomyChapters.find((chapter) => chapter.slug === selectedSlug);
 
@@ -56,6 +58,29 @@ export default function AnatomyLibrary() {
     setSelectedPage(null);
   };
 
+  const setViewerZoom = (next: number, center?: { x: number; y: number }) => {
+    const canvas = canvasRef.current;
+    const bounded = Math.min(3, Math.max(1, next));
+    if (canvas && center && zoom) {
+      const contentX = (canvas.scrollLeft + center.x) / zoom;
+      const contentY = (canvas.scrollTop + center.y) / zoom;
+      requestAnimationFrame(() => { canvas.scrollLeft = contentX * bounded - center.x; canvas.scrollTop = contentY * bounded - center.y; });
+    }
+    setZoom(bounded);
+  };
+  const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2) return;
+    const [a, b] = Array.from(event.touches);
+    const rect = event.currentTarget.getBoundingClientRect();
+    pinchRef.current = { distance: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), zoom, x: (a.clientX + b.clientX) / 2 - rect.left, y: (a.clientY + b.clientY) / 2 - rect.top };
+  };
+  const onTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2 || !pinchRef.current) return;
+    event.preventDefault();
+    const [a, b] = Array.from(event.touches);
+    setViewerZoom(pinchRef.current.zoom * Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pinchRef.current.distance, pinchRef.current);
+  };
+
   if (selected) {
     const index = anatomyChapters.indexOf(selected);
     const pages = Array.from({ length: selected.lastPdfPage - selected.firstPdfPage + 1 }, (_, pageIndex) => selected.firstPdfPage + pageIndex);
@@ -71,7 +96,7 @@ export default function AnatomyLibrary() {
         <span className="anatomy-roman">{selected.roman}</span>
         <div><span className="eyebrow light">ANATOMIE · KAPITEL {selected.roman}</span><h1 id="anatomy-title">{selected.title}</h1><p>{selected.summary}</p></div>
       </header>
-      <section className="anatomy-chapter-intro"><div><span className="eyebrow">Kapitelüberblick</span><h2>{selected.summary}</h2><p>{pages.length} Lernseiten aus dem bereitgestellten Skript. Tippe eine Seite an, um sie im Vollbild zu lesen.</p></div><ul>{selected.topics.map((topic) => <li key={topic}>{topic}</li>)}</ul></section>
+      <section className="anatomy-chapter-intro"><div><span className="eyebrow">Kapitelüberblick</span><h2>{selected.summary}</h2><p>{pages.length} Lernseiten aus dem bereitgestellten Skript. Tippe eine Seite an, um sie im Vollbild zu lesen.</p><a className="anatomy-pdf-link" href="/anatomie-skriptum.pdf" target="_blank" rel="noreferrer">PDF separat öffnen ↗</a></div><ul>{selected.topics.map((topic) => <li key={topic}>{topic}</li>)}</ul></section>
       {selected.relatedTopicNumbers?.length ? <aside className="anatomy-related"><b>Passende Krankheitsbilder</b><p>{selected.relatedTopicNumbers.map(number => relatedTopics[number] && <a key={number} href={`/muendlich/${relatedTopics[number].slug}`}>{relatedTopics[number].title}</a>)}</p></aside> : null}
       <div className="anatomy-page-stack">
         {pages.map((pdfPage) => <figure key={pdfPage} className="anatomy-script-page">
@@ -92,12 +117,13 @@ export default function AnatomyLibrary() {
           <button type="button" disabled={selectedPage === selected.firstPdfPage} onClick={() => { setZoom(1); setLoadError(false); setSelectedPage(selectedPage - 1); }} aria-label="Vorherige Seite">←</button>
           <span><b>Seite {selectedPage - selected.firstPdfPage + 1} von {pages.length}</b><small>Skriptseite {selectedPage - 1}</small></span>
           <button type="button" disabled={selectedPage === selected.lastPdfPage} onClick={() => { setZoom(1); setLoadError(false); setSelectedPage(selectedPage + 1); }} aria-label="Nächste Seite">→</button>
-          <button type="button" onClick={() => setZoom((value) => Math.max(1, value - .25))} disabled={zoom === 1} aria-label="Verkleinern">−</button>
-          <button type="button" onClick={() => setZoom((value) => Math.min(3, value + .25))} disabled={zoom === 3} aria-label="Vergrößern">+</button>
-          <button type="button" onClick={() => setZoom(1)}>An Ansicht anpassen</button>
+          <button type="button" onClick={() => setViewerZoom(zoom - .25)} disabled={zoom === 1} aria-label="Verkleinern">−</button>
+          <output aria-live="polite">{Math.round(zoom * 100)} %</output>
+          <button type="button" onClick={() => setViewerZoom(zoom + .25)} disabled={zoom === 3} aria-label="Vergrößern">+</button>
+          <button type="button" onClick={() => setViewerZoom(1)}>An Breite anpassen</button>
           <button ref={closeButtonRef} className="close" type="button" onClick={() => setSelectedPage(null)} aria-label="Vollbild schließen">×</button>
         </div>
-        <div className={`anatomy-lightbox-canvas ${zoom > 1 ? "zoomed" : ""}`}>
+        <div ref={canvasRef} className={`anatomy-lightbox-canvas ${zoom > 1 ? "zoomed" : ""}`} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => { pinchRef.current = null; }}>
           {loadError ? <div className="anatomy-load-error" role="alert"><b>Die Skriptseite konnte nicht geladen werden.</b><button onClick={() => setLoadError(false)}>Erneut laden</button></div> : <img key={selectedPage} src={`/lessons/anatomie/anatomie-${String(selectedPage).padStart(2, "0")}.jpg`} alt={`${selected.title}, Skriptseite ${selectedPage - 1} im Vollbild`} style={{ transform: `scale(${zoom})` }} onError={() => setLoadError(true)} />}
         </div>
       </div>}
