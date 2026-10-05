@@ -1,0 +1,208 @@
+export type QmFlashcard = { id: string; area: string; question: string; answer: string };
+
+export type QmQuestion = {
+  id: string;
+  prompt: string;
+  options: { text: string; correct?: boolean }[];
+  source: string;
+  difficulty: 1 | 2 | 3;
+  mode: "multiple";
+};
+
+export const qmFlashcards: QmFlashcard[] = [
+  { id: "qm-card-01", area: "Grundlagen", question: "Definieren Sie Qualität und Qualitätsmanagement prüfungstauglich.", answer: "Qualität ist der Grad, in dem festgelegte oder vorausgesetzte Anforderungen durch inhärente Merkmale erfüllt werden. Qualitätsmanagement ist das systematische Planen, Steuern, Sichern und fortlaufende Verbessern von Strukturen, Prozessen und Ergebnissen. Qualität ist ohne zuvor bestimmte Anforderungen nicht sinnvoll bewertbar." },
+  { id: "qm-card-02", area: "Messbarkeit", question: "Unterscheiden Sie objektive und subjektive Qualitätskriterien.", answer: "Objektive Kriterien sind unabhängig von persönlicher Bewertung messbar, etwa Vollständigkeit, Zeit, Funktionsstatus oder Fehlerquote. Subjektive Kriterien erfassen Wahrnehmung, Erfahrung und Zufriedenheit, etwa über validierte Befragungen oder Skalen. Subjektiv bedeutet nicht beliebig: Erhebungsmethode, Zielgruppe und Auswertung müssen definiert sein." },
+  { id: "qm-card-03", area: "Qualitätsdimensionen", question: "Nennen Sie acht Qualitätsdimensionen für den Rettungsdienst.", answer: "Sicherstellung, Zugänglichkeit, menschliche Anteilnahme, Angemessenheit, Zeitgerechtigkeit, Gleichmäßigkeit beziehungsweise Versorgungsgerechtigkeit, Kosteneffizienz und besseres Patientenoutcome. Das ist ein didaktisches Ordnungsmodell; Dimensionen können sich beeinflussen oder miteinander in Spannung stehen." },
+  { id: "qm-card-04", area: "Qualitätsdimensionen", question: "Wie lassen sich Zeitgerechtigkeit und Kosteneffizienz gleichzeitig bewerten?", answer: "Zeitgerechtigkeit fragt, ob Hilfe und Maßnahmen zum notwendigen Zeitpunkt erfolgen. Kosteneffizienz betrachtet den Ressourceneinsatz im Verhältnis zum Nutzen. Wirtschaftlichkeit darf Patientensicherheit und fachlich gebotene Versorgung nicht unterschreiten; Ziel ist angemessene Versorgung mit sinnvoll eingesetzten Ressourcen." },
+  { id: "qm-card-05", area: "Recht", question: "Welche Rechtsgrundlagen sind für QM in der NotSan-Prüfung besonders relevant?", answer: "§ 135a SGB V verpflichtet Leistungserbringer zur Sicherung und Weiterentwicklung der Qualität und zu fachlich gebotener, wissenschaftlich entsprechender Leistung. § 4 NotSanG nennt qualitätssichernde und organisatorische Maßnahmen sowie Dokumentation als Ausbildungsziel. Die NotSan-APrV konkretisiert kompetenzorientierte Ausbildungs- und Prüfungsanforderungen." },
+  { id: "qm-card-06", area: "Prozesse", question: "Grenzen Sie Führungs-, Kern- und Unterstützungsprozesse ab.", answer: "Führungsprozesse setzen Ziele, Verantwortlichkeiten und Rahmenbedingungen, etwa Strategie, Risikomanagement und Qualitätsziele. Kernprozesse erzeugen die eigentliche rettungsdienstliche Leistung, etwa Notrufbearbeitung, Versorgung, Transport und Übergabe. Unterstützungsprozesse ermöglichen Kernprozesse, etwa Material, Hygiene, Wartung, IT, Personalentwicklung und Datenanalyse." },
+  { id: "qm-card-07", area: "Donabedian", question: "Definieren Sie Struktur-, Prozess- und Ergebnisqualität.", answer: "Strukturqualität: personelle, technische, räumliche und organisatorische Voraussetzungen. Prozessqualität: wie die Leistung tatsächlich erbracht wird. Ergebnisqualität: welche beabsichtigten oder unbeabsichtigten Resultate entstehen, etwa Patientenzustand, Sicherheit oder Zufriedenheit. Alle drei Dimensionen wirken zusammen." },
+  { id: "qm-card-08", area: "Donabedian", question: "Warum garantiert gute Strukturqualität noch kein gutes Ergebnis?", answer: "Ausreichendes Personal, Material und Technik schaffen nur die Voraussetzung. Wenn Abläufe nicht eingehalten werden, Kommunikation scheitert oder Maßnahmen falsch angewendet werden, bleibt die Prozessqualität mangelhaft. Außerdem beeinflussen Erkrankungsschwere und externe Faktoren das Ergebnis." },
+  { id: "qm-card-09", area: "Ziele", question: "Was macht ein Qualitätsziel SMART?", answer: "Spezifisch, messbar, akzeptiert beziehungsweise attraktiv, realistisch und terminiert. Beispiel: Bis 30. Juni sinkt der Anteil unvollständiger Fahrzeugchecks auf unter zwei Prozent, gemessen an allen dokumentierten Schichtübernahmen." },
+  { id: "qm-card-10", area: "PDCA", question: "Erläutern Sie den PDCA-Zyklus.", answer: "Plan: Problem, Ursachen, Ausgangsdaten, Ziel, Maßnahmen und Ressourcen bestimmen. Do: Maßnahme kontrolliert umsetzen. Check: Prozess- und Ergebniskennzahlen mit Ziel/Baseline vergleichen, Nebenwirkungen prüfen. Act: wirksame Lösung standardisieren oder bei Zielverfehlung Ursachen und Plan anpassen. Danach beginnt der nächste Zyklus." },
+  { id: "qm-card-11", area: "Kennzahlen", question: "Was unterscheidet Prozess- und Ergebniskennzahlen?", answer: "Prozesskennzahlen zeigen, ob ein definierter Ablauf umgesetzt wird, etwa Quote vollständig dokumentierter Fahrzeugchecks. Ergebniskennzahlen messen die Wirkung, etwa Zahl materialbedingter Einsatzverzögerungen. Eine reine Prozesskennzahl beweist noch keinen Patientennutzen." },
+  { id: "qm-card-12", area: "Audit", question: "Unterscheiden Sie First-, Second- und Third-Party-Audit.", answer: "First Party: internes Audit durch oder im Auftrag der eigenen Organisation. Second Party: Audit einer interessierten Partei, typischerweise Kunde/Auftraggeber bei einem Lieferanten. Third Party: unabhängiges Audit, etwa durch eine Zertifizierungsstelle. Audit ist ein systematischer Soll-Ist-Abgleich; nicht jedes Audit führt zu einem Zertifikat." },
+  { id: "qm-card-13", area: "QMS", question: "Unterscheiden Sie DIN EN ISO 9001, KTQ und EFQM.", answer: "ISO 9001 enthält zertifizierbare Anforderungen an ein Qualitätsmanagementsystem. KTQ ist ein branchenspezifisches Verfahren im Gesundheitswesen mit Selbst- und Fremdbewertung. EFQM ist ein Excellence-Modell zur umfassenden Organisationsbewertung und Weiterentwicklung; es ist keine bloße ISO-Ersatznorm." },
+  { id: "qm-card-14", area: "Fehlerkultur", question: "Was ist CIRS und was ist es nicht?", answer: "Ein Critical Incident Reporting System sammelt und analysiert kritische Ereignisse und Beinahe-Ereignisse, um systemische Ursachen zu erkennen und Wiederholungen zu verhindern. Es ersetzt weder Akutmaßnahmen, verpflichtende Meldewege noch Straf- oder Haftungsprüfung. Ziel ist Lernen, nicht Schuldzuweisung." },
+  { id: "qm-card-15", area: "Fehleranalyse", question: "Warum sind Beinahe-Ereignisse für QM wertvoll?", answer: "Sie zeigen Sicherheitslücken, bevor ein Schaden eintritt. Durch Analyse von Bedingungen, Barrieren und Ursachen können präventive Maßnahmen abgeleitet werden. Fehlender Patientenschaden bedeutet nicht fehlendes Risiko." },
+  { id: "qm-card-16", area: "Dokumentation", question: "Welche Anforderungen stellt § 630f BGB an die Behandlungsdokumentation?", answer: "Sie ist in unmittelbarem zeitlichem Zusammenhang zu führen und enthält die für aktuelle und künftige Behandlung wesentlichen Maßnahmen und Ergebnisse. Korrekturen müssen den ursprünglichen Inhalt und Änderungszeitpunkt erkennbar lassen. Grundsätzlich gilt eine Aufbewahrung von zehn Jahren, soweit keine andere Frist greift." },
+  { id: "qm-card-17", area: "Beweisrecht", question: "Welche Folge kann fehlende Dokumentation nach § 630h Abs. 3 BGB haben?", answer: "Fehlt die Aufzeichnung einer medizinisch gebotenen wesentlichen Maßnahme oder ihres Ergebnisses entgegen § 630f, wird vermutet, dass diese Maßnahme nicht getroffen wurde. Das ist eine gesetzliche Vermutung mit beweisrechtlicher Wirkung, keine pauschale Aussage, dass jede nicht notierte Kleinigkeit automatisch als nicht erfolgt gilt." },
+  { id: "qm-card-18", area: "Datenschutz", question: "Welche Grundsätze gelten bei QM-Auswertungen mit Patientendaten?", answer: "Zweckbindung, Datenminimierung, Rechtsgrundlage, Zugriffsschutz, Vertraulichkeit und definierte Lösch-/Aufbewahrungsregeln. Wo möglich werden Daten anonymisiert oder pseudonymisiert. QM-Interesse erlaubt keinen unbegrenzten Zugriff auf personenbezogene Gesundheitsdaten." },
+  { id: "qm-card-19", area: "Fall Material", question: "Ordnen Sie fehlendes Material Struktur, Prozess und Ergebnis zu.", answer: "Struktur: fehlende Standardisierung, unübersichtliche Lagerung, ungeeignete IT oder unklare Zuständigkeiten. Prozess: Check nicht durchgeführt, Verbrauch nicht nachgefüllt, Übergabe nicht dokumentiert. Ergebnis: verzögerte Versorgung, Beinahe-Ereignis, tatsächlicher Patientenschaden oder Beschwerde." },
+  { id: "qm-card-20", area: "Fall Material", question: "Formulieren Sie zwei geeignete Kennzahlen für das Materialproblem.", answer: "Prozess: Anteil vollständig und fristgerecht dokumentierter Fahrzeugchecks an allen Schichtübernahmen. Ergebnis: Zahl materialbedingter Einsatzverzögerungen oder kritischer Ereignisse pro 1.000 Einsätze. Ergänzend Balancing Measure: zusätzliche Checkdauer pro Schicht." },
+  { id: "qm-card-21", area: "Risikomanagement", question: "Wie unterscheidet sich eine Korrektur von einer Korrekturmaßnahme?", answer: "Korrektur beseitigt den unmittelbar entdeckten Fehler, etwa fehlendes Material auffüllen. Korrekturmaßnahme adressiert die Ursache, damit der Fehler nicht erneut auftritt, etwa Standardisierung, Verantwortlichkeit, technische Sperre und Wirksamkeitskontrolle." },
+  { id: "qm-card-22", area: "Verbesserung", question: "Was ist eine Balancing Measure?", answer: "Eine Ausgleichskennzahl prüft unbeabsichtigte Nebenwirkungen einer Verbesserung. Wird etwa die Vollständigkeit von Checks erhöht, kann zusätzlich die Checkdauer oder verspätetes Ausrücken überwacht werden, damit eine Zielverbesserung nicht an anderer Stelle Schaden verursacht." },
+  { id: "qm-card-23", area: "Verantwortung", question: "Wer ist für Qualität verantwortlich?", answer: "Die Leitung schafft System, Ziele, Ressourcen und Verantwortlichkeiten; QM-Beauftragte moderieren und überwachen das System; Führungskräfte setzen es um; Mitarbeitende halten Prozesse ein, melden Risiken und bringen Verbesserungen ein. QM darf nicht an eine Einzelperson delegiert und damit aus dem Alltag ausgelagert werden." },
+  { id: "qm-card-24", area: "Transfer", question: "Wie wird aus einem Auditbefund eine nachhaltige Verbesserung?", answer: "Befund präzisieren, Risiko und Ursache analysieren, Verantwortlichkeit und SMART-Ziel festlegen, Maßnahme umsetzen, mit geeigneten Kennzahlen kontrollieren, Wirksamkeit bewerten und bei Erfolg standardisieren. Eine bloße Schulung ohne Ursachenanalyse und Wirksamkeitskontrolle ist oft unzureichend." },
+];
+
+export const qmQuestions: QmQuestion[] = [
+  { id: "qm-q-01", prompt: "Welche Aussagen beschreiben Qualität und Qualitätsmanagement korrekt?", options: [
+    { text: "Qualität kann erst anhand festgelegter oder vorausgesetzter Anforderungen bewertet werden.", correct: true },
+    { text: "Qualitätsmanagement umfasst Planung, Steuerung, Sicherung und Verbesserung.", correct: true },
+    { text: "Hohe Qualität bedeutet immer maximalen Ressourceneinsatz unabhängig vom Bedarf." },
+    { text: "Ein Qualitätsstandard macht Kriterien und erwartete Ausprägungen nachvollziehbar.", correct: true },
+    { text: "Qualität ist ausschließlich eine subjektive Empfindung des Patienten." },
+  ], source: "Qualität bezieht Merkmale auf definierte Anforderungen. QM gestaltet und verbessert das System; maximaler Aufwand ist weder automatisch angemessen noch effizient.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-02", prompt: "Welche Erhebungen bilden überwiegend objektive Qualitätskriterien ab?", options: [
+    { text: "Anteil funktionsfähiger Defibrillatoren bei Schichtbeginn.", correct: true },
+    { text: "Median der Ausrückzeit in einem definierten Zeitraum.", correct: true },
+    { text: "Empfundene Wertschätzung durch Patienten auf einer Befragungsskala." },
+    { text: "Quote vollständig dokumentierter Medikamentengaben.", correct: true },
+    { text: "Subjektiv erlebter Liegekomfort auf der Fahrtrage." },
+  ], source: "Funktionsstatus, Zeiten und Dokumentationsquoten sind objektivierbar. Wahrnehmung und Zufriedenheit sind subjektive Kriterien, können aber methodisch standardisiert erhoben werden.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-03", prompt: "Welche Zuordnungen zu Qualitätsdimensionen im Rettungsdienst sind plausibel?", options: [
+    { text: "Ein barrierearmer Notrufzugang unterstützt die Zugänglichkeit.", correct: true },
+    { text: "Eine indikationsgerechte VFA-Anwendung unterstützt Angemessenheit und Gleichmäßigkeit.", correct: true },
+    { text: "Kosteneffizienz erlaubt den Verzicht auf sicherheitsrelevante Ausstattung, wenn dies Ausgaben senkt." },
+    { text: "Empathische Einbeziehung von Patient und Angehörigen betrifft menschliche Anteilnahme.", correct: true },
+    { text: "Reanimationsregister können Hinweise auf Patientenoutcome liefern.", correct: true },
+  ], source: "Qualitätsdimensionen ergänzen sich. Wirtschaftlichkeit steht innerhalb der fachlich gebotenen und sicheren Versorgung, nicht darüber.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-04", prompt: "Welche Aussagen zu den rechtlichen Grundlagen sind zutreffend?", options: [
+    { text: "§ 135a SGB V verpflichtet Leistungserbringer zur Sicherung und Weiterentwicklung der Qualität.", correct: true },
+    { text: "§ 4 NotSanG nennt qualitätssichernde und organisatorische Maßnahmen als Ausbildungsziel.", correct: true },
+    { text: "Das NotSanG macht Qualitätsmanagement ausschließlich zur Aufgabe der ärztlichen Leitung." },
+    { text: "§ 4 NotSanG umfasst auch die Dokumentation notfallmedizinischer und einsatztaktischer Maßnahmen.", correct: true },
+    { text: "Qualitätssicherung ist nur freiwillig, solange kein Patientenschaden eingetreten ist." },
+  ], source: "Qualitätssicherung und Dokumentation sind gesetzlich verankert. Verantwortung besteht präventiv und nicht erst nach einem Schaden.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-05", prompt: "Welche Zuordnungen zu Prozessarten sind richtig?", options: [
+    { text: "Festlegen von Qualitätszielen: Führungsprozess.", correct: true },
+    { text: "Notfallversorgung und Patiententransport: Kernprozess.", correct: true },
+    { text: "Gerätewartung und Materialbereitstellung: Unterstützungsprozess.", correct: true },
+    { text: "Risikomanagement ist ausschließlich ein Kernprozess am Patienten." },
+    { text: "Personalentwicklung kann Kernprozesse unterstützen und zugleich durch Führung gesteuert werden.", correct: true },
+  ], source: "Prozessarten werden nach ihrer Funktion im Leistungssystem unterschieden. Manche Tätigkeiten besitzen Schnittstellen, bleiben aber einer primären Funktion zuordenbar.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-06", prompt: "Ein RTW besitzt moderne Technik und ausreichend Material. Trotzdem werden Fahrzeugchecks häufig ausgelassen. Welche Aussagen sind korrekt?", options: [
+    { text: "Die Ausstattung spricht zunächst für vorhandene Strukturqualität.", correct: true },
+    { text: "Das Auslassen der Checks ist ein Problem der Prozessqualität.", correct: true },
+    { text: "Ohne eingetretenen Schaden kann keine Qualitätsabweichung bestehen." },
+    { text: "Materialbedingte Verzögerungen wären ein mögliches Ergebnisproblem.", correct: true },
+    { text: "Gute Struktur garantiert unabhängig vom Ablauf ein gutes Ergebnis." },
+  ], source: "Struktur schafft Voraussetzungen, Prozess beschreibt die tatsächliche Durchführung und Ergebnis die Folgen. Eine Schwäche kann schon vor dem Patientenschaden vorliegen.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-07", prompt: "Welche Ziele sind vollständig SMART formuliert?", options: [
+    { text: "Die Materialkontrolle soll künftig besser werden." },
+    { text: "Bis 30. Juni sinkt die Quote unvollständiger dokumentierter RTW-Checks von 12 auf unter 2 Prozent.", correct: true },
+    { text: "Alle Mitarbeitenden sollen möglichst bald gewissenhafter prüfen." },
+    { text: "Innerhalb von acht Wochen werden mindestens 95 Prozent der Schichtübergaben mit der einheitlichen digitalen Checkliste dokumentiert.", correct: true },
+    { text: "Es darf nie wieder ein Materialfehler auftreten." },
+  ], source: "SMART-Ziele benennen Gegenstand, Messgröße, Zielwert und Termin und müssen realistisch sowie akzeptierbar sein. Absolute Null-Fehler-Ziele können als Vision dienen, sind aber selten ein gutes operatives SMART-Ziel.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-08", prompt: "Welche Tätigkeiten gehören im PDCA-Zyklus zur Phase Plan?", options: [
+    { text: "Ist-Zustand und Baseline erheben.", correct: true },
+    { text: "Ursachen und Risiken analysieren.", correct: true },
+    { text: "SMART-Ziel, Maßnahmen, Verantwortliche und Ressourcen festlegen.", correct: true },
+    { text: "Nach erfolgreicher Erprobung die Lösung verbindlich standardisieren." },
+    { text: "Die im Pilotbereich geplante Checkliste bereits flächendeckend anwenden." },
+  ], source: "Plan schafft Datenbasis, Ziel, Ursachenverständnis und Umsetzungsplan. Standardisierung folgt in Act; Umsetzung erfolgt in Do.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-09", prompt: "Ein neuer Fahrzeugcheck wird vier Wochen lang auf einer Wache erprobt. Welche Handlungen gehören zu Check und Act?", options: [
+    { text: "Check: Checkquote, Materialfehler und Einsatzverzögerungen mit der Baseline vergleichen.", correct: true },
+    { text: "Check: unbeabsichtigte Auswirkungen wie längere Ausrückzeiten erfassen.", correct: true },
+    { text: "Act: wirksamen Ablauf standardisieren und auf weitere Wachen übertragen.", correct: true },
+    { text: "Act: bei Zielverfehlung unverändert weiterarbeiten, damit Daten vergleichbar bleiben." },
+    { text: "Act: Ursachen neu bewerten und Maßnahme anpassen, wenn sie nicht wirksam ist.", correct: true },
+  ], source: "Check bewertet Wirkung und Nebenwirkungen. Act standardisiert Erfolg oder passt bei Zielverfehlung das Vorgehen an; danach beginnt der nächste Zyklus.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-10", prompt: "Welche Aussagen zu Kennzahlen sind fachlich korrekt?", options: [
+    { text: "Eine hohe Checklistenquote ist eine Prozesskennzahl und beweist allein keine bessere Patientensicherheit.", correct: true },
+    { text: "Materialbedingte Verzögerungen pro 1.000 Einsätze können eine Ergebniskennzahl sein.", correct: true },
+    { text: "Eine Kennzahl ist nur nützlich, wenn Definition, Nenner, Zeitraum und Datenquelle klar sind.", correct: true },
+    { text: "Je mehr Kennzahlen erhoben werden, desto höher ist automatisch die Qualität." },
+    { text: "Eine Balancing Measure kann Nebenwirkungen der Verbesserung sichtbar machen.", correct: true },
+  ], source: "Kennzahlen benötigen klare Operationalisierung und Bezug zum Ziel. Prozess, Ergebnis und mögliche Gegenwirkungen sollten gemeinsam betrachtet werden.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-11", prompt: "Welche Zuordnungen zu Auditarten stimmen?", options: [
+    { text: "Interne Auditoren prüfen das eigene QM-System: First-Party-Audit.", correct: true },
+    { text: "Ein Auftraggeber prüft seinen Leistungspartner: Second-Party-Audit.", correct: true },
+    { text: "Eine unabhängige Zertifizierungsstelle prüft ISO-Anforderungen: Third-Party-Audit.", correct: true },
+    { text: "Jedes interne Audit endet mit einem öffentlich anerkannten Zertifikat." },
+    { text: "Audits vergleichen Kriterien mit nachweisbarer tatsächlicher Umsetzung.", correct: true },
+  ], source: "Auditparteien unterscheiden sich nach Beziehung zur geprüften Organisation. Zertifizierung ist typischerweise ein unabhängiges Third-Party-Verfahren, nicht Zweck jedes Audits.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-12", prompt: "Welche Aussagen unterscheiden ISO 9001, KTQ und EFQM zutreffend?", options: [
+    { text: "ISO 9001 enthält zertifizierbare Anforderungen an ein Qualitätsmanagementsystem.", correct: true },
+    { text: "KTQ ist ein auf Einrichtungen des Gesundheitswesens ausgerichtetes Bewertungsverfahren.", correct: true },
+    { text: "EFQM dient der umfassenden Organisationsentwicklung und Excellence-Bewertung.", correct: true },
+    { text: "EFQM und ISO 9001 sind in Inhalt und Zweck vollständig identisch." },
+    { text: "Eine Zertifizierung bestätigt die geprüfte Systemkonformität, nicht Fehlerfreiheit jedes Einzelfalls.", correct: true },
+  ], source: "Die Modelle haben unterschiedliche Schwerpunkte. Ein Zertifikat ist ein Systemnachweis innerhalb des Prüfbereichs und keine Garantie für ausnahmslos fehlerfreie Versorgung.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-13", prompt: "Welche Ereignisse eignen sich für ein CIRS?", options: [
+    { text: "Beinahe-Verwechslung ähnlich aussehender Medikamente ohne Patientenschaden.", correct: true },
+    { text: "Wiederholt blockierter Zugriff auf einen Notfallrucksack, bevor ein Schaden eintritt.", correct: true },
+    { text: "Akut fortbestehende Gefahr, bei der zunächst unmittelbare Sicherungsmaßnahmen nötig sind.", correct: true },
+    { text: "Jeder CIRS-Eintrag ersetzt automatisch Pflichtmeldung, Einsatzdokumentation und Vorgesetzteninformation." },
+    { text: "Ein kritisches Kommunikationsereignis mit Lernpotenzial.", correct: true },
+  ], source: "CIRS kann kritische und beinahe eingetretene Ereignisse aufnehmen. Akutmaßnahmen und verbindliche Meldewege bleiben zusätzlich erforderlich.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-14", prompt: "Welche Merkmale fördern eine lernorientierte Fehlerkultur?", options: [
+    { text: "Trennung zwischen akzeptablem Irrtum, riskantem Verhalten und vorsätzlichem Regelverstoß.", correct: true },
+    { text: "Systemische Ursachen und Barrieren zusätzlich zum individuellen Handeln untersuchen.", correct: true },
+    { text: "Meldende grundsätzlich öffentlich benennen, um Abschreckung zu erzeugen." },
+    { text: "Rückmeldung geben, welche Verbesserung aus Meldungen entstanden ist.", correct: true },
+    { text: "Sicherheitsrelevante Ereignisse transparent, vertraulich und nachvollziehbar bearbeiten.", correct: true },
+  ], source: "Eine Just Culture fördert Meldung und Lernen, ohne Verantwortung aufzugeben. Pauschale Schuldzuweisung unterdrückt Hinweise; völlige Folgenlosigkeit jedes Verhaltens wäre ebenfalls falsch.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-15", prompt: "Welche Aussagen entsprechen § 630f BGB?", options: [
+    { text: "Die Behandlungsakte ist in unmittelbarem zeitlichem Zusammenhang zu führen.", correct: true },
+    { text: "Wesentliche Maßnahmen, Befunde, Therapien und Wirkungen sind aufzuzeichnen.", correct: true },
+    { text: "Eine spätere Korrektur darf den ursprünglichen Inhalt vollständig unsichtbar überschreiben." },
+    { text: "Änderungen müssen ursprünglichen Inhalt und Änderungszeitpunkt erkennen lassen.", correct: true },
+    { text: "Die Grundaufbewahrung beträgt zehn Jahre, soweit keine andere Vorschrift abweicht.", correct: true },
+  ], source: "§ 630f fordert zeitnahe, wesentliche und revisionssichere Dokumentation sowie grundsätzlich zehnjährige Aufbewahrung.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-16", prompt: "Eine medizinisch gebotene wesentliche Maßnahme wurde nicht dokumentiert. Welche Aussagen zur Beweiswirkung sind richtig?", options: [
+    { text: "Nach § 630h Abs. 3 BGB kann vermutet werden, dass die Maßnahme nicht getroffen wurde.", correct: true },
+    { text: "Die Regel betrifft jede unbedeutende fehlende Notiz gleichermaßen." },
+    { text: "Die Vermutung hat Bedeutung für die Beweislast im Haftungsprozess.", correct: true },
+    { text: "Fehlende Dokumentation ist zugleich ein Qualitäts- und Risikomanagementproblem.", correct: true },
+    { text: "Eine nachträgliche heimliche Änderung ist eine geeignete Korrektur." },
+  ], source: "Das Gesetz bezieht sich auf medizinisch gebotene wesentliche Maßnahmen und Ergebnisse. Revisionssichere Ergänzung ist möglich; heimliches Überschreiben widerspricht § 630f.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-17", prompt: "Welche Anforderungen gelten für eine QM-Auswertung von Einsatzdaten?", options: [
+    { text: "Zweck, Datenumfang und Zugriffsberechtigte müssen festgelegt sein.", correct: true },
+    { text: "Wo möglich sollten Daten anonymisiert oder pseudonymisiert werden.", correct: true },
+    { text: "Ein QM-Zweck rechtfertigt automatisch unbegrenzte Einsicht in jede Patientenakte." },
+    { text: "Datenminimierung und Zugriffsschutz bleiben auch bei interner Auswertung relevant.", correct: true },
+    { text: "Aufbewahrung und Löschung müssen geregelt sein.", correct: true },
+  ], source: "Gesundheitsdaten bleiben besonders geschützt. QM benötigt eine definierte Rechts- und Zweckgrundlage sowie technische und organisatorische Schutzmaßnahmen.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-18", prompt: "Wiederholt fehlt Material im RTW. Welche Befunde gehören überwiegend zur Strukturqualität?", options: [
+    { text: "Jede Wache nutzt ein anderes Rucksacklayout.", correct: true },
+    { text: "Die digitale Checkliste ist auf mehreren Fahrzeugen technisch nicht verfügbar.", correct: true },
+    { text: "Die Besatzung überspringt trotz verfügbarer Checkliste den Schichtcheck." },
+    { text: "Zuständigkeiten für Nachbestellung und Lagerbestand sind ungeklärt.", correct: true },
+    { text: "Eine Medikamentengabe verzögert sich wegen fehlenden Materials." },
+  ], source: "Layout, technische Ausstattung und formale Verantwortlichkeiten sind Struktur. Ausgelassener Check ist Prozess; Verzögerung ist Ergebnis.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-19", prompt: "Welche Maßnahmen adressieren Ursachen des Materialproblems statt nur den Einzelfehler?", options: [
+    { text: "Einheitliches Rucksack- und Fahrzeuglayout einführen.", correct: true },
+    { text: "Fehlendes Material im aktuell betroffenen RTW einmalig auffüllen." },
+    { text: "Verantwortlichkeit, Mindestbestand und Nachfüllprozess verbindlich definieren.", correct: true },
+    { text: "Digitale Checkliste mit kontrollierter Version und Ausfallverfahren etablieren.", correct: true },
+    { text: "Wirksamkeit anhand von Checkquote und materialbedingten Verzögerungen prüfen.", correct: true },
+  ], source: "Einmaliges Auffüllen ist Korrektur. Standardisierung, Verantwortlichkeit, robuste Prozesse und Wirksamkeitskontrolle sind Korrekturmaßnahmen.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-20", prompt: "Welche Kennzahlen bilden das Materialprojekt ausgewogen ab?", options: [
+    { text: "Anteil vollständig dokumentierter Checks an allen Schichtübernahmen.", correct: true },
+    { text: "Zahl materialbedingter Verzögerungen pro 1.000 Einsätze.", correct: true },
+    { text: "Zusätzliche durchschnittliche Dauer des Schichtchecks als Ausgleichskennzahl.", correct: true },
+    { text: "Gesamtzahl aller Einsatzprotokolle ohne Bezug zum Materialproblem." },
+    { text: "Zahl gemeldeter Beinahe-Ereignisse mit Kontext zur Meldekultur.", correct: true },
+  ], source: "Ein ausgewogenes Set verbindet Umsetzung, Ergebnis, Nebenwirkung und Sicherheitslernen. Rohzahlen ohne Nenner oder Zielbezug können irreführen.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-21", prompt: "Nach Einführung eines CIRS steigen die gemeldeten Beinahe-Ereignisse. Welche Interpretationen sind möglich?", options: [
+    { text: "Die tatsächliche Ereigniszahl kann gestiegen sein.", correct: true },
+    { text: "Meldebereitschaft und Sicherheitskultur können sich verbessert haben.", correct: true },
+    { text: "Die Kennzahl beweist allein eine Verschlechterung der Patientenversorgung." },
+    { text: "Zusätzliche Kennzahlen und qualitative Analyse sind zur Interpretation nötig.", correct: true },
+    { text: "Rückmeldungen und umgesetzte Maßnahmen sollten mitbetrachtet werden.", correct: true },
+  ], source: "Meldedaten sind abhängig von Exposition und Meldekultur. Mehr Meldungen können zunächst ein positives Transparenzsignal sein; Interpretation braucht Kontext.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-22", prompt: "Welche Aussagen beschreiben die Verantwortung im QM-System richtig?", options: [
+    { text: "Die Leitung muss Ziele, Ressourcen und klare Verantwortlichkeiten schaffen.", correct: true },
+    { text: "QM-Beauftragte unterstützen das System, tragen aber nicht allein die gesamte Qualitätsverantwortung.", correct: true },
+    { text: "Mitarbeitende haben keine Rolle, solange sie keine Führungsfunktion besitzen." },
+    { text: "Führungskräfte müssen Standards umsetzen und deren Wirksamkeit überwachen.", correct: true },
+    { text: "Mitarbeitende sollen Risiken melden und an Verbesserungen mitwirken.", correct: true },
+  ], source: "Qualität ist Führungsaufgabe und Alltagsverantwortung zugleich. Die QM-Funktion koordiniert, ersetzt aber weder Leitung noch Prozessverantwortliche.", difficulty: 2, mode: "multiple" },
+  { id: "qm-q-23", prompt: "Ein Audit stellt fest, dass eine Schulung durchgeführt wurde, der Fehler aber unverändert häufig auftritt. Welche Schlüsse sind angemessen?", options: [
+    { text: "Die Durchführung einer Maßnahme ist nicht gleichbedeutend mit nachgewiesener Wirksamkeit.", correct: true },
+    { text: "Ursachenanalyse und gewählte Maßnahme müssen erneut geprüft werden.", correct: true },
+    { text: "Das Ziel ist erreicht, weil alle Mitarbeitenden eine Teilnahmebescheinigung besitzen." },
+    { text: "Technische, organisatorische oder gestalterische Ursachen können fortbestehen.", correct: true },
+    { text: "Der PDCA-Zyklus geht mit angepasstem Plan erneut weiter.", correct: true },
+  ], source: "Schulung ist nur eine Intervention. QM bewertet Ergebnis und Ursache; bei fehlender Wirkung wird angepasst statt eine Aktivität mit Erfolg gleichzusetzen.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-24", prompt: "Welche Maßnahmen unterstützen nachhaltige Standardisierung nach erfolgreichem Pilotprojekt?", options: [
+    { text: "Freigegebene Prozessbeschreibung und einheitliche Checkliste versionieren.", correct: true },
+    { text: "Verantwortliche, Schulung, Ausfallverfahren und Änderungsweg definieren.", correct: true },
+    { text: "Kennzahlen nach Roll-out weiter beobachten.", correct: true },
+    { text: "Nach einmaligem Erfolg jede weitere Kontrolle beenden." },
+    { text: "Rückmeldungen aus anderen Wachen in den nächsten PDCA-Zyklus aufnehmen.", correct: true },
+  ], source: "Standardisierung benötigt dokumentierte, gelenkte Prozesse, Kompetenz, Verantwortlichkeit und fortgesetzte Wirksamkeitskontrolle. Verbesserung bleibt zyklisch.", difficulty: 3, mode: "multiple" },
+];
