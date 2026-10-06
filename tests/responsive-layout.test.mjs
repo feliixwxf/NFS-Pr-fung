@@ -22,8 +22,8 @@ test("the oral statistic stacks in constrained layouts instead of leaving the pa
 test("processing progress is shown separately from consolidation and metadata remains readable", () => {
   assert.match(page, /progress-ring-stat[\s\S]*?progress-ring[\s\S]*?formatProgressPercent\(metrics\.completionPercent\)[\s\S]*?<span>Bearbeitungsfortschritt<\/span>/);
   assert.match(page, /Festigung: \{summary\.average\} %/);
-  assert.match(css, /\.progress-ring-stat>span\{[^}]*font-size:13px/);
-  assert.match(css, /\.profile-stat-grid span[^\n]*font-size:12px/);
+  assert.match(css, /\.progress-ring-stat>span\{[^}]*font-size:var\(--text-support\)/);
+  assert.match(css, /\.profile-stat-grid span[^\n]*font-size:var\(--text-meta\)/);
 });
 
 test("chapter action bar uses stateful labelled controls and local outline icons", () => {
@@ -39,6 +39,6 @@ test("chapter action bar uses stateful labelled controls and local outline icons
 test("chapter action bar wraps secondary controls and becomes a two-column mobile grid", () => {
   assert.match(css, /@media \(max-width: 1050px\) \{[^}]*\.chapter-qol \{ flex-wrap:wrap;/);
   assert.match(css, /@media \(max-width: 600px\)[\s\S]*?\.chapter-primary-actions \{ display:grid; grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
-  assert.match(css, /\.chapter-primary-actions button[^}]*white-space:nowrap/);
+  assert.match(css, /\.chapter-primary-actions button[^}]*white-space:normal/);
   assert.match(css, /\.chapter-qol button:focus-visible \{ outline:3px solid #c95738/);
 });
