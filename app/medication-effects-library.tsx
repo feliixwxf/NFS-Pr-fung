@@ -13,9 +13,10 @@ export type MedicationEffect = {
   monitoring?: string;
   sideEffects: string;
   preparation?: {
-    drugMg: number;
-    drugMl: number;
-    salineMl: number;
+    ampouleMg: number;
+    ampouleMl: number;
+    ampoules: number;
+    totalMg: number;
     totalMl: number;
     source: string;
   };
@@ -73,7 +74,7 @@ export const medications: MedicationEffect[] = [
   { name: "Furosemid (Lasix)", aliases: ["Lasix"], group: "Schleifendiuretikum", effect: "Hemmt den Na⁺-K⁺-2Cl⁻-Cotransporter im aufsteigenden Teil der Henle-Schleife und steigert die Natrium- und Wasserausscheidung.", interactions: "Andere Antihypertensiva oder ototoxische Arzneimittel können Risiken verstärken; NSAR können die Diurese abschwächen.", contraindications: "Anurie, schwere Hypovolämie, ausgeprägte Elektrolytstörungen und unbehandelter Harnabflussstau.", sideEffects: "Hypotonie, Dehydratation, Hypokaliämie, Hyponatriämie, metabolische Alkalose und selten Ototoxizität." },
   { name: "Urapidil (Ebrantil)", aliases: ["Ebrantil"], group: "α₁-Blocker / zentral wirksames Antihypertensivum", effect: "Senkt den peripheren Gefäßwiderstand über α₁-Blockade und vermindert zentral den sympathischen Blutdruckreflex.", interactions: "Andere α-Rezeptorenblocker, Vasodilatatoren und Antihypertensiva können die Blutdrucksenkung verstärken; auch Volumenmangel und Alkohol erhöhen das Hypotonierisiko.", contraindications: "Aortenisthmusstenose, hämodynamisch wirksamer arteriovenöser Shunt und Stillzeit. Ein hämodynamisch nicht wirksamer Dialyse-Shunt ist ausgenommen. Schwangerschaft wird in der neuen Unterrichtsunterlage nicht als Kontraindikation genannt; Präeklampsie und Eklampsie sind besondere Einsatzsituationen.", sideEffects: "Übelkeit, Schwindel, Kopfschmerz, Bradykardie, Druckgefühl in der Brust, Müdigkeit, Schweißausbruch, Ruhelosigkeit, Hautreaktion und selten Priapismus." },
   { name: "Nifedipin (Adalat)", aliases: ["Adalat"], group: "Dihydropyridin-Calciumantagonist", effect: "Blockiert L-Typ-Calciumkanäle in der Gefäßmuskulatur und führt vor allem zu arterieller Vasodilatation und Nachlastsenkung.", interactions: "CYP3A4-Hemmer, andere Antihypertensiva und Grapefruitsaft können die Wirkung verändern oder verstärken.", contraindications: "Schwangerschaft, akutes Koronarsyndrom, Hypotonie, kardiogener Schock, höhergradige Aortenklappenstenose und hypertroph-obstruktive Kardiomyopathie.", sideEffects: "Kopfschmerz, Flush, Schwindel, Knöchelödeme, Hypotonie und reflektorische Tachykardie." },
-  { name: "Amiodaron (Cordarex)", aliases: ["Cordarex"], group: "Antiarrhythmikum Klasse III", effect: "Verlängert über Kaliumkanalblockade die Repolarisation und Refraktärzeit; zusätzlich werden Natrium- und Calciumkanäle sowie β-Rezeptoren beeinflusst.", interactions: "QT-verlängernde Arzneimittel, Digoxin, bestimmte Statine und orale Antikoagulanzien können relevante Wechselwirkungen zeigen.", contraindications: "Ausgeprägte Bradykardie oder höhergradiger AV-Block ohne Schrittmacher sowie bekannte Überempfindlichkeit.", sideEffects: "Bradykardie, Hypotonie, QT-Verlängerung, Übelkeit und bei Langzeitgabe Schilddrüsen-, Lungen- oder Lebertoxizität.", preparation: { drugMg: 300, drugMl: 6, salineMl: 94, totalMl: 100, source: "Anlage B2A · VFA 20" } },
+  { name: "Amiodaron (Cordarex)", aliases: ["Cordarex"], group: "Antiarrhythmikum Klasse III", effect: "Verlängert über Kaliumkanalblockade die Repolarisation und Refraktärzeit; zusätzlich werden Natrium- und Calciumkanäle sowie β-Rezeptoren beeinflusst.", interactions: "QT-verlängernde Arzneimittel, Digoxin, bestimmte Statine und orale Antikoagulanzien können relevante Wechselwirkungen zeigen.", contraindications: "Ausgeprägte Bradykardie oder höhergradiger AV-Block ohne Schrittmacher sowie bekannte Überempfindlichkeit.", sideEffects: "Bradykardie, Hypotonie, QT-Verlängerung, Übelkeit und bei Langzeitgabe Schilddrüsen-, Lungen- oder Lebertoxizität.", preparation: { ampouleMg: 150, ampouleMl: 3, ampoules: 2, totalMg: 300, totalMl: 6, source: "Anlage B2A · VFA 20" } },
   { name: "Fenoterol (Partusisten)", aliases: ["Partusisten"], group: "β₂-Sympathomimetikum / Tokolytikum", effect: "Stimuliert β₂-Rezeptoren der Uterusmuskulatur und vermindert dadurch vorübergehend die Wehentätigkeit.", interactions: "Andere Sympathomimetika können Tachykardie und Hypokaliämie verstärken; Betablocker können die Wirkung abschwächen.", contraindications: "Relevante maternale Tachyarrhythmie, schwere kardiale Erkrankung und Situationen, in denen eine Wehenhemmung nicht vertretbar ist.", sideEffects: "Tachykardie, Palpitationen, Tremor, Unruhe, Hyperglykämie und Hypokaliämie." },
   { name: "Atropin (Atropinsulfat Inresa)", aliases: ["Atropinsulfat"], group: "Anticholinergikum", effect: "Blockiert muskarinische Acetylcholinrezeptoren und hebt vagale Bremsen am Herzen auf.", interactions: "Andere anticholinerge Wirkstoffe können Mundtrockenheit, Tachykardie und Verwirrtheit verstärken.", contraindications: "Relevante Tachykardie, Engwinkelglaukom und höhergradiger infra-Hisärer AV-Block erfordern besondere Vorsicht.", sideEffects: "Tachykardie, Mundtrockenheit, Mydriasis, Akkommodationsstörung und Harnverhalt." },
   { name: "Epinephrin / Adrenalin (Suprarenin)", aliases: ["Suprarenin"], group: "Katecholamin · α/β-Sympathomimetikum", effect: "Als Katecholamin aktiviert Adrenalin α₁-, β₁- und β₂-Rezeptoren: α₁ bewirkt Vasokonstriktion und steigert den Gefäßtonus, β₁ erhöht Herzfrequenz, Kontraktilität und Erregungsleitung, β₂ erweitert die Bronchien und beeinflusst die Gefäßweite der Skelettmuskulatur.", interactions: "Andere Sympathomimetika verstärken die Wirkung; Betablocker können kardiale Effekte verändern.", contraindications: "Bei tachykarden Rhythmusstörungen, schwerer Hypertonie oder Ischämie nur im passenden vitalen VFA-Kontext.", sideEffects: "Tachykardie, Herzrhythmusstörungen, Blutdruckanstieg, Tremor und Unruhe." },
@@ -88,10 +89,10 @@ export const medications: MedicationEffect[] = [
 ];
 
 function AmiodaronePreparation({ preparation }: { preparation: NonNullable<MedicationEffect["preparation"]> }) {
-  const fluidWidth = preparation.drugMl / 10 * 470;
-  return <section className="medication-amiodarone-prep" aria-label="Amiodaron-Zubereitung nach Anlage B2A">
-    <div className="medication-amiodarone-prep-heading"><div><small>{preparation.source}</small><b>Amiodaron · Entnahmespritze</b></div><span>{preparation.drugMg} mg</span></div>
-    <div className="medication-amiodarone-syringe" role="img" aria-label={`Zehn-Milliliter-Spritze mit ${preparation.drugMl} Milliliter Amiodaron, entsprechend ${preparation.drugMg} Milligramm`}>
+  const fluidWidth = preparation.totalMl / 10 * 470;
+  return <section className="medication-amiodarone-prep" aria-label="Amiodaron-Aufziehschema nach Anlage B2A">
+    <div className="medication-amiodarone-prep-heading"><div><small>{preparation.source}</small><b>Amiodaron · Aufziehschema</b></div><span>{preparation.totalMg} mg</span></div>
+    <div className="medication-amiodarone-syringe" role="img" aria-label={`Zehn-Milliliter-Spritze mit ${preparation.totalMl} Milliliter Amiodaron, entsprechend ${preparation.totalMg} Milligramm`}>
       <svg viewBox="0 0 650 170" xmlns="http://www.w3.org/2000/svg">
         <path d="M35 76H77V100H35Z" fill="#d8e7e8" stroke="#8ca6a9" strokeWidth="2"/><path d="M31 72V104M78 63V113" stroke="#657b83" strokeWidth="4"/>
         <rect x="88" y="63" width="470" height="50" rx="8" fill="#fbffff" stroke="#9ab2b7" strokeWidth="3"/>
@@ -103,8 +104,8 @@ function AmiodaronePreparation({ preparation }: { preparation: NonNullable<Medic
         <text x="558" y="146" textAnchor="end" fontSize="14" fontWeight="700" fill="#496a70">10-ml-Spritze</text>
       </svg>
     </div>
-    <div className="medication-amiodarone-flow"><span><b>{preparation.drugMl} ml</b><small>2 Ampullen Amiodaron</small></span><i>＋</i><span><b>{preparation.salineMl} ml</b><small>NaCl 0,9 %</small></span><i>→</i><span className="target"><b>{preparation.totalMl} ml</b><small>Kurzinfusion · 3 mg/ml</small></span></div>
-    <p><b>Wichtig:</b> Die Spritze zeigt nur die entnommenen 6 ml Amiodaron. Sie werden nach Anlage B2A mit 94 ml NaCl 0,9 % zur 100-ml-Kurzinfusion zubereitet – keine direkte Gabe der Entnahmespritze.</p>
+    <div className="medication-amiodarone-flow"><span><b>{preparation.ampouleMl} ml</b><small>1 Ampulle · {preparation.ampouleMg} mg</small></span><i>＋</i><span><b>{preparation.ampouleMl} ml</b><small>1 Ampulle · {preparation.ampouleMg} mg</small></span><i>→</i><span className="target"><b>{preparation.totalMl} ml</b><small>{preparation.ampoules} Ampullen · {preparation.totalMg} mg</small></span></div>
+    <p><b>Aufziehen:</b> Eine Ampulle enthält 3 ml mit 150 mg. Zwei Ampullen werden unverdünnt zusammen aufgezogen: 6 ml enthalten 300 mg Amiodaron.</p>
   </section>;
 }
 

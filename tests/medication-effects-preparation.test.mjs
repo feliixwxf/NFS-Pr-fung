@@ -7,11 +7,12 @@ const [library, css] = await Promise.all([
   readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
 ]);
 
-test("Amiodaron shows the B2A withdrawal syringe and final short infusion", () => {
-  assert.match(library, /drugMg: 300, drugMl: 6, salineMl: 94, totalMl: 100/);
-  assert.match(library, /2 Ampullen Amiodaron/);
-  assert.match(library, /Kurzinfusion · 3 mg\/ml/);
-  assert.match(library, /keine direkte Gabe der Entnahmespritze/);
+test("Amiodaron shows two undiluted B2A ampoules in one syringe", () => {
+  assert.match(library, /ampouleMg: 150, ampouleMl: 3, ampoules: 2, totalMg: 300, totalMl: 6/);
+  assert.match(library, /1 Ampulle · \{preparation\.ampouleMg\} mg/);
+  assert.match(library, /\{preparation\.ampoules\} Ampullen · \{preparation\.totalMg\} mg/);
+  assert.match(library, /unverdünnt zusammen aufgezogen/);
+  assert.doesNotMatch(library, /94 ml NaCl|100-ml-Kurzinfusion|Kurzinfusion · 3 mg\/ml/);
 });
 
 test("the Amiodaron preparation remains responsive without horizontal scrolling", () => {
