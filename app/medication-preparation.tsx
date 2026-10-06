@@ -33,7 +33,7 @@ const adrenaline: Preparation = { name: "Adrenalin", amount: "4 mg", drugMl: 4, 
 const prednisolone: Preparation = { name: "Prednisolon", amount: "100 mg", drugMl: 0, salineMl: 0, totalMl: 0, route: "rektal als Suppositorium", source: "VFA 24", kind: "suppository", note: "Ein Zäpfchen wird nicht in eine Spritze aufgezogen." };
 const nifedipine: Preparation = { name: "Nifedipin", amount: "10 mg", drugMl: 0, salineMl: 0, totalMl: 0, route: "oral als Kapsel", source: "VFA 17", kind: "capsule", note: "Nur im dafür vorgesehenen VFA-17-Pfad; nicht mit dem Urapidilpfad gleichsetzen." };
 const diazepam: Preparation = { name: "Diazepam", amount: "5 oder 10 mg", drugMl: 0, salineMl: 0, totalMl: 0, route: "rektal als Rectiole", source: "VFA 30", kind: "rectiole", note: "Alters- und Gewichtsgrenzen der Kinder-VFA bestimmen die Rectiolenstärke." };
-const adrenalineCpr: Preparation = { name: "Adrenalin · CPR", amount: "1 mg", drugMl: 1, salineMl: 0, totalMl: 1, route: "i.v. · unverdünnt", source: "Anlage B2A · ERC 2025", note: "Bei schwerer Hypothermie gelten temperaturabhängige Sonderregeln. Unter 30 °C ist eine Gabe nur unter den im Reanimationskapitel beschriebenen Bedingungen zu erwägen." };
+const adrenalineCpr: Preparation = { name: "Adrenalin · CPR", amount: "1 mg", drugMl: 1, salineMl: 9, totalMl: 10, route: "i.v./i.o. · auf 10 ml verdünnt · 0,1 mg/ml", source: "Anlage B2A · ERC 2025", syringeLabel: "Adrenalin · 0,1 mg/ml", note: "1 ml Adrenalin (1 mg) plus 9 ml NaCl 0,9 %. Bei schwerer Hypothermie gelten temperaturabhängige Sonderregeln; unter 30 °C ist eine Gabe nur unter den im Reanimationskapitel beschriebenen Bedingungen zu erwägen." };
 const metamizole: Preparation = { name: "Metamizol", amount: "1 g", drugMl: 2, salineMl: 98, totalMl: 100, route: "Kurzinfusion über 5 Minuten", source: "Anlage B2A · VFA 39", kind: "infusion" };
 const butylscopolamine: Preparation = { name: "Butylscopolamin", amount: "20 mg", drugMl: 1, salineMl: 9, totalMl: 10, route: "langsam i.v. · 2 mg/ml", source: "Anlage B2A · VFA 39" };
 const dimenhydrinate: Preparation = { name: "Dimenhydrinat", amount: "62 mg", drugMl: 10, salineMl: 0, totalMl: 10, route: "langsam i.v. · unverdünnt", source: "Anlage B2A · VFA 18" };
@@ -49,6 +49,7 @@ const topicPreparations: Record<number, Preparation[]> = {
   2: [aspirin, heparin, nitroSpray],
   4: [...trauma, midazolamAnalgesia],
   7: [alteplase],
+  8: [{ ...tranexamic, name: "Tranexamsäure · Trauma-Zubereitung", note: "Diese B2A-Zubereitung gehört zum traumatischen Blutungspfad. Bei einer isolierten nichttraumatischen Ulkusblutung ist Tranexamsäure keine Routinegabe; Anwendung nur bei einer anderen gültigen Indikation, ärztlicher Anordnung oder spezifischen SOP." }],
   11: [fenoterol],
   13: [nifedipine],
   14: [metamizole, butylscopolamine],
@@ -56,17 +57,23 @@ const topicPreparations: Record<number, Preparation[]> = {
   16: [atropineBradycardia, epinephrineBradyInfusion, epinephrineBradyPerfusor],
   17: trauma,
   18: [...trauma, tranexamic],
+  19: [...trauma, midazolamAnalgesia, tranexamic],
   20: [...trauma, midazolamAnalgesia, tranexamic],
   21: [furosemide, nitroSpray, { ...morphine, name: "Morphin · CPAP-Zweig", source: "Anlage B2A · VFA 06", note: "VFA 06 nennt bei nicht tolerierter CPAP-Therapie 2 mg i.v., entsprechend 2 ml der vorbereiteten 1-mg/ml-Lösung." }],
   22: trauma,
   23: [amiodarone],
+  25: [...trauma, tranexamic],
   26: [glucoseAdult, glucoseChild],
   29: [diazepam],
   30: [...trauma, tranexamic],
+  31: [...trauma, midazolamAnalgesia, tranexamic],
+  32: [tranexamic],
+  43: [...trauma, tranexamic],
   33: trauma,
   37: [naloxone],
   39: [metamizole, butylscopolamine, dimenhydrinate],
   42: [...trauma, dimenhydrinate],
+  44: [metamizole, butylscopolamine],
   46: [adrenalineCpr],
   48: [adrenaline, prednisolone],
 };
