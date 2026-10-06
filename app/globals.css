@@ -108,7 +108,7 @@ button { cursor:pointer; }
 .login-card small { display:block; color:#9aa4a8; font-size:10px; text-align:center; line-height:1.5; margin-top:18px; }
 
 /* App chrome */
-.app-shell { min-height:100vh; }
+.app-shell { --sidebar-width:248px; min-height:100vh; }
 .sidebar { position:fixed; z-index:20; inset:0 auto 0 0; width:230px; padding:28px 20px 24px; background:#fff; border-right:1px solid var(--line); display:flex; flex-direction:column; }
 .sidebar .brand { padding:0 9px 29px; border-bottom:1px solid var(--line); }
 .sidebar nav { display:grid; gap:5px; margin-top:25px; }
@@ -122,8 +122,9 @@ button { cursor:pointer; }
 .logout { margin-top:16px; padding:10px; border:0; background:none; color:#919a9e; font-size:12px; text-align:left; }
 .main-content { min-height:100vh; margin-left:230px; display:flex; flex-direction:column; }
 .topbar { position:relative; height:74px; padding:0 4.5vw; border-bottom:1px solid var(--line); background:#fff; display:flex; align-items:center; justify-content:flex-end; gap:18px; }
-.header-clock { position:absolute; left:calc(50% - 115px); top:50%; display:flex; align-items:center; gap:8px; color:var(--navy); font-size:15px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.04em; transform:translate(-50%,-50%); }
+.header-clock { position:absolute; left:calc(50% - var(--sidebar-width) / 2); top:50%; display:flex; align-items:center; justify-content:center; gap:9px; width:148px; min-height:40px; padding:6px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-soft); color:var(--navy); font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:.04em; white-space:nowrap; transform:translate(-50%,-50%); }
 .header-clock span { display:grid; place-items:center; width:25px; height:25px; border-radius:8px; background:var(--orange-light); color:var(--orange); font-size:14px; }
+.header-clock svg { width:17px; height:17px; }
 .status-pill { padding:8px 12px; border-radius:99px; background:#f0f7f4; color:#4b7464; font-size:11px; font-weight:700; }
 .status-pill span { display:inline-block; width:7px; height:7px; margin-right:7px; border-radius:50%; background:#40a879; }
 .status-pill.preparing { background:#fff4ed; color:#a95635; }
@@ -897,8 +898,8 @@ button,input,select,textarea{font:inherit}
 :where(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid var(--focus)!important;outline-offset:3px}
 button{min-height:44px}
 .app-shell,.main-content{background:var(--cream)}
-.sidebar{width:248px;padding:28px 18px 22px;border-color:var(--line);box-shadow:none}
-.main-content{margin-left:248px}
+.sidebar{width:var(--sidebar-width);padding:28px 18px 22px;border-color:var(--line);box-shadow:none}
+.main-content{margin-left:var(--sidebar-width)}
 .sidebar nav button{min-height:48px;padding:12px 14px;border-radius:var(--radius-sm);color:#526067;font-size:14px}
 .sidebar nav button:hover,.sidebar nav button.active{background:var(--orange-light);color:#9f3f25}
 .brand-mark{border-radius:8px;background:var(--orange);box-shadow:none}
@@ -998,8 +999,16 @@ button{min-height:44px}
 .case-progress{height:6px}.case-feedback.correct{background:var(--green-light)}
 
 @media(max-width:1400px){
+  .app-shell{--sidebar-width:0px}
   .sidebar{display:none}.main-content{margin-left:0}.topbar{justify-content:space-between}.topbar .mobile-brand{display:flex}.mobile-menu-toggle{display:grid}
-  html,body{max-width:100%}.main-content{width:100%;min-width:0}.header-clock{display:none}.status-pill{margin-left:auto}.mobile-menu{width:min(390px,90vw)}
+  html,body{max-width:100%}.main-content{width:100%;min-width:0}.header-clock{left:50%}.status-pill{margin-left:auto}.mobile-menu{width:min(390px,90vw)}
+}
+@media(max-width:900px){
+  .topbar .status-pill,.topbar .mobile-brand > span:last-child{display:none}
+}
+@media(max-width:530px){
+  .header-clock{width:88px;min-height:36px;padding:6px;font-size:13px;letter-spacing:0}
+  .header-clock span{display:none}
 }
 @media(max-width:760px){
   .page-section,.quiz-page,.topic-reader{width:calc(100% - 24px);margin-top:26px}

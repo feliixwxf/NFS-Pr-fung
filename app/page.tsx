@@ -165,7 +165,7 @@ const topicIndexBySlug = Object.fromEntries(Object.entries(topicSlugByIndex).map
 const ACCESS_STORAGE_KEY = "notsan-access";
 const ACCESS_COOKIE_KEY = "notsan_access";
 const ACCESS_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
-const timeFormatter = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit" });
+const timeFormatter = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
 
 function HeaderClock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -174,13 +174,19 @@ function HeaderClock() {
     const updateTime = () => setNow(new Date());
     updateTime();
     const interval = window.setInterval(updateTime, 1000);
-    return () => window.clearInterval(interval);
+    document.addEventListener("visibilitychange", updateTime);
+    window.addEventListener("focus", updateTime);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", updateTime);
+      window.removeEventListener("focus", updateTime);
+    };
   }, []);
 
   return (
     <time className="header-clock" dateTime={now?.toISOString()} aria-label={now ? `Aktuelle Uhrzeit: ${timeFormatter.format(now)} Uhr` : "Aktuelle Uhrzeit wird geladen"}>
-      <span aria-hidden="true">◷</span>
-      {now ? timeFormatter.format(now) : "--:--"}
+      <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg></span>
+      {now ? timeFormatter.format(now) : "--:--:--"}
     </time>
   );
 }
