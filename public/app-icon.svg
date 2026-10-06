@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="background" x1="64" y1="32" x2="448" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#174758"/>
+      <stop offset="1" stop-color="#081f2b"/>
+    </linearGradient>
+    <linearGradient id="tile" x1="124" y1="108" x2="388" y2="404" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff8257"/>
+      <stop offset="1" stop-color="#e9572d"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#background)"/>
+  <circle cx="410" cy="96" r="102" fill="#ffffff" opacity=".035"/>
+  <circle cx="74" cy="442" r="132" fill="#ffffff" opacity=".025"/>
+  <rect x="102" y="102" width="308" height="308" rx="82" fill="url(#tile)"/>
+  <path d="M169 347V165h42l90 111V165h43v182h-40l-92-113v113h-43Z" fill="#fff"/>
+  <path d="M364 115h33v14h14v33h-14v14h-33v-14h-14v-33h14v-14Z" fill="#fff" opacity=".96"/>
+</svg>
