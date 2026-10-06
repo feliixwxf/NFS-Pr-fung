@@ -96,9 +96,12 @@ export function progressMetrics(progress: QuestionProgress, availableQuestionIds
   };
 }
 
+const progressNumberFormat = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 });
+
+/** Formats a percentage on the 0–100 scale for text only; keeps stored and bar values intact. */
 export function formatProgressPercent(value: number) {
   const bounded = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
-  return `${new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(bounded)} %`;
+  return `${progressNumberFormat.format(bounded)}\u00a0%`;
 }
 
 /** Restores one record after an immediately undone self-assessment. */

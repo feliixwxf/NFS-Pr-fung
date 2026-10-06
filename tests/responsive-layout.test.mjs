@@ -21,7 +21,7 @@ test("the oral statistic stacks in constrained layouts instead of leaving the pa
 
 test("processing progress is shown separately from consolidation and metadata remains readable", () => {
   assert.match(page, /progress-ring-stat[\s\S]*?progress-ring[\s\S]*?formatProgressPercent\(metrics\.completionPercent\)[\s\S]*?<span>Bearbeitungsfortschritt<\/span>/);
-  assert.match(page, /Festigung: \{summary\.average\} %/);
+  assert.match(page, /Festigung: \{formatProgressPercent\(summary\.average\)\}/);
   assert.match(css, /\.progress-ring-stat>span\{[^}]*font-size:13px/);
   assert.match(css, /\.profile-stat-grid span[^\n]*font-size:12px/);
 });
