@@ -8,20 +8,23 @@ const [library, css] = await Promise.all([
 ]);
 
 test("Amiodaron shows two undiluted B2A ampoules in one syringe", () => {
-  assert.match(library, /ampouleMg: 150, ampouleMl: 3, ampoules: 2, totalMg: 300, totalMl: 6/);
-  assert.match(library, /1 Ampulle · \{preparation\.ampouleMg\} mg/);
-  assert.match(library, /\{preparation\.ampoules\} Ampullen · \{preparation\.totalMg\} mg/);
-  assert.match(library, /unverdünnt zusammen aufgezogen/);
-  assert.doesNotMatch(library, /94 ml NaCl|100-ml-Kurzinfusion|Kurzinfusion · 3 mg\/ml/);
+  assert.match(library, /dose: "300 mg", route: "2 Ampullen unverdünnt aufziehen", drugMl: 6, totalMl: 6/);
+  assert.match(library, /Eine Ampulle enthält 3 ml mit 150 mg; zwei Ampullen ergeben 6 ml mit 300 mg/);
 });
 
-test("the Amiodaron preparation can be expanded and collapsed", () => {
-  assert.match(library, /<details className="medication-amiodarone-prep"/);
-  assert.match(library, /<summary className="medication-amiodarone-prep-heading"/);
-  assert.match(css, /\.medication-amiodarone-prep\[open\] \.medication-amiodarone-prep-heading>i\{transform:rotate\(180deg\)\}/);
+test("every medication effect card has a VFA preparation panel", () => {
+  const medicationEntries = library.match(/\{ name: "[^"]+"[^\n]+\},/g) ?? [];
+  assert.ok(medicationEntries.length >= 20);
+  for (const entry of medicationEntries) assert.match(entry, /preparation: \{/);
 });
 
-test("the Amiodaron preparation remains responsive without horizontal scrolling", () => {
-  assert.match(css, /\.medication-amiodarone-syringe svg\{display:block;width:100%;height:auto\}/);
-  assert.match(css, /@media\(max-width:520px\)[^{]*\{\.medication-amiodarone-flow\{display:grid;grid-template-columns:1fr\}/);
+test("all preparation panels can be expanded and collapsed", () => {
+  assert.match(library, /<details className="medication-dose-prep"/);
+  assert.match(library, /<summary className="medication-dose-prep-heading"/);
+  assert.match(css, /\.medication-dose-prep\[open\] \.medication-dose-prep-heading>i\{transform:rotate\(180deg\)\}/);
+});
+
+test("the medication preparation remains responsive without horizontal scrolling", () => {
+  assert.match(css, /\.medication-dose-syringe svg\{display:block;width:100%;height:auto\}/);
+  assert.match(css, /@media\(max-width:520px\)[^{]*\{\.medication-dose-flow\{display:grid;grid-template-columns:1fr\}/);
 });
