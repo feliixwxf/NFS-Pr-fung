@@ -6,7 +6,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function BronchoobstruktionLesson({ Vfa, children }: Props) {
-  const bronchoMedications = ["Salbutamol", "Atrovent (Ipratropium)", "Prednisolon"].map(name => medications.find(item => item.name === name)).filter((item): item is NonNullable<typeof item> => Boolean(item));
+  const bronchoMedications = ["Salbutamol (Sultanol)", "Ipratropiumbromid (Atrovent)", "Prednisolon (Solu-Decortin H)"].map(name => medications.find(item => item.name === name)).filter((item): item is NonNullable<typeof item> => Boolean(item));
   const section = (number: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Bronchoobstruktion · Asthma vs. COPD</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
   const versus = (asthma: ReactNode, copd: ReactNode) => <div className="broncho-vs"><article><small>Asthma bronchiale</small>{asthma}</article><article><small>COPD</small>{copd}</article></div>;
   return <article className="lesson-article rippenfraktur-lesson broncho-lesson">
