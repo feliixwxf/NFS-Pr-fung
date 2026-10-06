@@ -1686,3 +1686,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .terminology-inflammation{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:20px 0}.terminology-inflammation span{padding:15px;border:1px solid #d6e2e8;border-radius:15px;background:#f7fafb;color:#64777d}.terminology-inflammation b{display:block;margin-bottom:5px;color:var(--term-dark)}.terminology-evidence>span{text-align:center;font-weight:760}.terminology-evidence b{display:grid;width:25px;height:25px;margin:0 auto 7px;place-items:center;border-radius:8px;background:var(--term-warm);color:#fff}.terminology-finale{border-top-color:#c4d7e2}
 @media(max-width:820px){.terminology-principles,.terminology-inflammation{grid-template-columns:repeat(3,minmax(0,1fr))}.terminology-affix-grid,.terminology-organ-grid,.terminology-epi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.terminology-formula,.terminology-evidence{display:grid;grid-template-columns:1fr 1fr}.terminology-formula>i,.terminology-evidence>i{display:none}}
 @media(max-width:600px){.terminology-compare,.terminology-definition-grid,.terminology-therapy-grid,.terminology-principles,.terminology-inflammation,.terminology-affix-grid,.terminology-organ-grid,.terminology-epi-grid,.terminology-formula,.terminology-evidence{grid-template-columns:1fr}.terminology-speech-flow,.terminology-prevention-flow{flex-direction:column}.terminology-speech-flow>i,.terminology-prevention-flow>i{transform:rotate(90deg);text-align:center}}
+
+/* Mündliche Themen · gemeinsamer Layout-Sicherheitsrahmen */
+.topic-reader,.lesson-article,.lesson-section,.lesson-prose{min-width:0}
+.lesson-prose :is(p,li,small,b,strong,span,h2,h3,h4),.topic-reader :is(td,th,figcaption),.lesson-source{overflow-wrap:anywhere}
+.lesson-prose :is(img,svg,video,canvas){max-width:100%;height:auto}
+.lesson-prose :is(.stroke-types,.reading-columns,.figure-grid,.symptom-grid,.differential-grid,.samplers-grid,.pulmo-care-grid,.pulmo-risk-grid,.pulmo-vfa-flow,.material-chips)>*{min-width:0}
+.lesson-prose table{width:100%;border-collapse:collapse}
+.lesson-prose th,.lesson-prose td{min-width:0}
+@media(max-width:760px){
+  .lesson-prose :is(.pulmo-care-grid,.pulmo-risk-grid,.pulmo-vfa-flow,.stability-compare,.ecg-pattern){grid-template-columns:1fr}
+  .lesson-prose .material-chips{align-items:stretch}
+}
