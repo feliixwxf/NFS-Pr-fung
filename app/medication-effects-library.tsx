@@ -90,8 +90,9 @@ export const medications: MedicationEffect[] = [
 
 function AmiodaronePreparation({ preparation }: { preparation: NonNullable<MedicationEffect["preparation"]> }) {
   const fluidWidth = preparation.totalMl / 10 * 470;
-  return <section className="medication-amiodarone-prep" aria-label="Amiodaron-Aufziehschema nach Anlage B2A">
-    <div className="medication-amiodarone-prep-heading"><div><small>{preparation.source}</small><b>Amiodaron · Aufziehschema</b></div><span>{preparation.totalMg} mg</span></div>
+  return <details className="medication-amiodarone-prep" aria-label="Amiodaron-Aufziehschema nach Anlage B2A">
+    <summary className="medication-amiodarone-prep-heading"><div><small>{preparation.source}</small><b>Amiodaron · Aufziehschema</b></div><span>{preparation.totalMg} mg</span><i aria-hidden="true">⌄</i></summary>
+    <div className="medication-amiodarone-prep-content">
     <div className="medication-amiodarone-syringe" role="img" aria-label={`Zehn-Milliliter-Spritze mit ${preparation.totalMl} Milliliter Amiodaron, entsprechend ${preparation.totalMg} Milligramm`}>
       <svg viewBox="0 0 650 170" xmlns="http://www.w3.org/2000/svg">
         <path d="M35 76H77V100H35Z" fill="#d8e7e8" stroke="#8ca6a9" strokeWidth="2"/><path d="M31 72V104M78 63V113" stroke="#657b83" strokeWidth="4"/>
@@ -105,8 +106,9 @@ function AmiodaronePreparation({ preparation }: { preparation: NonNullable<Medic
       </svg>
     </div>
     <div className="medication-amiodarone-flow"><span><b>{preparation.ampouleMl} ml</b><small>1 Ampulle · {preparation.ampouleMg} mg</small></span><i>＋</i><span><b>{preparation.ampouleMl} ml</b><small>1 Ampulle · {preparation.ampouleMg} mg</small></span><i>→</i><span className="target"><b>{preparation.totalMl} ml</b><small>{preparation.ampoules} Ampullen · {preparation.totalMg} mg</small></span></div>
-    <p><b>Aufziehen:</b> Eine Ampulle enthält 3 ml mit 150 mg. Zwei Ampullen werden unverdünnt zusammen aufgezogen: 6 ml enthalten 300 mg Amiodaron.</p>
-  </section>;
+      <p><b>Aufziehen:</b> Eine Ampulle enthält 3 ml mit 150 mg. Zwei Ampullen werden unverdünnt zusammen aufgezogen: 6 ml enthalten 300 mg Amiodaron.</p>
+    </div>
+  </details>;
 }
 
 export function MedicationEffectCard({ item, headingLevel = 2, onExpand }: { item: MedicationEffect; headingLevel?: 2 | 3; onExpand?: (item: MedicationEffect) => void }) {

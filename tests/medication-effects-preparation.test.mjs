@@ -15,6 +15,12 @@ test("Amiodaron shows two undiluted B2A ampoules in one syringe", () => {
   assert.doesNotMatch(library, /94 ml NaCl|100-ml-Kurzinfusion|Kurzinfusion · 3 mg\/ml/);
 });
 
+test("the Amiodaron preparation can be expanded and collapsed", () => {
+  assert.match(library, /<details className="medication-amiodarone-prep"/);
+  assert.match(library, /<summary className="medication-amiodarone-prep-heading"/);
+  assert.match(css, /\.medication-amiodarone-prep\[open\] \.medication-amiodarone-prep-heading>i\{transform:rotate\(180deg\)\}/);
+});
+
 test("the Amiodaron preparation remains responsive without horizontal scrolling", () => {
   assert.match(css, /\.medication-amiodarone-syringe svg\{display:block;width:100%;height:auto\}/);
   assert.match(css, /@media\(max-width:520px\)[^{]*\{\.medication-amiodarone-flow\{display:grid;grid-template-columns:1fr\}/);
