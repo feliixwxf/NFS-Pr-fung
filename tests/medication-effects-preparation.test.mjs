@@ -12,6 +12,13 @@ test("Amiodaron shows two undiluted B2A ampoules in one syringe", () => {
   assert.match(library, /Eine Ampulle enthält 3 ml mit 150 mg; zwei Ampullen ergeben 6 ml mit 300 mg/);
 });
 
+test("Urapidil and Midazolam show their complete five millilitre ampoules", () => {
+  assert.match(library, /name: "Urapidil \(Ebrantil\)"[^\n]+dose: "25 mg in 5 ml"[^\n]+drugMl: 5, totalMl: 5[^\n]+syringeLabel: "Urapidil · 25 mg \/ 5 ml"/);
+  assert.match(library, /Eine VFA-Gabe von 10 mg entspricht 2 ml/);
+  assert.match(library, /name: "Midazolam \(Dormicum\)"[^\n]+dose: "5 mg in 5 ml"[^\n]+drugMl: 5, totalMl: 5[^\n]+syringeLabel: "Midazolam · 5 mg \/ 5 ml"/);
+  assert.match(library, /beim Erwachsenen mit laufendem Krampfanfall nennt der i\.v\.-Erstschritt 3 mg = 3 ml/);
+});
+
 test("every medication effect card has a VFA preparation panel", () => {
   const medicationEntries = library.match(/\{ name: "[^"]+"[^\n]+\},/g) ?? [];
   assert.ok(medicationEntries.length >= 20);
