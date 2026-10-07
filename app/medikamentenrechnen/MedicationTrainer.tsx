@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { isCorrect, parseGermanNumber } from "../lib/medicationCalculations";
 import { medicationCases, medicationRules, sourceIssues, type Category } from "../lib/medicationData";
 import { readMedicationProgress, recordMedicationAnswer, type MedicationProgress } from "../lib/medicationProgress";
@@ -8,6 +8,27 @@ import { saveMedicationProgress } from "../lib/cloudProgress";
 
 type Mode = "learn" | "exam";
 type Result = { answers: Record<string,string>; correct: boolean };
+
+function createShuffledCaseOrder() {
+ const cases=[...medicationCases];
+ for(let index=cases.length-1;index>0;index--){
+   const target=Math.floor(Math.random()*(index+1));
+   [cases[index],cases[target]]=[cases[target],cases[index]];
+ }
+ if(typeof window!=="undefined"&&cases.length>1){
+   const storageKey="notsan-medication-case-order";
+   const previous=window.localStorage.getItem(storageKey);
+   let signature=cases.map(item=>item.id).join("|");
+   if(signature===previous){
+     const first=cases.shift();
+     if(first) cases.push(first);
+     signature=cases.map(item=>item.id).join("|");
+   }
+   window.localStorage.setItem(storageKey,signature);
+ }
+ return cases;
+}
+
 export default function MedicationTrainer({ accountUserId, onSyncError }: { accountUserId: string | null; onSyncError: () => void }) {
  const [mode,setMode]=useState<Mode>("learn"), [group,setGroup]=useState("Alle"), [category,setCategory]=useState("Alle"), [drug,setDrug]=useState("Alle");
  const [length,setLength]=useState("10"), [index,setIndex]=useState(0), [inputs,setInputs]=useState<Record<string,string>>({}), [results,setResults]=useState<Record<string,Result>>({});
@@ -15,8 +36,10 @@ export default function MedicationTrainer({ accountUserId, onSyncError }: { acco
  const [errors,setErrors]=useState<Record<string,string>>({});
  const inputRefs=useRef<Record<string,HTMLInputElement|null>>({});
  const submitting=useRef(false);
+ const [caseOrder,setCaseOrder]=useState(()=>medicationCases);
+ useEffect(()=>{setCaseOrder(createShuffledCaseOrder())},[]);
  const ruleGroups=useMemo(()=>Array.from(new Set(medicationRules.map(r=>r.drug))),[]);
- const pool=useMemo(()=>medicationCases.filter(c=>(group==="Alle"||c.group===group)&&(category==="Alle"||c.category===category)&&(drug==="Alle"||medicationRules.find(r=>r.id===c.ruleId)?.drug===drug)&&(!wrongOnly||progress[c.id]?.correct<progress[c.id]?.attempts)),[group,category,drug,wrongOnly,progress]);
+ const pool=useMemo(()=>caseOrder.filter(c=>(group==="Alle"||c.group===group)&&(category==="Alle"||c.category===category)&&(drug==="Alle"||medicationRules.find(r=>r.id===c.ruleId)?.drug===drug)&&(!wrongOnly||progress[c.id]?.correct<progress[c.id]?.attempts)),[caseOrder,group,category,drug,wrongOnly,progress]);
  const session=useMemo(()=>length==="frei"?pool:pool.slice(0,Number(length)),[pool,length]);
  const current=session[index];
  const evaluated= current ? results[current.id] : undefined;
