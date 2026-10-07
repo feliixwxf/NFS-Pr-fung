@@ -3,13 +3,6 @@ import type { ComponentType, ReactNode } from "react";
 type FigureProps = { src: string; alt: string; caption: string; wide?: boolean };
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
-function VesselComparison() {
-  return <div className="htn-vessels" aria-label="Schematischer Vergleich von Arterie und Vene">
-    <figure><svg viewBox="0 0 320 205" role="img" aria-label="Arterie mit kleinerem rundem Lumen und kräftiger Muskelschicht"><circle cx="160" cy="102" r="87" fill="#e7a5a0" stroke="#a34a4b" strokeWidth="3"/><circle cx="160" cy="102" r="58" fill="#cf6263" stroke="#9f4446" strokeWidth="2"/><circle cx="160" cy="102" r="31" fill="#fff5ef" stroke="#ad5752" strokeWidth="3"/><path d="M160 58v19m-9-10 9 10 9-10" fill="none" stroke="#9a4a45" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg><figcaption><b>Arterie · Hochdrucksystem</b><span>Kräftige Media, kleineres rundes Lumen. Herzschlag und elastischer Rückstoß treiben das Blut vorwärts.</span></figcaption></figure>
-    <figure><svg viewBox="0 0 320 205" role="img" aria-label="Vene mit weiterem Lumen, dünnerer Muskelschicht und zwei Venenklappen"><ellipse cx="160" cy="102" rx="108" ry="82" fill="#a9c9dd" stroke="#4b7898" strokeWidth="3"/><ellipse cx="160" cy="102" rx="91" ry="68" fill="#d7eafa" stroke="#598cad" strokeWidth="2"/><path d="M160 42v22m-9-9 9 9 9-9" fill="none" stroke="#3f7598" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/><path d="M95 91q32 5 50 35M225 91q-32 5-50 35" fill="none" stroke="#407ba0" strokeWidth="5" strokeLinecap="round"/></svg><figcaption><b>Vene · Niederdrucksystem</b><span>Dünnere Media, weites Lumen. Klappen verhindern besonders in den Gliedmaßen den Rückfluss.</span></figcaption></figure>
-  </div>;
-}
-
 function UrapidilSyringe() {
   return <div className="htn-syringe">
     <div className="htn-syringe-title"><div><small>Anlage B2A · VFA 16</small><h3>Urapidil in der Spritze</h3></div><b>unverdünnt</b></div>
@@ -39,7 +32,7 @@ export default function HypertensiverNotfallLesson({ Figure, Vfa, children }: Pr
     {section("02", "Anatomie und Physiologie", <>
       <p>Das Herz liegt hinter dem Brustbein, überwiegend im linken Thorax. Es pumpt Blut in das arterielle Hochdrucksystem; die Venen führen es über das Niederdrucksystem zurück. Die Gefäßwand besteht von innen nach außen aus Endothel (Tunica interna), Muskelschicht (Tunica media) und äußerer Bindegewebsschicht (Tunica externa).</p>
       <h3>Arterie und Vene im Querschnitt</h3>
-      <VesselComparison />
+      <Figure src="/lessons/hypertensiver-notfall/arterie-vene-gefaesswand-hd.png" alt="Beschrifteter Querschnitt durch Arterie und Vene mit Tunica externa, Tunica media, Tunica interna, Lumen und Vasa vasorum" caption="Gefäßwand · Arterie und Vene im direkten Vergleich" wide />
       <div className="pulmo-anatomy-grid"><div><small>Herznah</small><b>Elastische Arterien</b><p>Die Aorta dehnt sich in der Systole und gibt in der Diastole gespeicherte Energie ab. So fließt Blut auch zwischen zwei Herzschlägen weiter (Windkessel).</p></div><div><small>Herzfern</small><b>Muskuläre Arterien</b><p>Ihre glatte Muskulatur verändert den Gefäßdurchmesser und verteilt den Blutstrom auf die Organe.</p></div><div><small>Vor Kapillaren</small><b>Arteriolen</b><p>Sie sind die wichtigsten veränderlichen Widerstandsgefäße: Engstellung erhöht, Weitstellung senkt den Widerstand.</p></div></div>
       <h3>Herzzeitvolumen, Widerstand und Druck – was hängt wie zusammen?</h3>
       <div className="htn-hemodynamics"><div><small>01 · Pumpleistung</small><b>Herzzeitvolumen (HZV)</b><p>Die Blutmenge, die das Herz in einer Minute auswirft: <strong>Herzfrequenz × Schlagvolumen</strong>. Beispiel: 70 Schläge/min × 70 ml/Schlag = 4,9 l/min. Das ist ein Rechenbeispiel, kein Zielwert.</p></div><div><small>02 · Strombremse</small><b>Peripherer Widerstand</b><p>Der Widerstand, gegen den das Blut im Körperkreislauf fließt. Vor allem der Durchmesser der Arteriolen verändert ihn: ein engeres Lumen erschwert den Durchfluss. Auch Blutviskosität und Gefäßlänge beeinflussen ihn.</p></div><div><small>03 · Druckniveau</small><b>Mittlerer arterieller Druck</b><p>Das über den Herzzyklus gemittelte Druckniveau. Näherungsweise gilt: <strong>MAP ≈ HZV × systemischer Gefäßwiderstand</strong>; der kleine zentrale Venendruck wird hier vernachlässigt.</p></div></div>
