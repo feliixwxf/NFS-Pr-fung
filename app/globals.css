@@ -1409,22 +1409,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 
 /* Responsive statistic and metadata corrections (iPad layout audit). */
 .topic-availability-stat{
+  display:grid;
   width:auto;
   min-width:190px;
   height:auto;
-  min-height:88px;
   padding:14px 18px;
   border-radius:var(--radius-md);
   place-items:stretch;
   align-content:center;
-  gap:5px;
+  gap:0;
   white-space:normal;
 }
 .topic-availability-stat>div{display:flex;align-items:baseline;gap:7px;min-width:0}
 .topic-availability-stat>div b{font-size:28px}
 .topic-availability-stat>div span{color:var(--ink);font-size:13px;font-weight:750;letter-spacing:0;text-transform:none}
-.topic-availability-stat>small{color:var(--muted);font-size:12px;line-height:1.35}
-.topic-availability-stat>small b{color:var(--orange);font-size:inherit}
 .progress-ring-stat{display:grid;justify-items:center;gap:10px;width:170px;text-align:center}
 .progress-ring-stat>.progress-ring b{font-size:32px}
 .progress-ring-stat>span{color:#495c63;font-size:13px;font-weight:750;line-height:1.3}

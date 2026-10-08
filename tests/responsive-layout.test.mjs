@@ -7,10 +7,11 @@ const [page, css] = await Promise.all([
   readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
 ]);
 
-test("oral topic availability uses a dedicated two-line statistic", () => {
+test("oral topic availability shows only the dynamic available count", () => {
   assert.match(page, /source-badge topic-availability-stat/);
   assert.match(page, /<b>\{READY_TOPIC_NUMBERS\.size\}<\/b><span>verfügbar<\/span>/);
-  assert.match(page, /topics\.length - READY_TOPIC_NUMBERS\.size\}<\/b> in Vorbereitung/);
+  assert.match(page, /aria-label=\{`\$\{READY_TOPIC_NUMBERS\.size\} verfügbar`\}/);
+  assert.doesNotMatch(page, /<small><b>\{topics\.length - READY_TOPIC_NUMBERS\.size\}/);
   assert.match(css, /\.topic-availability-stat\{[\s\S]*?min-width:190px;[\s\S]*?white-space:normal;/);
 });
 
