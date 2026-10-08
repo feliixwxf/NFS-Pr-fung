@@ -46,6 +46,10 @@ export const organisationFlashcards: OrganisationFlashcard[] = [
   { id: "orga-card-34", area: "MANV Thüringen", question: "Welche Bedeutung hat die Zahl von etwa 20 Patienten in der Thüringer Ü-MANV-Planung?", answer: "Bis etwa 20 Patienten wird in den meisten Gebietskörperschaften eine örtliche Bewältigung unter Einbindung von Regelrettungsdienst, Feuerwehr, Allgemeiner Hilfe sowie Zugtrupp und Sanitätsgruppe des SBZ geplant. Ab etwa 20 werden bei unzureichenden örtlichen Kräften Ü-MANV-Einheiten angefordert. Die Zahl ist ein Planungswert, keine starre Definition." },
   { id: "orga-card-35", area: "Ü-MANV", question: "Wie ist die Thüringer Einheit Ü-MANV Sofort zusammengesetzt?", answer: "Ein NEF mit Notarzt und NotSan/RettAss, zwei RTW (KTW Typ C) mit jeweils NotSan/RettAss und RettSan sowie ein KTW Typ A2 mit zwei RettSan. Die Einheit wird aus sofort verfügbaren oder zeitnah frei werdenden Mitteln der Regelvorhaltung gebildet." },
   { id: "orga-card-36", area: "Sichtung", question: "Welche Voraussetzungen gelten für SK IV/Blau?", answer: "SK IV/Blau bedeutet unter den gegebenen Ressourcen keine realistische Überlebenschance und palliative Versorgung. Die Zuordnung ist eine ärztliche Entscheidung des LNA, setzt einen tatsächlichen Ressourcenmangel voraus und muss bei Lage- oder Ressourcenänderung revidiert werden. Blau ist nicht EX/Schwarz." },
+  { id: "orga-card-37", area: "MANV Thüringen", question: "Was bedeutet der Lernwert ‚MANV ab fünf Betroffenen‘?", answer: "In örtlichen Thüringer Alarmplänen kann ab fünf Verletzten oder Betroffenen ein MANV-Alarmstichwort vorgesehen sein. Das ist eine operative Alarmierungsschwelle, keine landesweit starre gesetzliche Definition. Für die Lagebewertung bleiben Ressourcenmissverhältnis, Verletzungsschwere und der örtliche Alarm- und Einsatzplan entscheidend." },
+  { id: "orga-card-38", area: "Rettungsmittel", question: "Wann werden Spineboard und Vakuummatratze bevorzugt eingesetzt?", answer: "Das Spineboard eignet sich vor allem zur schnellen technischen Rettung und kurzen Umlagerung, ist aber hart und für längere Transporte wegen Schmerzen, Druckstellen und möglicher Atembeeinträchtigung ungünstig. Für eine notwendige längere Bewegungsrestriktion und den Transport bietet die Vakuummatratze regelmäßig bessere Anpassung, Stabilität, Druckverteilung und Komfort." },
+  { id: "orga-card-39", area: "Lagerung", question: "Wie unterscheiden sich die Lagerungen bei venösem und arteriellem Extremitätenverschluss?", answer: "Beim vermuteten venösen Verschluss wird die Extremität ruhiggestellt und schonend hochgelagert; Massage und unnötige Mobilisation werden vermieden. Beim akuten arteriellen Verschluss wird die Extremität gepolstert ruhiggestellt und tief beziehungsweise auf Herzniveau gelagert; Hochlagerung, Kompression und aktive Erwärmung sind zu vermeiden. Der arterielle Verschluss ist ein zeitkritischer Gefäßnotfall." },
+  { id: "orga-card-40", area: "Lagerung", question: "Wie wird die Fritsch-Lagerung durchgeführt und was ist ihr Ziel?", answer: "Bei stärkerer vaginaler Blutung, besonders peripartal oder in der Nachgeburtsphase, liegt die Patientin auf dem Rücken. Eine sterile Vorlage wird vor die Vulva gelegt und die gestreckten Beine werden auf Kniehöhe überkreuzt. Ziel sind hygienische Versorgung und Abschätzung des Blutverlusts; die Vagina wird nicht tamponiert." },
 ];
 
 export const organisationQuestions: OrganisationQuestion[] = [
@@ -308,4 +312,32 @@ export const organisationQuestions: OrganisationQuestion[] = [
     { text: "Die Ü-MANV-Richtlinie erlaubt eine zeitweilige Einschränkung der Regelvorhaltung um bis zu 50 Prozent.", correct: true },
     { text: "Eine 25-Prozent-Zahl bedeutet zwingend, dass nur 25 Prozent der Regelrettung abgezogen werden dürfen." },
   ], source: "Die Thüringer Richtlinie begrenzt die Einschränkung auf bis zu 50 Prozent und verlangt eine fortbestehende Notversorgung. Die 25-Prozent-Zahl stammt aus älteren beziehungsweise örtlichen Planungsansätzen für die verbleibende Mindestdeckung.", difficulty: 3, mode: "multiple" },
+  { id: "orga-q-38", prompt: "Welche Aussagen zum Thüringer Lernwert ‚MANV ab fünf Betroffenen‘ sind fachlich korrekt?", options: [
+    { text: "Örtliche Alarmpläne können ab fünf Verletzten oder Betroffenen ein MANV-Alarmstichwort vorsehen.", correct: true },
+    { text: "Die Zahl ist als operative Alarmierungsschwelle zu verstehen.", correct: true },
+    { text: "Das ThürRettG definiert jeden Einsatz mit exakt fünf Personen automatisch als MANV." },
+    { text: "Verletzungsschwere, Ressourcenbedarf und örtlicher Plan bleiben für die tatsächliche Lagebewertung maßgeblich.", correct: true },
+    { text: "Überörtliche Einheiten können bei einer erkennbaren Ressourcenlücke unabhängig von einer starren Zahl früh nachgefordert werden.", correct: true },
+  ], source: "Örtliche Thüringer Einsatzstichwörter können bei fünf Betroffenen beginnen; die landesrechtliche MANV-Abgrenzung bleibt ressourcen- und planbezogen.", difficulty: 3, mode: "multiple" },
+  { id: "orga-q-39", prompt: "Welche Aussagen zu Spineboard und Vakuummatratze treffen zu?", options: [
+    { text: "Das Spineboard eignet sich besonders für technische Rettung und kurze Umlagerungen.", correct: true },
+    { text: "Die Vakuummatratze bietet bei längerer Bewegungsrestriktion regelmäßig mehr Komfort und Druckverteilung.", correct: true },
+    { text: "Eine lange Transportdauer auf dem unzureichend gepolsterten Spineboard erhöht das Risiko für Schmerzen und Druckstellen.", correct: true },
+    { text: "Das Spineboard ist für jeden Wirbelsäulenverdacht automatisch das beste dauerhafte Transportmittel." },
+    { text: "Indikation und Auswahl richten sich nach Befund, Rettungsweg und örtlicher Vorgabe.", correct: true },
+  ], source: "Aktuelle Empfehlungen bevorzugen die Vakuummatratze für längere Bewegungsrestriktion; starre Boards dienen vor allem Rettung und Umlagerung.", difficulty: 3, mode: "multiple" },
+  { id: "orga-q-40", prompt: "Welche Zuordnungen von Lagerungsart und klinischem Ziel sind richtig?", options: [
+    { text: "Bewusstlos mit normaler Atmung: stabile Seitenlage zur Sicherung des Atemwegs.", correct: true },
+    { text: "Akuter arterieller Extremitätenverschluss: betroffene Extremität ruhigstellen und nicht hochlagern.", correct: true },
+    { text: "Verdacht auf venösen Verschluss: Extremität ruhigstellen, schonend hochlagern und nicht massieren.", correct: true },
+    { text: "Schwere Dyspnoe mit stabilem Kreislauf: Oberkörper nach Verträglichkeit anheben.", correct: true },
+    { text: "Jeder Schockzustand verlangt unabhängig von Ursache und Verletzungsmuster zwingend eine maximale Beinhebung." },
+  ], source: "Lagerung verfolgt ein physiologisches Ziel und wird an Atmung, Kreislauf, neurologischen Befund, Verletzungsmuster und Verträglichkeit angepasst.", difficulty: 3, mode: "multiple" },
+  { id: "orga-q-41", prompt: "Eine kreislaufstabile Patientin hat nach der Geburt eine stärkere vaginale Blutung. Welche Maßnahmen gehören zur Fritsch-Lagerung?", options: [
+    { text: "Rückenlage und sterile Vorlage vor der Vulva.", correct: true },
+    { text: "Gestreckte Beine etwa auf Kniehöhe überkreuzen.", correct: true },
+    { text: "Blutverlust anhand der Vorlagen und des klinischen Zustands abschätzen.", correct: true },
+    { text: "Die Vagina fest mit Material tamponieren, um die Blutung unsichtbar zu machen." },
+    { text: "Kreislauf, Uterustonus und weitere Blutungsursachen parallel beurteilen.", correct: true },
+  ], source: "Die Fritsch-Lagerung unterstützt bei vaginaler Blutung die hygienische Versorgung und Blutverlustbeurteilung; sie ersetzt keine Ursachenbehandlung.", difficulty: 3, mode: "multiple" },
 ];
