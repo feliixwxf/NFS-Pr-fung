@@ -479,6 +479,16 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .diagnostik-table table { min-width:0; font-size:12px; }
 .diagnostik-table th, .diagnostik-table td { padding:10px 12px; }
 .diagnostik-table tbody th { background:#f7faf9; color:var(--navy); }
+.ekg-position-table table { table-layout:fixed; }
+.ekg-position-table .ekg-col-lead { width:14%; }
+.ekg-position-table .ekg-col-position { width:52%; }
+.ekg-position-table .ekg-col-orientation { width:34%; }
+.ekg-position-table th, .ekg-position-table td { hyphens:auto; word-break:normal; overflow-wrap:break-word; }
+.glucose-table table { table-layout:fixed; }
+.glucose-table th:nth-child(1), .glucose-table td:nth-child(1) { width:27%; }
+.glucose-table th:nth-child(2), .glucose-table td:nth-child(2), .glucose-table th:nth-child(3), .glucose-table td:nth-child(3) { width:14%; white-space:nowrap; }
+.glucose-table th:nth-child(4), .glucose-table td:nth-child(4) { width:45%; }
+@media(max-width:600px){.ekg-position-table table,.glucose-table table{font-size:10px}.ekg-position-table th,.ekg-position-table td,.glucose-table th,.glucose-table td{padding:8px 7px}.glucose-table th:nth-child(1),.glucose-table td:nth-child(1){width:29%}.glucose-table th:nth-child(4),.glucose-table td:nth-child(4){width:43%}}
 
 .oxygen-phase-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 24px}
 .oxygen-phase-grid article{min-width:0;padding:17px;border:1px solid #d9e7e5;border-radius:16px;background:linear-gradient(145deg,#fff,#f3f8f7)}
