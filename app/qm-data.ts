@@ -42,6 +42,8 @@ export const qmFlashcards: QmFlashcard[] = [
   { id: "qm-card-30", area: "RTW-Ausstattung", question: "Nennen Sie typische nichtaktive Medizinprodukte auf einem RTW.", answer: "Beispiele sind Fahrtrage, Schaufeltrage, Vakuummatratze, Beckenschlinge, Beatmungsbeutel, Laryngoskopzubehör, Masken, Tuben, Kanülen, Katheter, Schienen und Verbandmittel. Die rechtliche Einordnung und Pflichten unterscheiden sich je nach Produkt und Zweckbestimmung." },
   { id: "qm-card-31", area: "Dokumentation", question: "Unterscheiden Sie Medizinproduktebuch und Bestandsverzeichnis.", answer: "Das Medizinproduktebuch wird für Produkte der Anlagen 1 und 2 MPBetreibV geführt und enthält unter anderem Identifikation, Einweisung, Kontrollen, Instandhaltung, Störungen und Vorkommnismeldungen. Das Bestandsverzeichnis erfasst grundsätzlich alle aktiven nichtimplantierbaren Produkte der Betriebsstätte mit Produkt-, Hersteller-, Identifikations- und Standortangaben." },
   { id: "qm-card-32", area: "Kontrollen", question: "Was unterscheiden STK und MTK?", answer: "Die sicherheitstechnische Kontrolle bewertet Sicherheit und Funktionsfähigkeit der von Anlage 1 erfassten Produkte. Die messtechnische Kontrolle prüft bei Produkten der Anlage 2, ob festgelegte maximale Messabweichungen eingehalten werden. Fristen und Umfang richten sich nach MPBetreibV und den jeweiligen Vorgaben." },
+  { id: "qm-card-33", area: "Medizinprodukterecht", question: "Geben Sie auf die Prüfungsfrage ‚Wo ist der Umgang mit Medizinprodukten geregelt?‘ eine kurze und eine vollständige Antwort.", answer: "Kurz: vor allem in der Medizinprodukte-Betreiberverordnung (MPBetreibV). Vollständig: Die EU-MDR regelt den europäischen Produktrechtsrahmen, das MPDG führt unionsrechtliche Vorgaben national durch, und die MPBetreibV konkretisiert das praktische Betreiben und Benutzen einschließlich Instandhaltung, Aufbereitung, Kontrollen, Einweisung und Dokumentation." },
+  { id: "qm-card-34", area: "QM-Instrumente", question: "Ordnen Sie wichtige QM-Instrumente nach ihrer Hauptfunktion.", answer: "Vereinheitlichen: Standards, SOP und Checklisten. Prüfen: Audits und Begehungen. Messen und vergleichen: Kennzahlen und Benchmarking. Lernen: CIRS, Beschwerdemanagement und Befragungen. Risiken und Ursachen analysieren: FMEA, Ursachenbaum und Fallanalyse. Kompetenz verbessern: Fortbildung und Simulation. Verbesserung steuern: PDCA mit Wirksamkeitskontrolle." },
 ];
 
 export const qmQuestions: QmQuestion[] = [
@@ -325,4 +327,25 @@ export const qmQuestions: QmQuestion[] = [
     { text: "Jede Person darf das Gerät ohne Einweisung benutzen, sobald es CE-gekennzeichnet ist." },
     { text: "Zubehör, Ausfallverfahren und sichere Einbindung in den Einsatzablauf berücksichtigen.", correct: true },
   ], source: "Die CE-Kennzeichnung ersetzt keine Betreiberorganisation. Sichere Einführung umfasst Funktionsprüfung, Einweisung, Dokumentation, Kontrollen, Zubehör und Ausfallkonzept.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-41", prompt: "In einer Prüfung wird gefragt, wo der Umgang mit Medizinprodukten im Rettungsdienst geregelt ist. Welche Antworten sind fachlich zutreffend?", options: [
+    { text: "Für das praktische Betreiben und Benutzen ist besonders die MPBetreibV maßgeblich.", correct: true },
+    { text: "Die EU-MDR bildet einen wesentlichen europäischen Produktrechtsrahmen.", correct: true },
+    { text: "Das MPDG ergänzt und vollzieht unionsrechtliche Medizinproduktevorgaben in Deutschland.", correct: true },
+    { text: "Das frühere MPG ist weiterhin die alleinige und abschließende Rechtsgrundlage." },
+    { text: "Eine betriebliche SOP kann MPBetreibV und MPDG vollständig ersetzen." },
+  ], source: "Die kurze Prüfungsantwort lautet MPBetreibV. Vollständig werden europäische MDR, nationales MPDG und die praktischen Betreiber- und Benutzerpflichten der MPBetreibV voneinander abgegrenzt.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-42", prompt: "Welche Zuordnungen von QM-Instrument und Hauptfunktion sind richtig?", options: [
+    { text: "SOP und Checkliste – einen Soll-Ablauf vereinheitlichen und Auslassungen reduzieren.", correct: true },
+    { text: "Audit – festgelegte Anforderungen systematisch mit der nachweisbaren Praxis vergleichen.", correct: true },
+    { text: "CIRS – aus kritischen Ereignissen und Beinahe-Ereignissen lernen.", correct: true },
+    { text: "FMEA – ausschließlich eingetretene Personenschäden juristisch bewerten." },
+    { text: "Benchmarking – unterschiedlich definierte Kennzahlen ohne Anpassung vergleichen." },
+  ], source: "QM-Instrumente erfüllen unterschiedliche Aufgaben. FMEA ist eine vorausschauende Risikoanalyse; Benchmarking benötigt vergleichbar definierte Kennzahlen.", difficulty: 3, mode: "multiple" },
+  { id: "qm-q-43", prompt: "Auf mehreren RTW fehlen wiederholt identische Verbrauchsmaterialien. Welche Kombination von QM-Instrumenten bildet eine tragfähige Verbesserung?", options: [
+    { text: "Eine standardisierte Checkliste legt den Soll-Ablauf der Kontrolle fest.", correct: true },
+    { text: "Ein Audit prüft, ob Kontrolle und Nachfüllung tatsächlich umgesetzt werden.", correct: true },
+    { text: "Kennzahlen erfassen Checkquote und materialbedingte Einsatzverzögerungen.", correct: true },
+    { text: "Eine Ursachenanalyse untersucht Lagerlogik, Zuständigkeiten und Übergabeprozess.", correct: true },
+    { text: "Das einmalige Auffüllen beendet den QM-Regelkreis ohne weitere Kontrolle." },
+  ], source: "Nachhaltiges QM verbindet Standardisierung, Prüfung, Messung, Ursachenanalyse und Wirksamkeitskontrolle. Das bloße Auffüllen ist nur eine unmittelbare Korrektur.", difficulty: 3, mode: "multiple" },
 ];

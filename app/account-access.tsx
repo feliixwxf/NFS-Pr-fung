@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { getSupabaseClient } from "./lib/supabaseClient";
+import { getRememberSessionDefault, getSupabaseClient, setRememberSession } from "./lib/supabaseClient";
 
 type Mode = "login" | "request" | "forgot" | "password";
 type PasswordSetupKind = "invite" | "recovery";
@@ -10,6 +10,7 @@ export default function AccountAccess({ onDone, passwordSetupKind, showLoginHead
   const [mode, setMode] = useState<Mode>(passwordSetupKind ? "password" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberSession, setRememberSessionState] = useState(getRememberSessionDefault);
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
@@ -26,9 +27,11 @@ export default function AccountAccess({ onDone, passwordSetupKind, showLoginHead
     setBusy(true);
     try {
       if (mode === "login") {
+        setRememberSession(rememberSession);
         const { error } = await client.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
         if (error) throw error;
-        setMessage("Angemeldet. Dein Lernstand wird geladen.");
+        const { error: otherSessionsError } = await client.auth.signOut({ scope: "others" });
+        setMessage(otherSessionsError ? "Angemeldet. Eine ältere Sitzung konnte nicht vollständig beendet werden." : "Angemeldet. Dein Lernstand wird geladen und ältere Sitzungen werden beendet.");
         onDone?.();
       } else if (mode === "request") {
         const { error } = await client.from("access_requests").insert({ email: email.trim().toLowerCase(), name: name.trim(), note: note.trim() });
@@ -65,6 +68,7 @@ export default function AccountAccess({ onDone, passwordSetupKind, showLoginHead
       {mode === "request" && <><label>Name<input required minLength={2} maxLength={120} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} /></label><label className="account-honeypot" aria-hidden="true">Website<input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} /></label></>}
       {mode !== "password" && <label>E-Mail<input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label>}
       {(mode === "login" || mode === "password") && <label>{mode === "password" ? "Neues Passwort" : "Passwort"}<input required minLength={mode === "password" ? 12 : undefined} type="password" autoComplete={mode === "password" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} /></label>}
+      {mode === "login" && <label className="account-remember"><input type="checkbox" checked={rememberSession} onChange={(event) => setRememberSessionState(event.target.checked)} /><span><b>Eingeloggt bleiben</b><small>Die Anmeldung bleibt auf diesem Gerät gespeichert. Eine neue Anmeldung auf einem anderen Gerät ersetzt die bisherige Sitzung.</small></span></label>}
       {mode === "password" && <label>Neues Passwort wiederholen<input required minLength={12} type="password" autoComplete="new-password" value={passwordConfirmation} onChange={(event) => setPasswordConfirmation(event.target.value)} /></label>}
       {mode === "request" && <label>Nachricht an Felix <small>(optional)</small><textarea maxLength={1000} value={note} onChange={(event) => setNote(event.target.value)} /></label>}
       <button type="submit" disabled={busy || !client}>{busy ? "Bitte warten …" : mode === "request" ? "Anfrage senden" : mode === "forgot" ? "Reset-Link anfordern" : mode === "password" ? "Neues Passwort speichern" : "Anmelden"}</button>

@@ -82,6 +82,11 @@ button { cursor:pointer; }
 .account-access h3 { margin:0 0 2px; font-size:17px; }
 .account-access label { display:grid; gap:5px; margin:0; color:var(--navy); font-size:12px; font-weight:750; }
 .account-access input,.account-access textarea { width:100%; min-height:40px; padding:9px 11px; border:1px solid #d8e1df; border-radius:9px; background:#fff; color:var(--navy); font:inherit; }
+.account-access label.account-remember { display:grid; grid-template-columns:20px minmax(0,1fr); align-items:start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--soft); cursor:pointer; }
+.account-access label.account-remember > input { width:18px; min-height:18px; height:18px; margin:2px 0 0; padding:0; accent-color:var(--accent); }
+.account-remember span { display:grid; gap:2px; min-width:0; }
+.account-remember b { font-size:.9rem; line-height:1.25; }
+.account-remember small { color:var(--muted); font-size:.78rem; line-height:1.4; font-weight:500; }
 .account-access textarea { min-height:66px; resize:vertical; }
 .account-access form > button[type="submit"] { min-height:42px; border:0; border-radius:9px; background:var(--orange); color:white; font-weight:800; cursor:pointer; }
 .account-access form > button:disabled { opacity:.55; cursor:not-allowed; }
@@ -471,6 +476,9 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .table-scroll th, .table-scroll td { padding:11px 13px; border-bottom:1px solid #e8eceb; text-align:left; vertical-align:top; overflow-wrap:anywhere; }
 .table-scroll th { background:#eef4f2; color:var(--navy); font-size:10px; letter-spacing:.02em; }
 .table-scroll tbody tr:last-child td { border-bottom:0; }
+.diagnostik-table table { min-width:0; font-size:12px; }
+.diagnostik-table th, .diagnostik-table td { padding:10px 12px; }
+.diagnostik-table tbody th { background:#f7faf9; color:var(--navy); }
 .quiz-launch .primary-button { opacity:1; }
 .mc-training-page { width:min(900px,91%); }
 .mc-training-page .section-heading { margin-bottom:22px; }
@@ -1092,6 +1100,15 @@ button{min-height:44px}
 .broncho-comparison b{color:#315258}
 .broncho-comparison span{color:#566d72}
 .broncho-path-steps{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:15px 0 0}.broncho-path-steps span{padding:7px 9px;border-radius:9px;background:#fff;color:#315f5a;font-size:10px;font-weight:800;line-height:1.4}.broncho-path-steps i{color:#6d9c94;font-style:normal;font-weight:900}
+.broncho-pressure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.broncho-pressure-grid article{min-width:0;padding:19px;border:1px solid #d4e4e0;border-radius:16px;background:#f7fbfa}
+.broncho-pressure-grid article:last-child{border-color:#dce3ec;background:#f7f9fc}
+.broncho-pressure-grid small{color:#34786d;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.broncho-pressure-grid h3{margin:5px 0 10px;color:#173d41;font-size:18px}
+.broncho-pressure-grid p{margin:8px 0 0;color:#52696e;font-size:12px;line-height:1.65}
+.broncho-pressure-formula{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:9px;margin:16px 0;padding:15px;border:1px solid #cfe0dc;border-radius:14px;background:#edf7f4;color:#245f57}
+.broncho-pressure-formula span,.broncho-pressure-formula b{padding:7px 11px;border-radius:9px;background:#fff;font-size:12px;line-height:1.35}
+.broncho-pressure-formula i{color:#72958f;font-style:normal;font-weight:900}
 .broncho-medication-heading{margin:28px 0 15px}.broncho-medication-heading small{color:#b35f43;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.broncho-medication-heading h3{margin:5px 0 7px;color:#173d41;font-size:21px}.broncho-medication-heading p{margin:0;color:#5c7075;font-size:11px;line-height:1.6}.medication-effects-grid.broncho-medication-cards{grid-template-columns:repeat(3,minmax(0,1fr));margin:0 0 24px}.broncho-medication-cards .medication-effect-card{padding:18px}.broncho-medication-cards .medication-effect-card h3{margin:3px 0 0;color:var(--navy);font-size:18px}.broncho-medication-cards .medication-effect-card p{overflow-wrap:anywhere}
 .broncho-preparation{margin:30px 0;padding:clamp(18px,3vw,28px);border:1px solid #cbdedb;border-radius:20px;background:linear-gradient(145deg,#f0f8f6,#fff 65%)}
 .broncho-preparation-heading small,.broncho-preparation-grid article>small{color:#34786d;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
@@ -1116,7 +1133,7 @@ button{min-height:44px}
 .broncho-syringe-dose{display:none}
 .broncho-preparation-caution{margin:0;padding-top:12px;border-top:1px solid #dce9e6}
 @media(max-width:980px){.medication-effects-grid.broncho-medication-cards{grid-template-columns:1fr}}
-@media(max-width:650px){.broncho-vs,.broncho-preparation-grid{grid-template-columns:1fr}.broncho-comparison{border:0;overflow:visible}.broncho-comparison>div{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;padding:10px;border:1px solid #dce8e6;border-radius:13px}.broncho-comparison>div:not(:first-child)>b{grid-column:1/-1;padding:0 2px 6px;border-bottom:1px solid #e5edeb;font-size:12px}.broncho-comparison>div:not(:first-child) span{padding:10px;border-radius:9px;background:#edf7f4}.broncho-comparison>div:not(:first-child) span:last-child{background:#f2f4f7}.broncho-comparison>div:not(:first-child) span:before{display:block;margin-bottom:4px;color:#3b766c;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;content:"Asthma"}.broncho-comparison>div:not(:first-child) span:last-child:before{color:#597a8b;content:"COPD"}.broncho-comparison>div:first-child{display:none}.broncho-path-steps{align-items:flex-start}.broncho-path-steps i{padding-top:7px}.broncho-medication-heading h3{font-size:19px}.broncho-medication-cards .medication-effect-card{padding:16px}}
+@media(max-width:650px){.broncho-vs,.broncho-preparation-grid,.broncho-pressure-grid{grid-template-columns:1fr}.broncho-comparison{border:0;overflow:visible}.broncho-comparison>div{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;padding:10px;border:1px solid #dce8e6;border-radius:13px}.broncho-comparison>div:not(:first-child)>b{grid-column:1/-1;padding:0 2px 6px;border-bottom:1px solid #e5edeb;font-size:12px}.broncho-comparison>div:not(:first-child) span{padding:10px;border-radius:9px;background:#edf7f4}.broncho-comparison>div:not(:first-child) span:last-child{background:#f2f4f7}.broncho-comparison>div:not(:first-child) span:before{display:block;margin-bottom:4px;color:#3b766c;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;content:"Asthma"}.broncho-comparison>div:not(:first-child) span:last-child:before{color:#597a8b;content:"COPD"}.broncho-comparison>div:first-child{display:none}.broncho-path-steps{align-items:flex-start}.broncho-path-steps i{padding-top:7px}.broncho-medication-heading h3{font-size:19px}.broncho-medication-cards .medication-effect-card{padding:16px}.broncho-pressure-formula{align-items:stretch}.broncho-pressure-formula span,.broncho-pressure-formula b{flex:1 1 100%;text-align:center}.broncho-pressure-formula i{align-self:center}}
 .broncho-gas-card{width:100%;max-width:100%;min-width:0;margin:25px 0;padding:19px;overflow:hidden;border:1px solid #d4e4e0;border-radius:16px;background:#f7fbfa}
 .broncho-gas-heading small{color:#32746c;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
 .broncho-gas-heading h3{margin:6px 0 15px;color:#173d41;font-size:17px}
