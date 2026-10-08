@@ -25,6 +25,13 @@ test("every medication effect card has a VFA preparation panel", () => {
   for (const entry of medicationEntries) assert.match(entry, /preparation: \{/);
 });
 
+test("Dimetinden is one entry searchable by both documented trade names", () => {
+  assert.equal((library.match(/name: "Dimetinden \(Histakut \/ Fenistil\)"/g) ?? []).length, 1);
+  assert.match(library, /aliases: \["Histakut", "Fenistil"\]/);
+  assert.match(library, /Andere Darreichungsformen oder Konzentrationen dürfen nicht daraus übernommen werden/);
+  assert.doesNotMatch(library, /name: "Dimetinden \(Histakut\)"|name: "Dimetinden \(Fenistil\)"/);
+});
+
 test("all preparation panels can be expanded and collapsed", () => {
   assert.match(library, /<details className="medication-dose-prep"/);
   assert.match(library, /<summary className="medication-dose-prep-heading"/);

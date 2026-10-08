@@ -6,7 +6,7 @@ import { getSupabaseClient } from "./lib/supabaseClient";
 type Mode = "login" | "request" | "forgot" | "password";
 type PasswordSetupKind = "invite" | "recovery";
 
-export default function AccountAccess({ onDone, passwordSetupKind }: { onDone?: () => void; passwordSetupKind?: PasswordSetupKind }) {
+export default function AccountAccess({ onDone, passwordSetupKind, showLoginHeading = true }: { onDone?: () => void; passwordSetupKind?: PasswordSetupKind; showLoginHeading?: boolean }) {
   const [mode, setMode] = useState<Mode>(passwordSetupKind ? "password" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +61,7 @@ export default function AccountAccess({ onDone, passwordSetupKind }: { onDone?: 
       <button type="button" className={mode === "request" ? "active" : ""} onClick={() => { setMode("request"); setMessage(""); }}>Zugang anfragen</button>
     </div>}
     <form onSubmit={submit}>
-      <h3>{mode === "request" ? "Freigabe anfragen" : mode === "forgot" ? "Passwort zurücksetzen" : mode === "password" ? passwordSetupKind === "recovery" ? "Neues Passwort festlegen" : "Passwort festlegen" : "Mit Lernkonto anmelden"}</h3>
+      {(mode !== "login" || showLoginHeading) && <h3>{mode === "request" ? "Freigabe anfragen" : mode === "forgot" ? "Passwort zurücksetzen" : mode === "password" ? passwordSetupKind === "recovery" ? "Neues Passwort festlegen" : "Passwort festlegen" : "Mit Lernkonto anmelden"}</h3>}
       {mode === "request" && <><label>Name<input required minLength={2} maxLength={120} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} /></label><label className="account-honeypot" aria-hidden="true">Website<input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} /></label></>}
       {mode !== "password" && <label>E-Mail<input required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label>}
       {(mode === "login" || mode === "password") && <label>{mode === "password" ? "Neues Passwort" : "Passwort"}<input required minLength={mode === "password" ? 12 : undefined} type="password" autoComplete={mode === "password" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} /></label>}
