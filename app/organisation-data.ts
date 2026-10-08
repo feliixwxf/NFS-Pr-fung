@@ -42,6 +42,10 @@ export const organisationFlashcards: OrganisationFlashcard[] = [
   { id: "orga-card-30", area: "Luftrettung", question: "Welche Mindestanforderungen gelten prüfungsbezogen für eine provisorische RTH-Landefläche?", answer: "Als Lernwert gilt eine freie, möglichst ebene und tragfähige Fläche von mindestens 30 mal 30 Metern. Sie muss von Personen und Fahrzeugen gesichert, frei von Hindernissen und losen Gegenständen sowie aus der Luft erkennbar sein. Leitungen, Masten, Gefälle und Wind werden gemeldet. Landung und Annäherungsweg bestimmt ausschließlich die Besatzung." },
   { id: "orga-card-31", area: "Autobahn", question: "Welche besonderen Gefahren müssen bei einem Rettungseinsatz auf der Autobahn in die erste Lagebeurteilung?", answer: "Fließender Hochgeschwindigkeitsverkehr und Folgeunfälle, unklare Fahrtrichtung oder falsche Anfahrt, fehlende Rettungsgasse, Trümmer, scharfe Fahrzeugteile, auslaufende Betriebsstoffe oder Gefahrgut, instabile Fahrzeuge, schlechte Sicht und Witterung sowie Behinderung durch Schaulustige. Warnkleidung, sichere Fahrzeugaufstellung und abgestimmte Verkehrsabsicherung mit Polizei und Feuerwehr haben Priorität." },
   { id: "orga-card-32", area: "Führung", question: "Aus welchen drei Bestandteilen besteht das Führungssystem der FwDV 100?", answer: "Führungsorganisation: Aufbau, Zuständigkeiten und Unterstellung. Führungsvorgang: Lagefeststellung, Planung, Befehlsgebung und Kontrolle als Regelkreis. Führungsmittel: Mittel zur Informationsgewinnung, -verarbeitung und -übertragung, beispielsweise Lagekarte, Einsatztagebuch, Funk und Kommunikationsplan." },
+  { id: "orga-card-33", area: "MANV Thüringen", question: "Wie werden MANV, Ü-MANV und Katastrophe in Thüringen abgegrenzt?", answer: "MANV: größere Zahl Verletzter, Erkrankter oder Betroffener benötigt unverzüglich Notfallrettung und kann mit der einsetzbaren Vorhaltung des eigenen Rettungsdienstbereichs versorgt werden. Ü-MANV/Großschadensereignis: die örtliche Vorhaltung reicht nicht. Katastrophe nach § 25 ThürBKG: ungewöhnlich große Gefährdung, die nur durch viele Stellen und Kräfte unter einheitlicher Leitung bewältigt werden kann." },
+  { id: "orga-card-34", area: "MANV Thüringen", question: "Welche Bedeutung hat die Zahl von etwa 20 Patienten in der Thüringer Ü-MANV-Planung?", answer: "Bis etwa 20 Patienten wird in den meisten Gebietskörperschaften eine örtliche Bewältigung unter Einbindung von Regelrettungsdienst, Feuerwehr, Allgemeiner Hilfe sowie Zugtrupp und Sanitätsgruppe des SBZ geplant. Ab etwa 20 werden bei unzureichenden örtlichen Kräften Ü-MANV-Einheiten angefordert. Die Zahl ist ein Planungswert, keine starre Definition." },
+  { id: "orga-card-35", area: "Ü-MANV", question: "Wie ist die Thüringer Einheit Ü-MANV Sofort zusammengesetzt?", answer: "Ein NEF mit Notarzt und NotSan/RettAss, zwei RTW (KTW Typ C) mit jeweils NotSan/RettAss und RettSan sowie ein KTW Typ A2 mit zwei RettSan. Die Einheit wird aus sofort verfügbaren oder zeitnah frei werdenden Mitteln der Regelvorhaltung gebildet." },
+  { id: "orga-card-36", area: "Sichtung", question: "Welche Voraussetzungen gelten für SK IV/Blau?", answer: "SK IV/Blau bedeutet unter den gegebenen Ressourcen keine realistische Überlebenschance und palliative Versorgung. Die Zuordnung ist eine ärztliche Entscheidung des LNA, setzt einen tatsächlichen Ressourcenmangel voraus und muss bei Lage- oder Ressourcenänderung revidiert werden. Blau ist nicht EX/Schwarz." },
 ];
 
 export const organisationQuestions: OrganisationQuestion[] = [
@@ -269,4 +273,39 @@ export const organisationQuestions: OrganisationQuestion[] = [
     { text: "Die Patientenablage grundsätzlich unmittelbar an den Rand des Rotorkreises verlegen." },
     { text: "Ansprechpartner und Übergabeweg zwischen RTH, Einsatzführung und Bodenrettung festlegen.", correct: true },
   ], source: "RTH-Betrieb ist Teil der Raumordnung. Absperrung, Fremdkörperschutz, getrennte Verkehrswege und eine abgestimmte Übergabeschnittstelle verhindern, dass die Luftrettung neue Gefahren oder logistische Blockaden erzeugt.", difficulty: 3, mode: "multiple" },
+  { id: "orga-q-33", prompt: "Welche Aussagen zur Thüringer Abgrenzung von MANV und Ü-MANV sind korrekt?", options: [
+    { text: "Beim MANV kann die Lage mit der einsetzbaren Vorhaltung des eigenen Rettungsdienstbereichs bewältigt werden.", correct: true },
+    { text: "Beim Ü-MANV reichen die örtlich vorhandenen und einsetzbaren Mittel nicht aus.", correct: true },
+    { text: "Beide sind größere Notfallereignisse unterhalb der Katastrophenschwelle.", correct: true },
+    { text: "Jeder MANV ist rechtlich automatisch eine Katastrophe nach ThürBKG." },
+    { text: "Eine Katastrophe verlangt ein Zusammenwirken zahlreicher Stellen unter einheitlicher Leitung.", correct: true },
+  ], source: "§ 17 ThürRettG, Nr. 8.1 LRDP und § 25 ThürBKG unterscheiden größere Notfallereignisse nach örtlicher Bewältigbarkeit und Katastrophen nach Ausmaß und notwendiger einheitlicher Gesamtleitung.", difficulty: 3, mode: "multiple" },
+  { id: "orga-q-34", prompt: "Welche Aussagen zur Thüringer Planungszahl von etwa 20 Patienten treffen zu?", options: [
+    { text: "Sie ist ein Planungswert für die mögliche örtliche Bewältigung.", correct: true },
+    { text: "Sie setzt die Einbindung zusätzlicher örtlicher Strukturen wie Zugtrupp und Sanitätsgruppe voraus.", correct: true },
+    { text: "Überörtliche Hilfe kann bei erkennbarer Ressourcenlücke auch früher nötig sein.", correct: true },
+    { text: "Erst ab exakt 21 Patienten darf eine Ü-MANV-Einheit alarmiert werden." },
+    { text: "Verletzungsschwere und Transportkapazität beeinflussen den Bedarf zusätzlich.", correct: true },
+  ], source: "Die Thüringer Ü-MANV-Richtlinie nennt etwa 20 Patienten als planerische Orientierung, nicht als starre Auslöseschwelle.", difficulty: 3, mode: "multiple" },
+  { id: "orga-q-35", prompt: "Welche Rettungsmittel bilden die Thüringer Einheit Ü-MANV Sofort?", options: [
+    { text: "Ein NEF", correct: true },
+    { text: "Zwei RTW", correct: true },
+    { text: "Ein KTW Typ A2", correct: true },
+    { text: "Ein Behandlungsplatz 50 als zwingender Fahrzeugbestandteil" },
+    { text: "Die Einheit wird aus sofort verfügbaren oder zeitnah frei werdenden Regelrettungsmitteln zusammengestellt.", correct: true },
+  ], source: "Thüringer Ü-MANV-Richtlinie: 1 NEF, 2 RTW und 1 KTW Typ A2.", difficulty: 2, mode: "multiple" },
+  { id: "orga-q-36", prompt: "Welche Aussagen zur Sichtungskategorie IV/Blau sind richtig?", options: [
+    { text: "Die endgültige Zuordnung ist eine ärztliche Entscheidung des LNA.", correct: true },
+    { text: "Sie setzt fehlende realistische Überlebenschance unter den gegebenen Ressourcen voraus.", correct: true },
+    { text: "Palliative Versorgung bleibt erforderlich.", correct: true },
+    { text: "Bei veränderter Ressourcenlage ist eine Re-Sichtung notwendig.", correct: true },
+    { text: "Blau und EX/Schwarz bedeuten dasselbe." },
+  ], source: "SK IV/Blau ist ressourcenabhängige ärztliche Priorisierung mit palliativer Konsequenz; EX/Schwarz kennzeichnet Verstorbene.", difficulty: 3, mode: "multiple" },
+  { id: "orga-q-37", prompt: "Ein Landkreis entsendet Ü-MANV Sofort. Welche Aussagen zur verbleibenden Regelrettung sind fachlich korrekt?", options: [
+    { text: "Die Regelversorgung darf nicht vollständig aufgehoben werden.", correct: true },
+    { text: "Notreserve und zusätzliches Personal können die entsendeten Mittel zeitnah ersetzen.", correct: true },
+    { text: "Anstehende Krankentransporte können zur Sicherung der Notfallrettung zurückgestellt werden.", correct: true },
+    { text: "Die Ü-MANV-Richtlinie erlaubt eine zeitweilige Einschränkung der Regelvorhaltung um bis zu 50 Prozent.", correct: true },
+    { text: "Eine 25-Prozent-Zahl bedeutet zwingend, dass nur 25 Prozent der Regelrettung abgezogen werden dürfen." },
+  ], source: "Die Thüringer Richtlinie begrenzt die Einschränkung auf bis zu 50 Prozent und verlangt eine fortbestehende Notversorgung. Die 25-Prozent-Zahl stammt aus älteren beziehungsweise örtlichen Planungsansätzen für die verbleibende Mindestdeckung.", difficulty: 3, mode: "multiple" },
 ];
