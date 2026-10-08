@@ -22,9 +22,24 @@ test("the oral statistic stacks in constrained layouts instead of leaving the pa
 
 test("processing progress is shown separately from consolidation and metadata remains readable", () => {
   assert.match(page, /progress-ring-stat[\s\S]*?progress-ring[\s\S]*?formatProgressPercent\(metrics\.completionPercent\)[\s\S]*?<span>Bearbeitungsfortschritt<\/span>/);
-  assert.match(page, /Festigung: \{formatProgressPercent\(summary\.average\)\}/);
+  assert.match(page, /Festigung: \{formatProgressPercent\(metrics\.consolidationPercent\)\}/);
   assert.match(css, /\.progress-ring-stat>span\{[^}]*font-size:13px/);
   assert.match(css, /\.profile-stat-grid span[^\n]*font-size:12px/);
+});
+
+test("MC hover, focus, selection and assessed states stay visually distinct", () => {
+  assert.match(css, /\.multiple-choice-actions button:hover:not\(:disabled\):not\(\.selected\)\{border-color:#c6cecb;background:#f1f4f3;box-shadow:none\}/);
+  assert.match(css, /\.multiple-choice-actions button:focus-visible\{outline:3px solid #e88b6b66;outline-offset:3px\}/);
+  assert.match(css, /\.multiple-choice-actions button\.selected\{border-color:var\(--orange\);background:#fff0e9/);
+  assert.match(css, /\.multiple-choice-actions button\.correct\{border-color:#168357;background:#168357/);
+  assert.match(css, /\.multiple-choice-actions button\.wrong\{border-color:#b43029;background:#b43029/);
+  assert.match(page, /disabled=\{!selected\.length\}>Auswahl prüfen/);
+});
+
+test("login stays compact at desktop and tablet widths and scrolls naturally on mobile", () => {
+  assert.match(page, /<AccountAccess showLoginHeading=\{false\} \/>/);
+  assert.match(css, /\.login-page \{ display:grid; grid-template-columns:minmax\(0,1\.02fr\) minmax\(360px,\.98fr\); min-height:100vh; min-height:100dvh; \}/);
+  assert.match(css, /@media \(max-width:700px\) \{[\s\S]*?\.login-page \{ grid-template-columns:1fr; min-height:100dvh; \}[\s\S]*?\.login-brand \{ min-height:0;/);
 });
 
 test("chapter action bar uses stateful labelled controls and local outline icons", () => {

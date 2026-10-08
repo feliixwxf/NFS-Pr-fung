@@ -83,6 +83,15 @@ export function progressMetrics(progress: QuestionProgress, availableQuestionIds
   const records = uniqueIds.map((id) => progress[id]).filter(Boolean);
   const attempts = records.reduce((sum, record) => sum + (record.attempts ?? 0), 0);
   const correctAttempts = records.reduce((sum, record) => sum + (record.correctAttempts ?? 0), 0);
+  const consolidationPoints = uniqueIds.reduce((sum, id) => {
+    const record = progress[id];
+    if (!record || record.lastResult === "wrong") return sum;
+    return sum + Math.min(3, Math.max(0, record.correctCount));
+  }, 0);
+  const maximumConsolidationPoints = uniqueIds.length * 3;
+  const consolidationPercent = maximumConsolidationPoints
+    ? Math.min(100, Math.max(0, consolidationPoints / maximumConsolidationPoints * 100))
+    : 0;
   return {
     answered: records.length,
     available: uniqueIds.length,
@@ -90,7 +99,9 @@ export function progressMetrics(progress: QuestionProgress, availableQuestionIds
     // A record exists only after an answer was actually assessed; wrong answers
     // therefore count as processed as well, while opened/bookmarked/skipped items do not.
     completionPercent: uniqueIds.length ? Math.min(100, Math.max(0, records.length / uniqueIds.length * 100)) : 0,
-    repetitionPercent: uniqueIds.length ? Math.round(records.reduce((sum, record) => sum + record.correctCount / 3, 0) / uniqueIds.length * 100) : 0,
+    consolidationPoints,
+    maximumConsolidationPoints,
+    consolidationPercent,
     hitRate: attempts >= 5 ? Math.round(correctAttempts / attempts * 100) : null,
     attempts,
   };
