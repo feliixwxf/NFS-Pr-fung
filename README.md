@@ -37,6 +37,22 @@ npm run build
 
 Der genaue gemeinsame Ablauf steht in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## KI-Prüfungstrainer einrichten
+
+Der textgebundene Prüfungstrainer verwendet ausschließlich das aktuell
+geöffnete Lernkapitel als Wissensgrundlage. Für lokale Entwicklung wird ein
+serverseitiger API-Schlüssel in `.env.local` benötigt:
+
+```bash
+OPENAI_API_KEY=...
+OPENAI_TUTOR_MODEL=gpt-6-luna
+```
+
+`OPENAI_TUTOR_MODEL` ist optional. In Vercel muss `OPENAI_API_KEY` als geheime
+Umgebungsvariable für die gewünschten Umgebungen hinterlegt und die Seite
+anschließend neu bereitgestellt werden. Der Schlüssel darf niemals mit dem
+Präfix `NEXT_PUBLIC_` oder direkt im Browser-Code gespeichert werden.
+
 ## Wichtige Inhaltsregel
 
 Medizinische Lerninhalte werden ausschließlich aus den von Felix
