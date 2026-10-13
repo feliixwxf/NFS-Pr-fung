@@ -2,11 +2,12 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { freeTutorKnowledge, type FreeTutorKnowledge } from "./free-tutor-knowledge";
+import { vfaLibrary, type VfaReference } from "./vfa-library";
 
 type TutorMode = "exam" | "case" | "question";
 type TutorScope = "chapter" | "site";
 type TutorResult = { evaluation: string; strengths: string[]; missing_points: string[]; score: number; source_basis: string };
-type TutorTurn = { role: "user" | "assistant"; text: string; result?: TutorResult };
+type TutorTurn = { role: "user" | "assistant"; text: string; result?: TutorResult; vfaImages?: readonly VfaReference[] };
 type LearningSource = { title: string; material: string; scope: TutorScope };
 
 const STOP_WORDS = new Set([
@@ -92,6 +93,32 @@ function scoreEntry(entry: FreeTutorKnowledge, query: string) {
 
 function rankedKnowledge(query: string, knowledge: readonly FreeTutorKnowledge[]) {
   return knowledge.map((entry) => ({ entry, score: scoreEntry(entry, query) })).filter((match) => match.score > 0).sort((a, b) => b.score - a.score);
+}
+
+function isVfaRequest(query: string) {
+  const value = normalize(query);
+  return /\b(vfa|verfahrensanweisung|verfahrensanweisungen)\b/.test(value) && /\b(zeig|zeige|zeigen|offne|bild|abbildung|original|vfa|verfahrensanweisung)\b/.test(value);
+}
+
+function findVfaReferences(query: string, fallbackTopic: string) {
+  const generic = new Set(["abbildung", "bild", "bitte", "original", "vfa", "verfahrensanweisung", "verfahrensanweisungen", "zeig", "zeige", "zeigen", "offne"]);
+  const directTokens = tokens(query).filter((token) => !generic.has(token));
+  const queryTokens = directTokens.length ? directTokens : tokens(fallbackTopic).filter((token) => !generic.has(token));
+  const exactNumber = normalize(query).match(/\bvfa\s*(\d{1,2})\b/)?.[1];
+  const wantsChild = queryTokens.some((token) => ["kind", "kinder", "neugeborene"].includes(token));
+  const wantsAdult = queryTokens.some((token) => ["erwachsene", "erwachsener"].includes(token));
+  const matches = vfaLibrary.map((entry) => {
+    const searchable = normalize(`${entry.title} ${entry.keywords}`);
+    let score = queryTokens.reduce((sum, token) => sum + (containsToken(searchable, token) ? 12 : 0), 0);
+    if (exactNumber && new RegExp(`\\bvfa ${exactNumber}\\b`).test(normalize(entry.title))) score += 100;
+    if (wantsChild && !/\b(kind|kinder|neugeborene)\b/.test(searchable)) score -= 24;
+    if (wantsAdult && /\b(kind|kinder|neugeborene)\b/.test(searchable)) score -= 24;
+    return { entry, score };
+  }).filter((match) => match.score > 0).sort((left, right) => right.score - left.score);
+  if (!matches.length) return [];
+  if (exactNumber) return matches.filter((match) => match.score >= 100).slice(0, 3).map((match) => match.entry);
+  const best = matches[0].score;
+  return matches.filter((match) => match.score >= Math.max(12, best - 6)).slice(0, 3).map((match) => match.entry);
 }
 
 function collectLearningMaterial(siteOverview: string): LearningSource | null {
@@ -295,6 +322,15 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
 
   const askQuestion = (value: string) => {
     if (!source) return;
+    if (isVfaRequest(value)) {
+      const vfaImages = findVfaReferences(value, source.title);
+      const text = vfaImages.length
+        ? `${vfaImages.length === 1 ? "Hier ist die passende Original-VFA" : "Hier sind die passenden Original-VFA"}. Tippe auf eine Abbildung, um sie vollständig und vergrößert zu öffnen.`
+        : "Ich konnte keine eindeutig passende VFA-Abbildung zuordnen. Nenne bitte das Thema, die VFA-Nummer oder den Wirkstoff, zum Beispiel „Zeig mir die VFA 25“, „VFA Anaphylaxie“ oder „VFA Morphin“.";
+      setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, vfaImages, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: vfaImages.length ? "Hinterlegte Original-VFA Thüringen 2026/2027" : "Keine eindeutige Zuordnung" } }]);
+      setInput("");
+      return;
+    }
     const match = rankedKnowledge(value, knowledge)[0];
     let text = "";
     let sourceBasis = "";
@@ -341,7 +377,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
         <div className="ai-tutor-tabs" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected={mode === "exam"} className={mode === "exam" ? "active" : ""} onClick={() => reset("exam")}>Mündliche Prüfung</button><button type="button" role="tab" aria-selected={mode === "case"} className={mode === "case" ? "active" : ""} onClick={() => reset("case")}>Fallbeispiel</button><button type="button" role="tab" aria-selected={mode === "question"} className={mode === "question" ? "active" : ""} onClick={() => reset("question")}>Lernchat</button></div>
         {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "exam" ? "01" : mode === "case" ? "F" : "?"}</span><div><h3>{mode === "exam" ? "Prüfung starten" : mode === "case" ? "Falltraining starten" : "Im Lernmaterial suchen"}</h3><p>{mode === "exam" ? "Der Lernprüfer bewertet deine freie Antwort anhand inhaltlicher Kernpunkte. Synonyme und übliche Abkürzungen werden berücksichtigt." : mode === "case" ? "Du erhältst eine Einsatzlage und beantwortest dazu nacheinander fachliche Fragen. Fehlende Kernpunkte landen automatisch in deiner Wiederholung." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode !== "question" && <>{source.scope === "site" && <label className="ai-tutor-focus">{mode === "case" ? "Fallthema" : "Prüfungsthema"}<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Hygiene oder Rechtskunde" /></label>}<div className="ai-tutor-start-actions"><button type="button" disabled={source.scope === "site" && !input.trim()} onClick={startExam}>{mode === "case" ? "Fallbeispiel starten →" : "Erste Prüfungsfrage stellen →"}</button>{mode === "exam" && <button className="secondary" type="button" disabled={!weakEntries.length} onClick={startWeakReview}>Schwächen wiederholen{weakEntries.length ? ` (${weakEntries.length})` : ""}</button>}</div></>}</div></div>}
         <div className="ai-tutor-conversation" aria-live="polite">
-          {turns.map((turn, index) => <article className={turn.role} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>Kernpunkte</small></div>{turn.result.evaluation && <p>{turn.result.evaluation}</p>}{turn.result.strengths.length > 0 && <section><b>Das war enthalten</b><ul>{turn.result.strengths.map((point) => <li key={point}>{point}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>Das solltest du ergänzen</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{point}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {turn.result.source_basis}</small>}</div></article>)}
+          {turns.map((turn, index) => <article className={turn.role} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.vfaImages && turn.vfaImages.length > 0 && <div className="ai-tutor-vfa-grid">{turn.vfaImages.map((vfa) => <a href={vfa.src} target="_blank" rel="noreferrer" key={vfa.src}><img src={vfa.src} alt={vfa.title} loading="lazy" /><b>{vfa.title}</b><small>Zum Vergrößern öffnen ↗</small></a>)}</div>}{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>Kernpunkte</small></div>{turn.result.evaluation && <p>{turn.result.evaluation}</p>}{turn.result.strengths.length > 0 && <section><b>Das war enthalten</b><ul>{turn.result.strengths.map((point) => <li key={point}>{point}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>Das solltest du ergänzen</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{point}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {turn.result.source_basis}</small>}</div></article>)}
           <div ref={endRef} />
         </div>
         {source && (mode === "question" || currentEntry) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "question" ? "Deine Frage" : mode === "case" ? "Deine Antwort zum Fall" : "Deine freie Antwort"}</label><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "question" ? "Stelle eine Wissensfrage zur NotSan-Prüfung …" : "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …"} /><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "question" ? "Suchen →" : "Antwort prüfen →"}</button></div></form>}
