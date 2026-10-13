@@ -1,14 +1,18 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { freeTutorKnowledge, type FreeTutorKnowledge } from "./free-tutor-knowledge";
+import { freeTutorKnowledge, type FreeTutorKnowledge, type TutorQuestionImage } from "./free-tutor-knowledge";
 import { vfaLibrary, type VfaReference } from "./vfa-library";
+import { saveLocalTutorWeaknesses, syncTutorWeaknesses, updateTutorWeakness } from "./lib/tutorWeaknessProgress";
 
-type TutorMode = "exam" | "case" | "question";
+type TutorMode = "exam" | "case" | "image" | "question";
 type TutorScope = "chapter" | "site";
-type TutorResult = { evaluation: string; strengths: string[]; missing_points: string[]; score: number; source_basis: string };
-type TutorTurn = { role: "user" | "assistant"; text: string; result?: TutorResult; vfaImages?: readonly VfaReference[] };
-type LearningSource = { title: string; material: string; scope: TutorScope };
+type TutorResult = { evaluation: string; strengths: string[]; missing_points: string[]; score: number; source_basis: string; source_href?: string };
+type TutorTurn = { role: "user" | "assistant"; text: string; result?: TutorResult; vfaImages?: readonly VfaReference[]; questionImage?: TutorQuestionImage };
+type LearningSource = { title: string; material: string; scope: TutorScope; href: string };
+type SpeechRecognitionEventLike = { results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean }> };
+type SpeechRecognitionLike = { lang: string; continuous: boolean; interimResults: boolean; onresult: ((event: SpeechRecognitionEventLike) => void) | null; onend: (() => void) | null; onerror: (() => void) | null; start: () => void; stop: () => void };
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
 const STOP_WORDS = new Set([
   "aber", "alle", "als", "also", "auch", "auf", "aus", "bei", "bitte", "das", "dass", "dem", "den", "der", "des", "die", "ein", "eine", "einer", "eines", "erklaere", "fur", "gibt", "haben", "ist", "kurz", "man", "mehr", "mir", "mit", "nach", "nenne", "oder", "sind", "uber", "und", "von", "warum", "was", "welche", "welcher", "wie", "wird", "zum", "zur",
@@ -131,7 +135,7 @@ function collectLearningMaterial(siteOverview: string): LearningSource | null {
   const scope: TutorScope = chapter ? "chapter" : "site";
   const visibleText = (clone.textContent || "").replace(/\s+/g, " ").trim();
   const material = `${siteOverview}\n\n${scope === "chapter" ? `Aktuell geöffnetes Kapitel „${title}“:\n` : "Aktuell sichtbare Seite:\n"}${visibleText}`.slice(0, 38_000);
-  return material.length >= 100 ? { title, material, scope } : null;
+  return material.length >= 100 ? { title, material, scope, href: window.location.pathname } : null;
 }
 
 function materialAnswer(material: string, query: string) {
@@ -248,7 +252,7 @@ function chooseExamPool(focus: string, knowledge: readonly FreeTutorKnowledge[])
   return [...pool.slice(offset), ...pool.slice(0, offset)].slice(0, 20);
 }
 
-export default function AiExamTutor({ active, siteOverview, additionalKnowledge = [] }: { active: boolean; siteOverview: string; additionalKnowledge?: readonly FreeTutorKnowledge[] }) {
+export default function AiExamTutor({ active, siteOverview, additionalKnowledge = [], userId = null }: { active: boolean; siteOverview: string; additionalKnowledge?: readonly FreeTutorKnowledge[]; userId?: string | null }) {
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [mode, setMode] = useState<TutorMode>("exam");
@@ -267,8 +271,15 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
   const [sessionScores, setSessionScores] = useState<number[]>([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
+  const [listening, setListening] = useState(false);
+  const [speechSupported] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const speechWindow = window as typeof window & { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor };
+    return Boolean(speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition);
+  });
   const dialogRef = useRef<HTMLElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const knowledge = useMemo(() => [...freeTutorKnowledge, ...additionalKnowledge], [additionalKnowledge]);
   const weakEntries = useMemo(() => knowledge.filter((entry) => weakEntryIds.includes(entry.id)), [knowledge, weakEntryIds]);
   const currentEntry = examPool[examIndex] || null;
@@ -286,8 +297,15 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [turns]);
   useEffect(() => {
-    try { window.localStorage.setItem("notsan-tutor-weak-entries", JSON.stringify(weakEntryIds)); } catch { /* Privater Browsermodus kann localStorage sperren. */ }
+    try { saveLocalTutorWeaknesses(weakEntryIds); } catch { /* Privater Browsermodus kann localStorage sperren. */ }
   }, [weakEntryIds]);
+  useEffect(() => {
+    return () => recognitionRef.current?.stop();
+  }, []);
+  useEffect(() => {
+    if (!userId) return;
+    syncTutorWeaknesses(userId).then(setWeakEntryIds).catch(() => setError("Die Schwächenliste konnte gerade nicht mit deinem Konto synchronisiert werden."));
+  }, [userId]);
   if (!active || dismissed) return null;
 
   const openTutor = () => {
@@ -308,16 +326,17 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
 
   const startExam = () => {
     if (!source) return;
-    const pool = chooseExamPool(input.trim() || source.title, knowledge);
+    const basePool = mode === "image" ? knowledge.filter((entry) => entry.image) : knowledge;
+    const pool = chooseExamPool(input.trim() || source.title, basePool);
     const first = pool[0];
-    setReviewMode(false); setSessionScores([]); setExamPool(pool); setExamIndex(0); setTurns(first ? [{ role: "assistant", text: questionText(first, 0) }] : []); setInput(""); setError(first ? "" : "Zu diesem Schwerpunkt wurden keine Lernkarten gefunden.");
+    setReviewMode(false); setSessionScores([]); setExamPool(pool); setExamIndex(0); setTurns(first ? [{ role: "assistant", text: questionText(first, 0), questionImage: first.image }] : []); setInput(""); setError(first ? "" : "Zu diesem Schwerpunkt wurden keine Lernkarten gefunden.");
   };
 
   const startWeakReview = () => {
     if (!source || !weakEntries.length) return;
     const offset = Math.floor(Math.random() * weakEntries.length);
     const pool = [...weakEntries.slice(offset), ...weakEntries.slice(0, offset)];
-    setReviewMode(true); setSessionScores([]); setExamPool(pool); setExamIndex(0); setTurns([{ role: "assistant", text: pool[0].question }]); setInput(""); setError("");
+    setReviewMode(true); setSessionScores([]); setExamPool(pool); setExamIndex(0); setTurns([{ role: "assistant", text: pool[0].question, questionImage: pool[0].image }]); setInput(""); setError("");
   };
 
   const askQuestion = (value: string) => {
@@ -337,7 +356,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     if (match && match.score >= 16) { text = structuredKnowledgeAnswer(match.entry); sourceBasis = `Lernbestand · ${match.entry.topic} · ${match.entry.area}`; }
     else { text = materialAnswer(source.material, value); sourceBasis = `${source.title} · sichtbarer Lesetext`; }
     if (!text) { text = "Dazu finde ich im hinterlegten Lernmaterial keinen eindeutigen Treffer. Öffne bitte das passende Kapitel und formuliere die Frage mit einem konkreten Fachbegriff erneut."; sourceBasis = "Kein sicherer Treffer"; }
-    setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: sourceBasis } }]);
+    setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: sourceBasis, source_href: match && match.score >= 16 ? match.entry.href : source.href } }]);
     setInput("");
   };
 
@@ -347,12 +366,13 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     setWeakEntryIds((current) => result.score <= 3
       ? [...new Set([...current, currentEntry.id])]
       : current.filter((id) => id !== currentEntry.id));
+    if (userId) updateTutorWeakness(userId, currentEntry.id, result.score).catch(() => setError("Die letzte Bewertung konnte nicht mit deinem Konto synchronisiert werden."));
     setSessionScores((current) => [...current, result.score]);
     const nextIndex = examPool.length > 1 ? (examIndex + 1) % examPool.length : examIndex;
     const next = examPool[nextIndex];
     const finishedWeakRound = reviewMode && nextIndex === 0;
     const response = `Musterlösung\n${currentEntry.answer.replace(/\n\n(?:Begründung|Warum):\s*[\s\S]+$/i, "").trim()}\n\nWarum diese Antwort?\n${answerRationale(currentEntry)}${next && !finishedWeakRound ? `\n\n${mode === "case" ? "Weiter im Fall" : "Nächste Frage"}\n${questionText(next, nextIndex)}` : finishedWeakRound ? "\n\nWiederholungsrunde beendet. Sicher beantwortete Inhalte wurden aus deiner Schwächenliste entfernt." : ""}`;
-    setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text: response, result }]);
+    setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text: response, result: { ...result, source_href: currentEntry.href }, questionImage: next && !finishedWeakRound ? next.image : undefined }]);
     if (finishedWeakRound) { setExamPool([]); setReviewMode(false); }
     else setExamIndex(nextIndex);
     setInput("");
@@ -365,6 +385,27 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     if (mode === "question") askQuestion(value); else answerExam(value);
   };
 
+  const toggleSpeech = () => {
+    if (listening) { recognitionRef.current?.stop(); return; }
+    const speechWindow = window as typeof window & { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor };
+    const Recognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
+    if (!Recognition) { setError("Die Spracheingabe wird von diesem Browser nicht unterstützt."); return; }
+    const recognition = new Recognition();
+    const base = input.trim();
+    recognition.lang = "de-DE";
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (let index = 0; index < event.results.length; index += 1) transcript += `${event.results[index][0].transcript} `;
+      setInput(`${base}${base ? " " : ""}${transcript.trim()}`.slice(0, 2500));
+    };
+    recognition.onend = () => setListening(false);
+    recognition.onerror = () => { setListening(false); setError("Die Spracheingabe wurde unterbrochen. Du kannst deine Antwort weiterhin tippen."); };
+    recognitionRef.current = recognition;
+    setError(""); setListening(true); recognition.start();
+  };
+
   return <>
     <div className="ai-tutor-launcher-group">
       <button className="ai-tutor-launcher" type="button" onClick={openTutor} aria-label="Kostenlosen Lernprüfer öffnen"><span>✶</span><b>Lernprüfer</b></button>
@@ -374,13 +415,13 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
       <button className="ai-tutor-dismiss-layer" type="button" onClick={() => setOpen(false)} aria-label="Lernprüfer schließen" />
       <section ref={dialogRef} className="ai-tutor-dialog" role="dialog" aria-modal="true" aria-label="Kostenloser Lernprüfer" tabIndex={-1}>
         <header><div><small>KOSTENLOS · OHNE EXTERNE KI</small><h2>Lernprüfer</h2><p>{source?.title || "Kein Kapitel geöffnet"}</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Lernprüfer schließen">×</button></header>
-        <div className="ai-tutor-tabs" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected={mode === "exam"} className={mode === "exam" ? "active" : ""} onClick={() => reset("exam")}>Mündliche Prüfung</button><button type="button" role="tab" aria-selected={mode === "case"} className={mode === "case" ? "active" : ""} onClick={() => reset("case")}>Fallbeispiel</button><button type="button" role="tab" aria-selected={mode === "question"} className={mode === "question" ? "active" : ""} onClick={() => reset("question")}>Lernchat</button></div>
-        {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "exam" ? "01" : mode === "case" ? "F" : "?"}</span><div><h3>{mode === "exam" ? "Prüfung starten" : mode === "case" ? "Falltraining starten" : "Im Lernmaterial suchen"}</h3><p>{mode === "exam" ? "Der Lernprüfer bewertet deine freie Antwort anhand inhaltlicher Kernpunkte. Synonyme und übliche Abkürzungen werden berücksichtigt." : mode === "case" ? "Du erhältst eine Einsatzlage und beantwortest dazu nacheinander fachliche Fragen. Fehlende Kernpunkte landen automatisch in deiner Wiederholung." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode !== "question" && <>{source.scope === "site" && <label className="ai-tutor-focus">{mode === "case" ? "Fallthema" : "Prüfungsthema"}<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Hygiene oder Rechtskunde" /></label>}<div className="ai-tutor-start-actions"><button type="button" disabled={source.scope === "site" && !input.trim()} onClick={startExam}>{mode === "case" ? "Fallbeispiel starten →" : "Erste Prüfungsfrage stellen →"}</button>{mode === "exam" && <button className="secondary" type="button" disabled={!weakEntries.length} onClick={startWeakReview}>Schwächen wiederholen{weakEntries.length ? ` (${weakEntries.length})` : ""}</button>}</div></>}</div></div>}
+        <div className="ai-tutor-tabs" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected={mode === "exam"} className={mode === "exam" ? "active" : ""} onClick={() => reset("exam")}>Mündliche Prüfung</button><button type="button" role="tab" aria-selected={mode === "case"} className={mode === "case" ? "active" : ""} onClick={() => reset("case")}>Fallbeispiel</button><button type="button" role="tab" aria-selected={mode === "image"} className={mode === "image" ? "active" : ""} onClick={() => reset("image")}>Bildfragen</button><button type="button" role="tab" aria-selected={mode === "question"} className={mode === "question" ? "active" : ""} onClick={() => reset("question")}>Lernchat</button></div>
+        {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "exam" ? "01" : mode === "case" ? "F" : mode === "image" ? "▧" : "?"}</span><div><h3>{mode === "exam" ? "Prüfung starten" : mode === "case" ? "Falltraining starten" : mode === "image" ? "Bilddiagnostik trainieren" : "Im Lernmaterial suchen"}</h3><p>{mode === "exam" ? "Der Lernprüfer bewertet deine freie Antwort anhand inhaltlicher Kernpunkte. Synonyme und übliche Abkürzungen werden berücksichtigt." : mode === "case" ? "Du erhältst eine Einsatzlage und beantwortest dazu nacheinander fachliche Fragen. Fehlende Kernpunkte landen automatisch in deiner Wiederholung." : mode === "image" ? "Erkenne EKG-Muster und anatomische Strukturen aus den hinterlegten Lernabbildungen und begründe deine Einordnung." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode !== "question" && <>{source.scope === "site" && mode !== "image" && <label className="ai-tutor-focus">{mode === "case" ? "Fallthema" : "Prüfungsthema"}<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Hygiene oder Rechtskunde" /></label>}<div className="ai-tutor-start-actions"><button type="button" disabled={source.scope === "site" && mode !== "image" && !input.trim()} onClick={startExam}>{mode === "case" ? "Fallbeispiel starten →" : mode === "image" ? "Erste Bildfrage öffnen →" : "Erste Prüfungsfrage stellen →"}</button>{mode === "exam" && <button className="secondary" type="button" disabled={!weakEntries.length} onClick={startWeakReview}>Schwächen wiederholen{weakEntries.length ? ` (${weakEntries.length})` : ""}</button>}</div></>}</div></div>}
         <div className="ai-tutor-conversation" aria-live="polite">
-          {turns.map((turn, index) => <article className={turn.role} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.vfaImages && turn.vfaImages.length > 0 && <div className="ai-tutor-vfa-grid">{turn.vfaImages.map((vfa) => <a href={vfa.src} target="_blank" rel="noreferrer" key={vfa.src}><img src={vfa.src} alt={vfa.title} loading="lazy" /><b>{vfa.title}</b><small>Zum Vergrößern öffnen ↗</small></a>)}</div>}{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>Kernpunkte</small></div>{turn.result.evaluation && <p>{turn.result.evaluation}</p>}{turn.result.strengths.length > 0 && <section><b>Das war enthalten</b><ul>{turn.result.strengths.map((point) => <li key={point}>{point}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>Das solltest du ergänzen</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{point}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {turn.result.source_basis}</small>}</div></article>)}
+          {turns.map((turn, index) => <article className={turn.role} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.questionImage && <figure className="ai-tutor-question-image"><a href={turn.questionImage.src} target="_blank" rel="noreferrer"><img src={turn.questionImage.src} alt={turn.questionImage.alt} loading="lazy" /></a><figcaption>{turn.questionImage.caption} · zum Vergrößern antippen</figcaption></figure>}{turn.vfaImages && turn.vfaImages.length > 0 && <div className="ai-tutor-vfa-grid">{turn.vfaImages.map((vfa) => <a href={vfa.src} target="_blank" rel="noreferrer" key={vfa.src}><img src={vfa.src} alt={vfa.title} loading="lazy" /><b>{vfa.title}</b><small>Zum Vergrößern öffnen ↗</small></a>)}</div>}{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>Kernpunkte</small></div>{turn.result.evaluation && <p>{turn.result.evaluation}</p>}{turn.result.strengths.length > 0 && <section><b>Das war enthalten</b><ul>{turn.result.strengths.map((point) => <li key={point}>{point}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>Das solltest du ergänzen</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{point}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {turn.result.source_basis}</small>}{turn.role === "assistant" && turn.result?.source_href && <a className="ai-tutor-source-link" href={turn.result.source_href}>Passendes Lernkapitel öffnen →</a>}</div></article>)}
           <div ref={endRef} />
         </div>
-        {source && (mode === "question" || currentEntry) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "question" ? "Deine Frage" : mode === "case" ? "Deine Antwort zum Fall" : "Deine freie Antwort"}</label><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "question" ? "Stelle eine Wissensfrage zur NotSan-Prüfung …" : "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …"} /><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "question" ? "Suchen →" : "Antwort prüfen →"}</button></div></form>}
+        {source && (mode === "question" || currentEntry) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "question" ? "Deine Frage" : mode === "case" ? "Deine Antwort zum Fall" : "Deine freie Antwort"}</label><div className="ai-tutor-input-wrap"><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "question" ? "Stelle eine Wissensfrage zur NotSan-Prüfung …" : "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …"} />{speechSupported && <button className={`ai-tutor-mic ${listening ? "listening" : ""}`} type="button" onClick={toggleSpeech} aria-pressed={listening} aria-label={listening ? "Spracheingabe beenden" : "Antwort einsprechen"}>{listening ? "■ Aufnahme stoppen" : "🎙 Antwort einsprechen"}</button>}</div><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "question" ? "Suchen →" : "Antwort prüfen →"}</button></div></form>}
         {error && <p className="ai-tutor-error" role="alert">{error}</p>}
         <footer><span>{knowledge.length} Lerninhalte · {weakEntries.length} in Wiederholung{sessionScores.length ? ` · Ø ${(sessionScores.reduce((sum, score) => sum + score, 0) / sessionScores.length).toFixed(1)}/5` : ""}</span><button type="button" onClick={() => reset()}>{mode === "question" ? "Chat leeren" : "Training zurücksetzen"}</button></footer>
       </section>

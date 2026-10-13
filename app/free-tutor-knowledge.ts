@@ -52,7 +52,40 @@ import { medicationCases, medicationRules } from "./lib/medicationData";
 type FlashcardLike = { id: string; area: string; question: string; answer: string };
 type ChoiceLike = { id: string; prompt: string; options: Array<{ text: string; correct?: boolean }>; source: string; difficulty: number };
 
-export type FreeTutorKnowledge = FlashcardLike & { topic: string };
+export type TutorQuestionImage = { src: string; alt: string; caption: string };
+export type FreeTutorKnowledge = FlashcardLike & { topic: string; href?: string; image?: TutorQuestionImage };
+
+const writtenRoutes: Record<string, string> = {
+  "Rechtskunde": "/schriftlich/rechtskunde",
+  "Kommunikation": "/schriftlich/kommunikation",
+  "Organisation und Einsatztaktik": "/schriftlich/organisation",
+  "Qualitätsmanagement": "/schriftlich/qualitaetsmanagement",
+  "Terminologie": "/schriftlich/terminologie",
+  "Medizinische Diagnostik": "/schriftlich/diagnostik",
+  "Hygiene und Infektionsschutz": "/schriftlich/hygiene",
+};
+
+const oralRoutes: Record<string, string> = {
+  "Hyperventilation": "hyperventilation", "Geburt": "geburt", "Abdominaltrauma": "abdominaltrauma", "Thoraxtrauma": "thoraxtrauma",
+  "Gallensteinkolik": "gallensteinkolik", "Wirbelsäulentrauma": "wirbelsaeulentrauma", "Extremitätentrauma": "extremitaetentrauma",
+  "Extrauteringravidität": "eug", "Lungenödem": "lungenoedem", "Rippenfraktur": "rippenfraktur", "Verbrennung": "verbrennung",
+  "Asthma und COPD": "asthma", "Pneumonie": "pneumonie", "Unterkühlung": "unterkuehlung", "Krampfanfall Erwachsener": "krampfanfall",
+  "Krampfanfall Kind": "krampfanfall-kind", "Vorhofflimmern": "vorhofflimmern", "Hypertensiver Notfall": "thema-14",
+  "Pseudokrupp und Epiglottitis": "pseudokrupp-epiglottitis", "Angina pectoris": "angina-pectoris", "Myokardinfarkt": "myokardinfarkt",
+  "Venenthrombose": "venenthrombose", "pAVK": "pavk", "Opiatintoxikation": "opiatintoxikation", "Polytrauma": "polytrauma",
+  "Akutes Abdomen": "akutes-abdomen", "Akute Pankreatitis": "akute-pankreatitis", "Ulkusblutung": "ulkusblutung",
+  "Schussverletzung": "schussverletzung", "Stichverletzung": "stichverletzung", "Explosionsverletzung": "explosionsverletzung",
+  "Amputationsverletzung": "amputationsverletzung", "Alkoholintoxikation": "alkoholintoxikation", "Instabile Bradykardie": "instabile-bradykardie",
+  "Herzrhythmusstörungen": "herzrhythmusstoerungen", "Herzbeuteltamponade": "herzbeuteltamponade", "Elektrounfall": "elektrounfall",
+  "Beckentrauma": "beckentrauma", "Barotrauma": "barotrauma", "Anaphylaxie": "anaphylaxie", "Schock": "schock",
+};
+
+function learningRoute(topic: string) {
+  if (writtenRoutes[topic]) return writtenRoutes[topic];
+  if (topic.startsWith("Medikament ·")) return "/medikamentenwirkung";
+  if (topic.startsWith("Medikamentenrechnen ·")) return "/medikamentenrechnen";
+  return oralRoutes[topic] ? `/muendlich/${oralRoutes[topic]}` : undefined;
+}
 
 const datasets: Array<[string, readonly FlashcardLike[]]> = [
   ["Rechtskunde", rechtskundeFlashcards],
@@ -106,7 +139,7 @@ const datasets: Array<[string, readonly FlashcardLike[]]> = [
 ];
 
 export const freeTutorKnowledge: FreeTutorKnowledge[] = datasets.flatMap(([topic, cards]) =>
-  cards.map((card) => ({ ...card, topic })),
+  cards.map((card) => ({ ...card, topic, href: learningRoute(topic) })),
 );
 
 const questionDatasets: Array<[string, readonly ChoiceLike[]]> = [
@@ -134,6 +167,7 @@ const multipleChoiceKnowledge: FreeTutorKnowledge[] = questionDatasets.flatMap((
     area: `Multiple Choice · Schwierigkeit ${question.difficulty}`,
     question: question.prompt,
     answer: `${correct}\n\nBegründung: ${question.source}`,
+    href: learningRoute(topic),
   };
 }));
 
@@ -151,6 +185,7 @@ const medicationKnowledge: FreeTutorKnowledge[] = medications.map((item, index) 
     `Nebenwirkungen: ${item.sideEffects}`,
     item.preparation ? `Dosierung und Zubereitung: ${item.preparation.dose}; ${item.preparation.route}. ${item.preparation.concentration ? `Konzentration: ${item.preparation.concentration}.` : ""} ${item.preparation.note || ""}` : "",
   ].filter(Boolean).join("\n"),
+  href: "/medikamentenwirkung",
 }));
 
 const medicationRuleKnowledge: FreeTutorKnowledge[] = medicationRules.map((rule) => ({
@@ -159,6 +194,7 @@ const medicationRuleKnowledge: FreeTutorKnowledge[] = medicationRules.map((rule)
   area: `${rule.group} · ${rule.indication}`,
   question: `Welche Rechenregel gilt für ${rule.drug} bei ${rule.indication}?`,
   answer: `Applikation: ${rule.route}. Regel: ${rule.parameter}.${rule.concentration ? ` Konzentration: ${rule.concentration}.` : ""}${rule.repeat ? ` Wiederholung: ${rule.repeat}.` : ""}${rule.singleMaximum ? ` Einzelhöchstdosis: ${rule.singleMaximum}.` : ""}${rule.cumulativeMaximum ? ` Gesamthöchstdosis: ${rule.cumulativeMaximum}.` : ""}`,
+  href: "/medikamentenrechnen",
 }));
 
 const medicationCaseKnowledge: FreeTutorKnowledge[] = medicationCases.map((item) => ({
@@ -167,9 +203,19 @@ const medicationCaseKnowledge: FreeTutorKnowledge[] = medicationCases.map((item)
   area: `${item.group} · ${item.category}`,
   question: `${item.text} ${item.question}`,
   answer: `${item.answers.map((answer) => `${answer.label}: ${String(answer.value).replace(".", ",")} ${answer.unit} (${answer.calculation})`).join("\n")}\nMerke: ${item.hint}`,
+  href: "/medikamentenrechnen",
 }));
 
-freeTutorKnowledge.push(...multipleChoiceKnowledge, ...medicationKnowledge, ...medicationRuleKnowledge, ...medicationCaseKnowledge);
+const imageKnowledge: FreeTutorKnowledge[] = [
+  { id: "image-av-block", topic: "Instabile Bradykardie", area: "EKG-Bildfrage", question: "Ordne die dargestellten AV-Blöcke ein und nenne für Grad I, Grad II Typ Wenckebach/Mobitz und Grad III das entscheidende EKG-Merkmal.", answer: "AV-Block I: Jede P-Welle wird übergeleitet, die PQ-Zeit ist konstant verlängert (> 200 ms).\nAV-Block II Typ Wenckebach: Die PQ-Zeit verlängert sich zunehmend, bis ein QRS-Komplex ausfällt.\nAV-Block II Typ Mobitz: Die PQ-Zeit bleibt konstant, plötzlich fällt ein QRS-Komplex aus.\nAV-Block III: P-Wellen und QRS-Komplexe laufen vollständig unabhängig voneinander; Vorhof und Kammer sind dissoziiert.", href: "/muendlich/instabile-bradykardie", image: { src: "/lessons/instabile-bradykardie/av-block-ekg-uebersicht.png", alt: "EKG-Übersicht der AV-Blöcke", caption: "EKG-Lernvergleich: AV-Blockierungen" } },
+  { id: "image-vorhofflimmern", topic: "Vorhofflimmern", area: "EKG-Bildfrage", question: "Welche Rhythmusstörung zeigt der EKG-Streifen und an welchen zwei Leitsymptomen im EKG erkennst du sie?", answer: "Vorhofflimmern. Typisch sind fehlende eindeutig abgrenzbare P-Wellen und absolut unregelmäßige RR-Abstände (absolute Arrhythmie).", href: "/muendlich/vorhofflimmern", image: { src: "/lessons/vorhofflimmern/vorhofflimmern-ekg.jpg", alt: "EKG bei Vorhofflimmern", caption: "EKG-Streifen beurteilen" } },
+  { id: "image-erregungsleitung", topic: "Herzrhythmusstörungen", area: "Anatomie-Bildfrage", question: "Beschreibe anhand der Abbildung den physiologischen Weg der Erregungsleitung durch das Herz.", answer: "Sinusknoten → Vorhofmyokard → AV-Knoten mit physiologischer Verzögerung → His-Bündel → rechter und linker Tawara-Schenkel → Purkinje-Fasern → Kammermyokard.", href: "/muendlich/herzrhythmusstoerungen", image: { src: "/lessons/vorhofflimmern/erregungsleitung.png", alt: "Erregungsleitungssystem des Herzens", caption: "Anatomie: kardiales Reizleitungssystem" } },
+  { id: "image-gefaesse", topic: "Venenthrombose", area: "Anatomie-Bildfrage", question: "Vergleiche Arterie und Vene anhand der Abbildung: Wandaufbau, Druckverhältnisse und Transportmechanismus.", answer: "Arterien besitzen eine kräftigere Tunica media und transportieren Blut unter höherem Druck vom Herzen weg. Venen haben dünnere Wände, ein größeres Lumen und führen Blut zum Herzen zurück; Venenklappen, Muskelpumpe, Atempumpe und der Sog des Herzens unterstützen den Rückstrom.", href: "/muendlich/venenthrombose", image: { src: "/lessons/venenthrombose/vene-arterie-beschriftet.png", alt: "Beschrifteter Vergleich von Arterie und Vene", caption: "Gefäßanatomie vergleichen" } },
+  { id: "image-willis", topic: "Apoplex", area: "Anatomie-Bildfrage", question: "Welche Struktur ist dargestellt und weshalb ist sie für die zerebrale Blutversorgung klinisch bedeutsam?", answer: "Dargestellt ist der Circulus arteriosus cerebri (Willis-Kreis). Er verbindet die vordere und hintere sowie beide seitlichen Hirnkreisläufe und kann bei Gefäßengstellen begrenzt eine kollaterale Blutversorgung ermöglichen.", href: "/muendlich/apoplex", image: { src: "/lessons/apoplexie/willis-kreis-beschriftet.png", alt: "Beschrifteter Circulus arteriosus cerebri", caption: "Hirngefäße: Willis-Kreis" } },
+  { id: "image-acs-regionen", topic: "Myokardinfarkt", area: "EKG-Bildfrage", question: "Ordne die EKG-Ableitungsgruppen den betroffenen Herzregionen zu.", answer: "Inferior: II, III, aVF. Lateral: I, aVL, V5–V6. Septal: V1–V2. Anterior: V3–V4. Eine Beurteilung erfolgt immer im klinischen Kontext und anhand benachbarter Ableitungen.", href: "/muendlich/myokardinfarkt", image: { src: "/lessons/acs/acs-ekg-regionen.png", alt: "Zuordnung der EKG-Ableitungen zu Herzregionen", caption: "12-Kanal-EKG: Herzregionen" } },
+];
+
+freeTutorKnowledge.push(...multipleChoiceKnowledge, ...medicationKnowledge, ...medicationRuleKnowledge, ...medicationCaseKnowledge, ...imageKnowledge);
 
 export function convertQuestionsToTutorKnowledge(topic: string, questions: readonly ChoiceLike[]): FreeTutorKnowledge[] {
   return questions.map((question) => ({
@@ -178,5 +224,6 @@ export function convertQuestionsToTutorKnowledge(topic: string, questions: reado
     area: `Multiple Choice · Schwierigkeit ${question.difficulty}`,
     question: question.prompt,
     answer: `${question.options.filter((option) => option.correct).map((option) => `• ${option.text}`).join("\n")}\n\nBegründung: ${question.source}`,
+    href: learningRoute(topic),
   }));
 }
