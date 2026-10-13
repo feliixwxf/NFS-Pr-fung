@@ -152,15 +152,26 @@ function structuredKnowledgeAnswer(entry: FreeTutorKnowledge) {
   return `Antwort\n${answerWithoutRationale}\n\nFachliche Begründung\n${answerRationale(entry)}`;
 }
 
-function TutorMessageText({ text }: { text: string }) {
+const IMPORTANT_TEXT_PATTERN = /(\b(?:Wirkung|Wechselwirkungen?|Kontraindikationen?|Nebenwirkungen?|Dosierung|Zubereitung|Reanimation|Atemweg|Atmung|Kreislauf|Bewusstsein|Bradykardie|Tachykardie|Hypotonie|Hypertonie|Dyspnoe|Atemdepression|Kammerflimmern|Blutung|Schock|ROSC|cABCDE|ABCDE|SAMPLER|OPQRST|GCS|SpO₂|SpO2|etCO₂|etCO2)\b|\b\d+(?:[.,]\d+)?\s?(?:mg|µg|g|ml|l|min|mmHg|cmH₂O|J|IE|%)(?:\/(?:kgKG|kg|h|min))?\b)/gi;
+
+function emphasizeImportantText(text: string) {
+  return text.split(IMPORTANT_TEXT_PATTERN).map((part, index) =>
+    !part ? null : index % 2 === 1 ? <strong className="message-key" key={`${part}-${index}`}>{part}</strong> : part,
+  );
+}
+
+function TutorMessageText({ text, emphasize = false }: { text: string; emphasize?: boolean }) {
   const headings = new Set(["antwort", "fachliche begründung", "musterlösung", "warum diese antwort?", "nächste frage", "weiter im fall"]);
   return <div className="ai-tutor-message-text">{text.split("\n").map((line, index) => {
     const trimmed = line.trim();
     if (!trimmed) return <span className="spacer" aria-hidden="true" key={`space-${index}`} />;
     const heading = trimmed.replace(/:$/, "").toLocaleLowerCase("de");
     if (headings.has(heading)) return <strong className="message-heading" key={`heading-${index}`}>{trimmed.replace(/:$/, "")}</strong>;
-    if (/^[•\-–]/.test(trimmed)) return <span className="message-bullet" key={`bullet-${index}`}>{trimmed.replace(/^[•\-–]\s*/, "")}</span>;
-    return <span key={`line-${index}`}>{trimmed}</span>;
+    if (/^[•\-–]/.test(trimmed)) {
+      const bullet = trimmed.replace(/^[•\-–]\s*/, "");
+      return <span className="message-bullet" key={`bullet-${index}`}>{emphasize ? emphasizeImportantText(bullet) : bullet}</span>;
+    }
+    return <span key={`line-${index}`}>{emphasize ? emphasizeImportantText(trimmed) : trimmed}</span>;
   })}</div>;
 }
 
@@ -330,7 +341,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
         <div className="ai-tutor-tabs" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected={mode === "exam"} className={mode === "exam" ? "active" : ""} onClick={() => reset("exam")}>Mündliche Prüfung</button><button type="button" role="tab" aria-selected={mode === "case"} className={mode === "case" ? "active" : ""} onClick={() => reset("case")}>Fallbeispiel</button><button type="button" role="tab" aria-selected={mode === "question"} className={mode === "question" ? "active" : ""} onClick={() => reset("question")}>Lernchat</button></div>
         {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "exam" ? "01" : mode === "case" ? "F" : "?"}</span><div><h3>{mode === "exam" ? "Prüfung starten" : mode === "case" ? "Falltraining starten" : "Im Lernmaterial suchen"}</h3><p>{mode === "exam" ? "Der Lernprüfer bewertet deine freie Antwort anhand inhaltlicher Kernpunkte. Synonyme und übliche Abkürzungen werden berücksichtigt." : mode === "case" ? "Du erhältst eine Einsatzlage und beantwortest dazu nacheinander fachliche Fragen. Fehlende Kernpunkte landen automatisch in deiner Wiederholung." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode !== "question" && <>{source.scope === "site" && <label className="ai-tutor-focus">{mode === "case" ? "Fallthema" : "Prüfungsthema"}<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Hygiene oder Rechtskunde" /></label>}<div className="ai-tutor-start-actions"><button type="button" disabled={source.scope === "site" && !input.trim()} onClick={startExam}>{mode === "case" ? "Fallbeispiel starten →" : "Erste Prüfungsfrage stellen →"}</button>{mode === "exam" && <button className="secondary" type="button" disabled={!weakEntries.length} onClick={startWeakReview}>Schwächen wiederholen{weakEntries.length ? ` (${weakEntries.length})` : ""}</button>}</div></>}</div></div>}
         <div className="ai-tutor-conversation" aria-live="polite">
-          {turns.map((turn, index) => <article className={turn.role} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><TutorMessageText text={turn.text} />{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>Kernpunkte</small></div>{turn.result.evaluation && <p>{turn.result.evaluation}</p>}{turn.result.strengths.length > 0 && <section><b>Das war enthalten</b><ul>{turn.result.strengths.map((point) => <li key={point}>{point}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>Das solltest du ergänzen</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{point}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {turn.result.source_basis}</small>}</div></article>)}
+          {turns.map((turn, index) => <article className={turn.role} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>Kernpunkte</small></div>{turn.result.evaluation && <p>{turn.result.evaluation}</p>}{turn.result.strengths.length > 0 && <section><b>Das war enthalten</b><ul>{turn.result.strengths.map((point) => <li key={point}>{point}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>Das solltest du ergänzen</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{point}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {turn.result.source_basis}</small>}</div></article>)}
           <div ref={endRef} />
         </div>
         {source && (mode === "question" || currentEntry) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "question" ? "Deine Frage" : mode === "case" ? "Deine Antwort zum Fall" : "Deine freie Antwort"}</label><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "question" ? "Stelle eine Wissensfrage zur NotSan-Prüfung …" : "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …"} /><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "question" ? "Suchen →" : "Antwort prüfen →"}</button></div></form>}
