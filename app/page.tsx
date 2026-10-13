@@ -9,6 +9,7 @@ import AccountAccess from "./account-access";
 import AccessCode from "./access-code";
 import AccountProfileSettings, { loadAccountAvatarUrl } from "./account-profile-settings";
 import AiExamTutor from "./ai-exam-tutor";
+import { convertQuestionsToTutorKnowledge } from "./free-tutor-knowledge";
 import { supplementalQuestions } from "./supplemental-questions";
 import { rechtskundeFlashcards, rechtskundeQuestions } from "./rechtskunde-data";
 import KommunikationLesson from "./kommunikation-lesson";
@@ -494,7 +495,7 @@ export default function Home() {
         {view === "anatomy" && <AnatomyLibrary />}
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
-      <AiExamTutor active siteOverview={`Verfügbare mündliche Prüfungsthemen: ${topics.join(", ")}. Schriftliche Lernbereiche: Rechtskunde, Organisation und Einsatztaktik, Kommunikation, Qualitätsmanagement, Terminologie, medizinische Diagnostik sowie Hygiene und Infektionsschutz. Weitere Bereiche der Seite: Multiple-Choice-Training, Medikamentenwirkung, Medikamentenrechnen und Anatomie.`} />
+      <AiExamTutor active additionalKnowledge={legacyTutorKnowledge} siteOverview={`Verfügbare mündliche Prüfungsthemen: ${topics.join(", ")}. Schriftliche Lernbereiche: Rechtskunde, Organisation und Einsatztaktik, Kommunikation, Qualitätsmanagement, Terminologie, medizinische Diagnostik sowie Hygiene und Infektionsschutz. Weitere Bereiche der Seite: Multiple-Choice-Training, Medikamentenwirkung, Medikamentenrechnen und Anatomie.`} />
       {!headerMenuVisible && !mobileMenuOpen && <button ref={floatingMenuButtonRef} className="floating-menu-toggle" type="button" onClick={(event) => openMobileMenu(event.currentTarget)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Menü öffnen"><span aria-hidden="true"><i /><i /><i /></span>Menü</button>}
       {mobileMenuOpen && <><button className="mobile-menu-backdrop" type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen" /><aside ref={mobileMenuRef} id="mobile-menu" className="mobile-menu open" role="dialog" aria-modal="true" aria-label="Navigation"><header><button className="brand brand-home" type="button" onClick={() => changeView("start")} aria-label="Zum Hauptmenü"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></button><button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen">×</button></header><small>MENÜ</small><nav aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span><b>{item.label}</b>{view === item.id && <i>Aktiv</i>}</button>)}</nav><div className="mobile-menu-note"><span>☼</span><div><b>{topics.length} Themen angelegt</b><p>Deine gesamte Prüfungsvorbereitung an einem Ort.</p></div></div></aside></>}
     </div>
@@ -1941,6 +1942,16 @@ const hodentorsionQuestions: MultipleChoiceQuestion[] = [
   { id: "hoden-q-17", mode: "multiple", prompt: "Der Schmerz lässt während des Transports plötzlich deutlich nach. Welche Bewertungen bleiben richtig?", options: [{ text: "Eine spontane Detorsion ist möglich, beseitigt aber den Abklärungsbedarf nicht", correct: true }, { text: "Intermittierende Torsion mit erneuter Verdrehung bleibt möglich", correct: true }, { text: "Zeitpunkt und klinische Veränderung müssen dokumentiert und übergeben werden", correct: true }, { text: "Die Zielklinik kann wegen der Besserung ohne Rücksprache auf eine allgemeine Hausarztpraxis geändert werden" }], source: "Schmerzabnahme schließt die Torsion nicht sicher aus; Rezidiv oder Resttorsion bleiben möglich und verlangen urologische Abklärung.", difficulty: 3 },
   { id: "hoden-q-18", mode: "multiple", prompt: "Welche Übergabe zeigt bei vermuteter Hodentorsion die höchste fachliche Qualität?", options: [{ text: "Exakter Beginn, Verlauf, Seite, Ausstrahlung und Schmerzstärke", correct: true }, { text: "Inspektions- und Tastbefund einschließlich Hochstand und Seitenunterschied", correct: true }, { text: "Vegetative Zeichen, Vorereignisse, letzte Nahrungsaufnahme, Analgesie und Wirkung", correct: true }, { text: "Nur die Vermutung ‚akutes Skrotum‘ ohne Zeitangabe, Befunde oder Maßnahmen" }], source: "Die operative Zeitentscheidung braucht eine präzise Zeitachse, fokussierte Befunde, relevante Anamnese und den dokumentierten Maßnahmenverlauf.", difficulty: 3 },
   ...supplementalQuestions.hodentorsion,
+];
+
+const legacyTutorKnowledge = [
+  ...convertQuestionsToTutorKnowledge("Akutes Koronarsyndrom", acsMultipleChoiceQuestions),
+  ...convertQuestionsToTutorKnowledge("Apoplex", apoplexMultipleChoiceQuestions),
+  ...convertQuestionsToTutorKnowledge("Schädel-Hirn-Trauma", shtMultipleChoiceQuestions),
+  ...convertQuestionsToTutorKnowledge("Lungenarterienembolie", laeMultipleChoiceQuestions),
+  ...convertQuestionsToTutorKnowledge("Nierensteinkolik", nierensteinkolikQuestions),
+  ...convertQuestionsToTutorKnowledge("Hypoglykämie", hypoglykaemieQuestions),
+  ...convertQuestionsToTutorKnowledge("Hodentorsion", hodentorsionQuestions),
 ];
 
 const totalQuestionCount = [schockQuestions, elektrounfallQuestions, anaphylaxieQuestions, barotraumaQuestions, beckentraumaQuestions, amputationsverletzungQuestions, instabileBradykardieQuestions, akutesAbdomenQuestions, pankreatitisQuestions, ulkusblutungQuestions, schussverletzungQuestions, stichverletzungQuestions, explosionsverletzungQuestions, alkoholintoxikationQuestions, opiatintoxikationQuestions, venenthromboseQuestions, pavkQuestions, myokardinfarktQuestions, polytraumaQuestions, bronchoQuestions, pneumonieQuestions, pseudokruppEpiglottitisQuestions, hypertensiverNotfallQuestions, vorhofflimmernQuestions, krampfanfallKindQuestions, krampfanfallQuestions, unterkuehlungQuestions, anginaPectorisQuestions, acsMultipleChoiceQuestions, apoplexMultipleChoiceQuestions, shtMultipleChoiceQuestions, laeMultipleChoiceQuestions, nierensteinkolikQuestions, hypoglykaemieQuestions, hodentorsionQuestions, hyperventilationQuestions, geburtQuestions, thoraxtraumaQuestions, abdominaltraumaQuestions, gallensteinkolikQuestions, wirbelsaeulentraumaQuestions, extremitaetentraumaQuestions, eugQuestions, lungenoedemQuestions, rippenfrakturQuestions, verbrennungQuestions, rechtskundeQuestions, kommunikationQuestions, organisationQuestions, qmQuestions, terminologyQuestions].reduce((sum, bank) => sum + bank.length, 0);

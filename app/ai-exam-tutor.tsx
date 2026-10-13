@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { freeTutorKnowledge, type FreeTutorKnowledge } from "./free-tutor-knowledge";
 
 type TutorMode = "exam" | "question";
@@ -72,8 +72,8 @@ function scoreEntry(entry: FreeTutorKnowledge, query: string) {
   return score + Math.round(matched / queryTokens.length * 20);
 }
 
-function rankedKnowledge(query: string) {
-  return freeTutorKnowledge.map((entry) => ({ entry, score: scoreEntry(entry, query) })).filter((match) => match.score > 0).sort((a, b) => b.score - a.score);
+function rankedKnowledge(query: string, knowledge: readonly FreeTutorKnowledge[]) {
+  return knowledge.map((entry) => ({ entry, score: scoreEntry(entry, query) })).filter((match) => match.score > 0).sort((a, b) => b.score - a.score);
 }
 
 function collectLearningMaterial(siteOverview: string): LearningSource | null {
@@ -112,19 +112,19 @@ function evaluateAnswer(entry: FreeTutorKnowledge, response: string): TutorResul
     strengths: matched.length ? [`Erkannt: ${matched.slice(0, 5).join(", ")}`] : [],
     missing_points: missing.length ? [`Noch prüfen: ${missing.slice(0, 6).join(", ")}`] : [],
     score,
-    source_basis: `Karteikarte · ${entry.topic} · ${entry.area}`,
+    source_basis: `Lernbestand · ${entry.topic} · ${entry.area}`,
   };
 }
 
-function chooseExamPool(focus: string) {
-  const ranked = rankedKnowledge(focus);
+function chooseExamPool(focus: string, knowledge: readonly FreeTutorKnowledge[]) {
+  const ranked = rankedKnowledge(focus, knowledge);
   const focused = ranked.filter((match) => match.score >= Math.max(12, (ranked[0]?.score || 0) * 0.35)).map((match) => match.entry);
-  const pool = focused.length >= 2 ? focused : freeTutorKnowledge;
+  const pool = focused.length >= 2 ? focused : [...knowledge];
   const offset = Math.floor(Math.random() * pool.length);
   return [...pool.slice(offset), ...pool.slice(0, offset)].slice(0, 20);
 }
 
-export default function AiExamTutor({ active, siteOverview }: { active: boolean; siteOverview: string }) {
+export default function AiExamTutor({ active, siteOverview, additionalKnowledge = [] }: { active: boolean; siteOverview: string; additionalKnowledge?: readonly FreeTutorKnowledge[] }) {
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [mode, setMode] = useState<TutorMode>("exam");
@@ -136,6 +136,7 @@ export default function AiExamTutor({ active, siteOverview }: { active: boolean;
   const [error, setError] = useState("");
   const dialogRef = useRef<HTMLElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const knowledge = useMemo(() => [...freeTutorKnowledge, ...additionalKnowledge], [additionalKnowledge]);
   const currentEntry = examPool[examIndex] || null;
   const canSubmit = Boolean(input.trim() && source);
 
@@ -166,17 +167,17 @@ export default function AiExamTutor({ active, siteOverview }: { active: boolean;
 
   const startExam = () => {
     if (!source) return;
-    const pool = chooseExamPool(input.trim() || source.title);
+    const pool = chooseExamPool(input.trim() || source.title, knowledge);
     const first = pool[0];
     setExamPool(pool); setExamIndex(0); setTurns(first ? [{ role: "assistant", text: first.question }] : []); setInput(""); setError(first ? "" : "Zu diesem Schwerpunkt wurden keine Lernkarten gefunden.");
   };
 
   const askQuestion = (value: string) => {
     if (!source) return;
-    const match = rankedKnowledge(value)[0];
+    const match = rankedKnowledge(value, knowledge)[0];
     let text = "";
     let sourceBasis = "";
-    if (match && match.score >= 16) { text = match.entry.answer; sourceBasis = `Karteikarte · ${match.entry.topic} · ${match.entry.area}`; }
+    if (match && match.score >= 16) { text = match.entry.answer; sourceBasis = `Lernbestand · ${match.entry.topic} · ${match.entry.area}`; }
     else { text = materialAnswer(source.material, value); sourceBasis = `${source.title} · sichtbarer Lesetext`; }
     if (!text) { text = "Dazu finde ich im hinterlegten Lernmaterial keinen eindeutigen Treffer. Öffne bitte das passende Kapitel und formuliere die Frage mit einem konkreten Fachbegriff erneut."; sourceBasis = "Kein sicherer Treffer"; }
     setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: sourceBasis } }]);
@@ -210,14 +211,14 @@ export default function AiExamTutor({ active, siteOverview }: { active: boolean;
       <section ref={dialogRef} className="ai-tutor-dialog" role="dialog" aria-modal="true" aria-label="Kostenloser Lernprüfer" tabIndex={-1}>
         <header><div><small>KOSTENLOS · OHNE EXTERNE KI</small><h2>Lernprüfer</h2><p>{source?.title || "Kein Kapitel geöffnet"}</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Lernprüfer schließen">×</button></header>
         <div className="ai-tutor-tabs" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected={mode === "exam"} className={mode === "exam" ? "active" : ""} onClick={() => reset("exam")}>Mündliche Prüfung</button><button type="button" role="tab" aria-selected={mode === "question"} className={mode === "question" ? "active" : ""} onClick={() => reset("question")}>Lernchat</button></div>
-        {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "exam" ? "01" : "?"}</span><div><h3>{mode === "exam" ? "Prüfung starten" : "Im Lernmaterial suchen"}</h3><p>{mode === "exam" ? "Der Lernprüfer nutzt die hinterlegten Karteikarten, prüft zentrale Begriffe und zeigt danach die Musterlösung." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“ oder „Erkläre die Sauerstoffformel“."}</p>{mode === "exam" && <>{source.scope === "site" && <label className="ai-tutor-focus">Prüfungsthema<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Hygiene oder Rechtskunde" /></label>}<button type="button" disabled={source.scope === "site" && !input.trim()} onClick={startExam}>Erste Prüfungsfrage stellen →</button></>}</div></div>}
+        {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "exam" ? "01" : "?"}</span><div><h3>{mode === "exam" ? "Prüfung starten" : "Im Lernmaterial suchen"}</h3><p>{mode === "exam" ? "Der Lernprüfer nutzt alle hinterlegten Karteikarten, MC-Fragen und Medikamentenfälle, prüft zentrale Begriffe und zeigt danach die Musterlösung." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode === "exam" && <>{source.scope === "site" && <label className="ai-tutor-focus">Prüfungsthema<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Hygiene oder Rechtskunde" /></label>}<button type="button" disabled={source.scope === "site" && !input.trim()} onClick={startExam}>Erste Prüfungsfrage stellen →</button></>}</div></div>}
         <div className="ai-tutor-conversation" aria-live="polite">
           {turns.map((turn, index) => <article className={turn.role} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><p>{turn.text}</p>{turn.role === "assistant" && turn.result && mode === "exam" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>Begriffscheck</small></div>{turn.result.evaluation && <p>{turn.result.evaluation}</p>}{turn.result.strengths.length > 0 && <section><b>Das war enthalten</b><ul>{turn.result.strengths.map((point) => <li key={point}>{point}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>Das solltest du prüfen</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{point}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {turn.result.source_basis}</small>}</div></article>)}
           <div ref={endRef} />
         </div>
         {source && (mode === "question" || currentEntry) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "exam" ? "Deine freie Antwort" : "Deine Frage"}</label><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "exam" ? "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …" : "Stelle eine Wissensfrage zur NotSan-Prüfung …"} /><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "exam" ? "Antwort prüfen →" : "Suchen →"}</button></div></form>}
         {error && <p className="ai-tutor-error" role="alert">{error}</p>}
-        <footer><span>Lokale Lernhilfe: keine API-Kosten, keine extern übertragenen Fragen.</span><button type="button" onClick={() => reset()}>{mode === "exam" ? "Training zurücksetzen" : "Chat leeren"}</button></footer>
+        <footer><span>{knowledge.length} Lerninhalte · lokal, ohne API-Kosten oder externe Übertragung.</span><button type="button" onClick={() => reset()}>{mode === "exam" ? "Training zurücksetzen" : "Chat leeren"}</button></footer>
       </section>
     </div>}
   </>;
