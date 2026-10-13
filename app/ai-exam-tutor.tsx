@@ -46,6 +46,10 @@ const CONCEPT_SYNONYMS = [
   ["blutgerinnsel", "thrombus"], ["gefaessverschluss", "okklusion"], ["herzinfarkt", "myokardinfarkt"],
   ["lungenarterienembolie", "lae", "lungenembolie"], ["schaedelhirntrauma", "sht"], ["reanimation", "cpr", "herz lungen wiederbelebung"],
   ["kontraindikation", "ki", "gegenanzeige"], ["nebenwirkung", "nw", "unerwuenschte wirkung"], ["intravenoes", "iv", "i.v."],
+  ["blutung", "blutet", "blutverlust", "haemorrhagie"], ["bewusstseinsstoerung", "bewusstsein eingetruebt", "somnolent", "sopor", "komatoes"],
+  ["atemdepression", "atemfrequenz vermindert", "atmet langsam", "bradypnoe"], ["vasokonstriktion", "gefaessverengung"], ["vasodilatation", "gefaesserweiterung"],
+  ["analgesie", "schmerzlinderung", "schmerztherapie"], ["antipyretisch", "fiebersenkend"], ["spasmolytisch", "krampfloesend"],
+  ["thrombozytenaggregation", "plaettchenaggregation", "blutplaettchen verklumpen"], ["bronchodilatation", "bronchienerweiterung"],
 ];
 
 function normalize(value: string) {
@@ -146,19 +150,38 @@ function materialAnswer(material: string, query: string) {
 }
 
 function keyTerms(answer: string) {
-  return tokens(answer).filter((word) => word.length >= 5 && !["dabei", "durch", "diese", "einem", "einen", "einer", "folgen", "kann", "sowie", "werden"].includes(word)).sort((a, b) => b.length - a.length).slice(0, 12);
+  const generic = new Set(["dabei", "dadurch", "durch", "diese", "einem", "einen", "einer", "folgen", "kann", "sowie", "typisch", "werden", "wirkt"]);
+  return tokens(answer).filter((word) => word.length >= 4 && !generic.has(word)).slice(0, 12);
+}
+
+function wordStem(word: string) {
+  const normalized = normalize(word);
+  if (normalized.length <= 5) return normalized;
+  return normalized.replace(/(?:ierungen|ierung|lichkeit|keiten|keit|ungen|ung|ischen|ischer|ische|isch|enden|ender|ende|ieren|iert|est|ern|em|en|er|es|e|n|s)$/u, "");
 }
 
 function includesConcept(response: string, term: string) {
   if (containsToken(response, term)) return true;
   const normalizedTerm = normalize(term);
   const group = CONCEPT_SYNONYMS.find((items) => items.some((item) => normalize(item) === normalizedTerm));
-  return Boolean(group?.some((item) => normalize(response).includes(normalize(item))));
+  if (group?.some((item) => normalize(response).includes(normalize(item)))) return true;
+  const termStem = wordStem(normalizedTerm);
+  if (termStem.length < 4) return false;
+  return tokens(response).some((word) => {
+    const responseStem = wordStem(word);
+    return responseStem === termStem
+      || termStem.length >= 6 && responseStem.startsWith(termStem)
+      || responseStem.length >= 6 && termStem.startsWith(responseStem);
+  });
 }
 
 function answerKeyPoints(answer: string) {
   const rawPoints = answer
     .split(/\n+|(?<=[.!?])\s+|;\s+/)
+    .flatMap((point) => {
+      const parts = point.split(/(?:,\s*)?\b(?:und|sowie)\b\s+/i).map((part) => part.trim());
+      return parts.length > 1 && parts.every((part) => part.length >= 12) ? parts : [point];
+    })
     .map((point) => point.replace(/^[•\-–—*\s]+/, "").trim())
     .filter((point) => point.length >= 12 && point.length <= 420);
   const unique = rawPoints.filter((point, index) => rawPoints.findIndex((candidate) => normalize(candidate) === normalize(point)) === index);
@@ -181,6 +204,31 @@ function answerRationale(entry: FreeTutorKnowledge) {
 function structuredKnowledgeAnswer(entry: FreeTutorKnowledge) {
   const answerWithoutRationale = entry.answer.replace(/\n\n(?:Begründung|Warum):\s*[\s\S]+$/i, "").trim();
   return `Antwort\n${answerWithoutRationale}\n\nFachliche Begründung\n${answerRationale(entry)}`;
+}
+
+const ANSWER_SECTION_INTENTS: Array<{ pattern: RegExp; labels: string[] }> = [
+  { pattern: /\b(dosier|dosis|wie viel|wieviel|aufzieh|zubereit|konzentration|applikation|gabe)\w*\b/i, labels: ["dosierung und zubereitung", "dosierung", "zubereitung", "applikation", "regel"] },
+  { pattern: /\b(wirk|wirkprinzip|rezeptor)\w*\b/i, labels: ["wirkung"] },
+  { pattern: /\b(kontraindikation|gegenanzeige|ki)\w*\b/i, labels: ["kontraindikationen", "kontraindikation"] },
+  { pattern: /\b(nebenwirkung|unerwuenschte wirkung|nw)\w*\b/i, labels: ["nebenwirkungen", "nebenwirkung"] },
+  { pattern: /\b(wechselwirkung|interaktion)\w*\b/i, labels: ["wechselwirkungen", "wechselwirkung"] },
+  { pattern: /\b(vorsicht|warnhinweis)\w*\b/i, labels: ["vorsicht"] },
+  { pattern: /\b(ueberwachung|monitoring|kontrolle)\w*\b/i, labels: ["überwachung", "ueberwachung"] },
+];
+
+function focusedKnowledgeAnswer(entry: FreeTutorKnowledge, query: string) {
+  const normalizedQuery = normalize(query);
+  const requestedLabels = ANSWER_SECTION_INTENTS
+    .filter((intent) => intent.pattern.test(normalizedQuery))
+    .flatMap((intent) => intent.labels);
+  if (!requestedLabels.length) return structuredKnowledgeAnswer(entry);
+  const requested = new Set(requestedLabels.map((label) => normalize(label)));
+  const matchingLines = entry.answer.split("\n").filter((line) => {
+    const label = line.match(/^([^:]{2,40}):/)?.[1];
+    return label ? requested.has(normalize(label)) : false;
+  });
+  if (!matchingLines.length) return structuredKnowledgeAnswer(entry);
+  return `Antwort\n${matchingLines.join("\n")}`;
 }
 
 const IMPORTANT_TEXT_PATTERN = /(\b(?:Wirkung|Wechselwirkungen?|Kontraindikationen?|Nebenwirkungen?|Dosierung|Zubereitung|Reanimation|Atemweg|Atmung|Kreislauf|Bewusstsein|Bradykardie|Tachykardie|Hypotonie|Hypertonie|Dyspnoe|Atemdepression|Kammerflimmern|Blutung|Schock|ROSC|cABCDE|ABCDE|SAMPLER|OPQRST|GCS|SpO₂|SpO2|etCO₂|etCO2)\b|\b\d+(?:[.,]\d+)?\s?(?:mg|µg|g|ml|l|min|mmHg|cmH₂O|J|IE|%)(?:\/(?:kgKG|kg|h|min))?\b)/gi;
@@ -209,8 +257,7 @@ function TutorMessageText({ text, emphasize = false }: { text: string; emphasize
 function evaluateAnswer(entry: FreeTutorKnowledge, response: string): TutorResult {
   const points = answerKeyPoints(entry.answer).map((point) => {
     const hits = point.terms.filter((term) => includesConcept(response, term));
-    const required = Math.min(2, Math.max(1, Math.ceil(point.terms.length * 0.35)));
-    return { ...point, covered: hits.length >= required, hits };
+    return { ...point, covered: hits.length >= 1, hits };
   });
   const covered = points.filter((point) => point.covered);
   const missing = points.filter((point) => !point.covered);
@@ -218,7 +265,7 @@ function evaluateAnswer(entry: FreeTutorKnowledge, response: string): TutorResul
   const score = Math.max(0, Math.min(5, Math.round(ratio * 5)));
   const verdict = score >= 4 ? "fachlich weitgehend vollständig" : score >= 2 ? "in wichtigen Teilen richtig, aber noch lückenhaft" : "noch deutlich zu ergänzen";
   return {
-    evaluation: `Deine Antwort ist ${verdict}. ${covered.length} von ${points.length} inhaltlichen Kernpunkten wurden erkannt. Synonyme und gebräuchliche Abkürzungen werden mitbewertet; die automatische Rückmeldung ersetzt dennoch keine Lehrkraft.`,
+    evaluation: `Deine Antwort ist ${verdict}. ${covered.length} von ${points.length} inhaltlichen Kernpunkten wurden erkannt. Stichwörter, Wortstämme, sinngleiche Formulierungen, Synonyme und gebräuchliche Abkürzungen werden mitbewertet; der Wortlaut der Musterlösung ist nicht erforderlich.`,
     strengths: covered.slice(0, 4).map((point) => shortenPoint(point.text)),
     missing_points: missing.slice(0, 5).map((point) => shortenPoint(point.text)),
     score,
@@ -353,7 +400,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     const match = rankedKnowledge(value, knowledge)[0];
     let text = "";
     let sourceBasis = "";
-    if (match && match.score >= 16) { text = structuredKnowledgeAnswer(match.entry); sourceBasis = `Lernbestand · ${match.entry.topic} · ${match.entry.area}`; }
+    if (match && match.score >= 16) { text = focusedKnowledgeAnswer(match.entry, value); sourceBasis = `Lernbestand · ${match.entry.topic} · ${match.entry.area}`; }
     else { text = materialAnswer(source.material, value); sourceBasis = `${source.title} · sichtbarer Lesetext`; }
     if (!text) { text = "Dazu finde ich im hinterlegten Lernmaterial keinen eindeutigen Treffer. Öffne bitte das passende Kapitel und formuliere die Frage mit einem konkreten Fachbegriff erneut."; sourceBasis = "Kein sicherer Treffer"; }
     setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: sourceBasis, source_href: match && match.score >= 16 ? match.entry.href : source.href } }]);
