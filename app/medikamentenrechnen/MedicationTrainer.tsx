@@ -9,6 +9,22 @@ import { saveMedicationProgress } from "../lib/cloudProgress";
 type Mode = "learn" | "exam";
 type Result = { answers: Record<string,string>; correct: boolean };
 
+function concealDirectSolutions(current: (typeof medicationCases)[number]) {
+ let text=current.text;
+ for(const answer of current.answers){
+   const values=new Set([
+     String(answer.value),
+     String(answer.value).replace(".",","),
+     answer.value.toLocaleString("de-DE",{useGrouping:true,maximumFractionDigits:10}),
+   ]);
+   const escapedValues=[...values].map(value=>value.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+   const escapedUnit=answer.unit.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+   const directValue=new RegExp(`(^|[^\\d.,])(?:${escapedValues.join("|")})\\s*${escapedUnit}(?!\\s*\\/)`,"giu");
+   text=text.replace(directValue,(_match,prefix:string)=>`${prefix}‹Wert selbst bestimmen›`);
+ }
+ return text;
+}
+
 function createShuffledCaseOrder() {
  const cases=[...medicationCases];
  for(let index=cases.length-1;index>0;index--){
@@ -79,7 +95,7 @@ export default function MedicationTrainer({ accountUserId, onSyncError }: { acco
    <div className="trainer-stats"><span><b>{solved}</b> gelöst</span><span><b>{correctTotal}</b> sicher korrekt</span><span><b>{Object.values(progress).filter(x=>x.correct<x.attempts).length}</b> Fehlerschwerpunkte</span></div>
    {finished ? <ExamSummary session={session} results={results} onRestart={reset}/> : current ? <article className="case-card">
     <header><div><span>Fall {index+1} von {session.length}</span><h2>{current.title}</h2></div><div className="case-tags"><span>{current.age} Jahre</span><span>{current.weight} kg</span><span>{current.phase}</span></div></header>
-    <div className="case-progress"><i style={{width:`${((index+1)/session.length)*100}%`}}/></div><p className="case-text">{current.text}</p><h3>{current.question}</h3>
+    <div className="case-progress"><i style={{width:`${((index+1)/session.length)*100}%`}}/></div><p className="case-text">{concealDirectSolutions(current)}</p><h3>{current.question}</h3>
     {mode==="learn"&&<details className="rule-details"><summary>Dosierregel anzeigen</summary><p>{medicationRules.find(r=>r.id===current.ruleId)?.parameter} · {medicationRules.find(r=>r.id===current.ruleId)?.concentration}</p></details>}
     <div className="answer-grid">{current.answers.map(answer=>{const errorId=`med-error-${current.id}-${answer.id}`;return <label key={answer.id}>{answer.label}<small>Rundung: {answer.decimals} Nachkommastellen</small><div><input ref={node=>{inputRefs.current[answer.id]=node}} inputMode="decimal" disabled={!!evaluated} value={inputs[answer.id]||""} onChange={e=>{setInputs({...inputs,[answer.id]:e.target.value});setErrors(previous=>({...previous,[answer.id]:""}))}} aria-label={`${answer.label} in ${answer.unit}`} aria-invalid={!!errors[answer.id]} aria-describedby={errors[answer.id]?errorId:undefined}/><span>{answer.unit}</span></div>{errors[answer.id]&&<p id={errorId} className="field-error" role="alert"><span aria-hidden="true">⚠</span> {errors[answer.id]}</p>}</label>})}</div>
     {mode==="learn"&&!evaluated&&<div className="hint-row"><button onClick={()=>setHintStep(Math.min(2,hintStep+1))}>Hinweis {hintStep+1}/2</button>{hintStep>0&&<p>{hintStep===1?current.hint:`Rechenweg: ${current.answers[0].calculation}`}</p>}</div>}
