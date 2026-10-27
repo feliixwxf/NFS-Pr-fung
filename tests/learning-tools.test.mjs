@@ -9,6 +9,7 @@ const tutor = await readFile(new URL("../app/ai-exam-tutor.tsx", import.meta.url
 const barotrauma = await readFile(new URL("../app/barotrauma-lesson.tsx", import.meta.url), "utf8");
 const knowledge = await readFile(new URL("../app/free-tutor-knowledge.ts", import.meta.url), "utf8");
 const serviceWorker = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
+const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
 
 test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(page, /Mein Lernplan/);
@@ -43,6 +44,9 @@ test("case generator integrates oral follow-ups into every examination mode", ()
   assert.match(tutor, /Welche konkrete Kontraindikation oder Sicherheitsgrenze/);
   assert.match(tutor, /clinicalDoseValues/);
   assert.match(tutor, /Korrekt erkannt:/);
+  assert.match(tutor, /point\.terms\.length <= 3/);
+  assert.match(tutor, /fachliche Inhalt, nicht der Wortlaut/);
+  assert.match(tutor, /keine weitergehende oder möglicherweise unpassende Angabe/);
   assert.match(tutor, /nameVfaReferences/);
   assert.match(tutor, /VFA_NAME_BY_NUMBER/);
   assert.match(tutor, /Bitte wähle ein konkreteres Thema/);
@@ -59,6 +63,14 @@ test("case generator integrates oral follow-ups into every examination mode", ()
   assert.match(knowledge, /ekg-strip-lbbb/);
   assert.match(knowledge, /bundle-branch-b\.svg/);
   assert.match(cases, /Therapie und Dosierungen werden gegen die hinterlegten VFA-Inhalte geprüft/);
+});
+
+test("AI tutor remains compact and operable on iPad-sized viewports", () => {
+  assert.match(styles, /grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
+  assert.match(styles, /@media\(min-width:701px\) and \(max-width:1100px\)/);
+  assert.match(styles, /max-height:calc\(100dvh - 24px\)/);
+  assert.match(styles, /\.ai-tutor-form textarea\{min-height:82px;max-height:18dvh;font-size:16px\}/);
+  assert.match(styles, /html \{ max-width:100%; overflow-x:hidden/);
 });
 
 test("barotrauma explains the complete pressure injury mechanism in teachable steps", () => {

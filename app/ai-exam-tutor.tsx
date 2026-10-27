@@ -20,7 +20,7 @@ type SpeechRecognitionLike = { lang: string; continuous: boolean; interimResults
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
 const STOP_WORDS = new Set([
-  "aber", "alle", "als", "also", "auch", "auf", "aus", "bei", "bitte", "das", "dass", "dem", "den", "der", "des", "die", "ein", "eine", "einer", "eines", "erklaere", "fur", "gibt", "haben", "ist", "kurz", "man", "mehr", "mir", "mit", "nach", "nenne", "oder", "sind", "uber", "und", "von", "warum", "was", "welche", "welcher", "wie", "wird", "zum", "zur",
+  "aber", "alle", "als", "also", "auch", "auf", "aus", "bei", "bereits", "bitte", "dabei", "dadurch", "das", "dass", "dem", "den", "der", "des", "die", "diese", "dieser", "dieses", "durch", "ein", "eine", "einem", "einen", "einer", "eines", "erklaere", "etwas", "folgen", "fur", "gibt", "haben", "hier", "ist", "kann", "kurz", "man", "mehr", "mir", "mit", "muss", "nach", "nenne", "oder", "sind", "sowie", "uber", "und", "von", "warum", "was", "welche", "welcher", "wie", "wird", "werden", "zum", "zur",
 ]);
 
 const ALIASES: Record<string, string> = {
@@ -414,8 +414,7 @@ function materialAnswer(material: string, query: string) {
 }
 
 function keyTerms(answer: string) {
-  const generic = new Set(["dabei", "dadurch", "durch", "diese", "einem", "einen", "einer", "folgen", "kann", "sowie", "typisch", "werden", "wirkt"]);
-  return tokens(answer).filter((word) => word.length >= 4 && !generic.has(word)).slice(0, 12);
+  return tokens(answer).filter((word) => word.length >= 4).slice(0, 14);
 }
 
 function wordStem(word: string) {
@@ -523,7 +522,20 @@ function focusedKnowledgeAnswer(entry: FreeTutorKnowledge, query: string) {
     const label = line.match(/^([^:]{2,40}):/)?.[1];
     return label ? requested.has(normalize(label)) : false;
   });
-  if (!matchingLines.length) return structuredKnowledgeAnswer(entry);
+  if (!matchingLines.length) {
+    const focusedFragments = entry.answer
+      .split(/\n+|(?<=[.!?])\s+/)
+      .map((fragment) => fragment.trim())
+      .filter(Boolean)
+      .filter((fragment) => {
+        const normalizedFragment = normalize(fragment);
+        if (requestedLabels.some((label) => normalizedFragment.includes(normalize(label)))) return true;
+        return requested.has("dosierung und zubereitung") && clinicalDoseValues(fragment).length > 0;
+      })
+      .slice(0, 3);
+    if (focusedFragments.length) return `Antwort\n${focusedFragments.join("\n")}`;
+    return "Antwort\nDieser einzelne Aspekt ist im hinterlegten Lernmaterial nicht eindeutig separat ausgewiesen. Deshalb gebe ich keine weitergehende oder möglicherweise unpassende Angabe aus.";
+  }
   return `Antwort\n${matchingLines.join("\n")}`;
 }
 
@@ -571,11 +583,15 @@ function evaluateAnswer(entry: FreeTutorKnowledge, response: string): TutorResul
     const expectedValues = clinicalDoseValues(point.text);
     const submittedValues = clinicalDoseValues(response);
     const matchedValues = expectedValues.filter((expected) => submittedValues.some((submitted) => sameClinicalDose(expected, submitted)));
-    const termCoverage = hits.length > 0 ? Math.min(1, hits.length / Math.min(2, Math.max(1, point.terms.length))) : 0;
+    const termCoverage = hits.length >= 2 || hits.length === 1 && point.terms.length <= 3
+      ? 1
+      : hits.length === 1
+        ? 0.65
+        : 0;
     const valueCoverage = expectedValues.length ? matchedValues.length / expectedValues.length : 0;
     const coverage = Math.max(termCoverage, valueCoverage);
     const safetyRelevant = /\b(?:atemweg|atmung|kreislauf|blutung|dosier|dosis|kontra|defibr|notarzt|transport|reanimation|sauerstoff)\w*\b/i.test(point.text);
-    return { ...point, covered: coverage >= 1, partial: coverage > 0 && coverage < 1, coverage, safetyRelevant, weight: safetyRelevant ? 1.5 : 1, hits };
+    return { ...point, covered: coverage >= 0.99, partial: coverage > 0 && coverage < 0.99, coverage, safetyRelevant, weight: safetyRelevant ? 1.5 : 1, hits };
   });
   const covered = points.filter((point) => point.covered);
   const partial = points.filter((point) => point.partial);
@@ -600,10 +616,10 @@ function evaluateAnswer(entry: FreeTutorKnowledge, response: string): TutorResul
       : "";
   const safetyNotice = !incorrectDose && criticalOmission ? " Ein sicherheitsrelevanter Kernpunkt fehlt; deshalb ist die Bewertung auf höchstens 3 Punkte begrenzt." : "";
   return {
-    evaluation: `Deine Antwort ist ${verdict}. ${covered.length} Kernpunkte wurden vollständig und ${partial.length} teilweise erkannt.${doseNotice}${safetyNotice} Stichwörter, Wortstämme, sinngleiche Formulierungen, Synonyme und gebräuchliche Abkürzungen werden mitbewertet; der Wortlaut der Musterlösung ist nicht erforderlich.`,
-    strengths: covered.slice(0, 4).map((point) => shortenPoint(point.text)),
-    partial_points: partial.slice(0, 4).map((point) => shortenPoint(point.text)),
-    missing_points: [...(incorrectDose ? ["Dosierung und Zubereitung exakt mit der hinterlegten VFA abgleichen."] : []), ...missing.map((point) => shortenPoint(point.text))].slice(0, 5),
+    evaluation: `Deine Antwort ist ${verdict}.${doseNotice}${safetyNotice} Bewertet wird der fachliche Inhalt, nicht der Wortlaut: korrekte Stichwörter, Synonyme, Abkürzungen und sinngleiche Erklärungen zählen.`,
+    strengths: covered.slice(0, 3).map((point) => shortenPoint(point.text)),
+    partial_points: partial.slice(0, 3).map((point) => shortenPoint(point.text)),
+    missing_points: [...(incorrectDose ? ["Dosierung und Zubereitung exakt mit der hinterlegten VFA abgleichen."] : []), ...missing.map((point) => shortenPoint(point.text))].slice(0, 3),
     score,
     source_basis: `${isVfaExamEntry(entry) ? "VFA-geprüfter Lernbestand" : "Lernbestand"} · ${entry.topic} · ${entry.area}`,
   };
@@ -995,7 +1011,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
         ...result,
         evaluation: `${result.evaluation}\nDie fehlende Stelle wird jetzt gezielt nachgefragt.`,
         partial_points: [],
-        missing_points: ["Ein noch unsicherer Kernpunkt wird in der folgenden Prüfer-Nachfrage erneut geprüft."],
+        missing_points: [],
       };
       setAdaptiveQuestion(followUp);
       setTurns((current) => [...current,
