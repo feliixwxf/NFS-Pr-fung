@@ -10,6 +10,9 @@ const barotrauma = await readFile(new URL("../app/barotrauma-lesson.tsx", import
 const knowledge = await readFile(new URL("../app/free-tutor-knowledge.ts", import.meta.url), "utf8");
 const serviceWorker = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
 const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+const offlineSupport = await readFile(new URL("../app/offline-support.tsx", import.meta.url), "utf8");
+const viewportSupport = await readFile(new URL("../app/device-viewport-support.tsx", import.meta.url), "utf8");
 
 test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(page, /Mein Lernplan/);
@@ -89,9 +92,19 @@ test("barotrauma explains the complete pressure injury mechanism in teachable st
 });
 
 test("offline worker caches the app shell and visited same-origin assets", () => {
-  assert.match(page, /OfflineBootstrap/);
+  assert.match(layout, /OfflineBootstrap/);
+  assert.match(offlineSupport, /getRegistrations/);
   assert.match(serviceWorker, /CACHE_APP_SHELL/);
   assert.match(serviceWorker, /request\.mode === "navigate"/);
   assert.match(serviceWorker, /caches\.match\("\/"\)/);
   assert.match(serviceWorker, /\["script", "style", "font", "image"\]/);
+});
+
+test("iPad viewport support handles keyboard, split view, touch and standalone mode", () => {
+  assert.match(layout, /DeviceViewportSupport/);
+  assert.match(viewportSupport, /window\.visualViewport/);
+  assert.match(viewportSupport, /keyboard-open/);
+  assert.match(styles, /@media \(hover:none\) and \(pointer:coarse\)/);
+  assert.match(styles, /@media \(display-mode:standalone\)/);
+  assert.match(styles, /min-width:701px\) and \(max-width:900px/);
 });

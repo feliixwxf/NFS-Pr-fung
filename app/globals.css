@@ -42,10 +42,10 @@
 .burn-infusion-warning { margin:15px 0 0!important; padding:14px 16px; border-left:3px solid #e88752; border-radius:0 10px 10px 0; background:#fff3eb; color:#6d4832; font-size:12px; line-height:1.6; }
 @media(max-width:620px) { .burn-infusion-form,.burn-infusion-result { grid-template-columns:1fr; } .burn-infusion-result { min-height:0; } .burn-infusion-header { gap:11px; } .burn-infusion-header > span { flex-basis:38px; width:38px; height:38px; } }
 
-:root { --navy:#0b2634; --navy-2:#12394a; --ink:#13232c; --muted:#6e7d84; --orange:#f26a3d; --orange-light:#fff0e9; --cream:#f5f3ed; --line:#e5e8e7; --green:#2d9b73; --white:#fff; }
+:root { --navy:#0b2634; --navy-2:#12394a; --ink:#13232c; --muted:#6e7d84; --orange:#f26a3d; --orange-light:#fff0e9; --cream:#f5f3ed; --line:#e5e8e7; --green:#2d9b73; --white:#fff; --app-height:100dvh; --visual-offset-top:0px; --keyboard-inset:0px; }
 * { box-sizing:border-box; }
 html { max-width:100%; overflow-x:hidden; scroll-behavior:smooth; }
-body { max-width:100%; margin:0; overflow-x:hidden; background:#f8f8f6; color:var(--ink); font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+body { max-width:100%; min-height:var(--app-height,100dvh); margin:0; overflow-x:hidden; background:#f8f8f6; color:var(--ink); font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 button,input { font:inherit; }
 button { cursor:pointer; }
 .loading-screen,.content-loading-screen { display:grid; place-content:center; justify-items:center; gap:18px; min-height:100vh; min-height:100dvh; padding:28px; background:var(--navy); color:#fff; text-align:center; }
@@ -1882,6 +1882,44 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 @media(max-width:390px){.ai-tutor-launcher b{display:none}.ai-tutor-launcher{padding:10px}.ai-tutor-form>div:not(.ai-tutor-input-wrap){align-items:stretch;flex-direction:column}.ai-tutor-form small{max-width:none}.ai-tutor-form>div:not(.ai-tutor-input-wrap)>button{width:100%}.ai-tutor-vfa-grid{grid-template-columns:1fr}.ai-tutor-vfa-grid img{height:240px}}
 @media(max-height:640px) and (max-width:700px){.ai-tutor-dialog>header p{display:none}.ai-tutor-dialog>header{padding-top:calc(8px + env(safe-area-inset-top));padding-bottom:7px}.ai-tutor-tabs{padding-block:6px}.ai-tutor-form textarea{min-height:64px}.ai-tutor-dialog>footer{display:none}}
 @media(prefers-reduced-motion:reduce){.ai-tutor-launcher,.ai-tutor-thinking i{transition:none;animation:none}}
+
+/* iPad, Split View, Bildschirmtastatur und installierte App */
+.app-shell,.login-page,.loading-screen{min-height:var(--app-height,100dvh)}
+.keyboard-open .floating-menu-toggle,.keyboard-open .ai-tutor-launcher-group{display:none}
+.keyboard-open .ai-tutor-backdrop{top:var(--visual-offset-top);bottom:auto;height:var(--app-height);padding-bottom:0}
+.keyboard-open .ai-tutor-dialog{max-height:var(--app-height)}
+
+@media (min-width:701px) and (max-width:900px){
+  .dashboard,.page-section,.quiz-page,.topic-reader,.learning-plan-page,.case-generator-page{width:calc(100% - 32px)}
+  .dashboard-grid{margin-inline:0}
+  .action-cards,.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .action-cards>button{min-height:210px}
+  .written-folder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ai-tutor-dialog{width:100%;max-width:100%;border-radius:20px}
+  .ai-tutor-tabs{display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .ai-tutor-tabs::-webkit-scrollbar{display:none}
+  .ai-tutor-tabs button{min-width:max-content;flex:1 0 auto;padding-inline:13px}
+}
+
+@media (max-width:759px){
+  .written-folder-grid{grid-template-columns:1fr}
+}
+
+@media (hover:none) and (pointer:coarse){
+  button,select,input,textarea,summary,[role="button"]{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  button,summary,[role="button"]{min-height:44px}
+  input,select,textarea{font-size:16px}
+  .ai-tutor-launcher-close{width:44px;height:44px;flex-basis:44px}
+  .action-cards>button:hover,.stats-grid.menu-shortcuts>button:hover,.written-folder-grid>button:hover,.dashboard-smart-grid>button:hover,.ai-tutor-launcher:hover,.ai-tutor-vfa-grid a:hover{transform:none;box-shadow:var(--shadow-card)}
+  button:active,[role="button"]:active,summary:active{filter:brightness(.96)}
+}
+
+@media (display-mode:standalone){
+  html{background:var(--navy);overscroll-behavior-y:none}
+  body{padding-top:env(safe-area-inset-top);padding-right:env(safe-area-inset-right);padding-left:env(safe-area-inset-left);background:var(--cream)}
+  .topbar{padding-top:env(safe-area-inset-top);height:calc(72px + env(safe-area-inset-top))}
+  .main-content{min-height:calc(var(--app-height,100dvh) - env(safe-area-inset-top))}
+}
 
 /* Persönlicher Lernplan, Fallgenerator und Offline-Status */
 .sidebar nav{min-height:0;overflow-y:auto;overscroll-behavior:contain}.sidebar-tip,.sidebar>.logout{flex:0 0 auto}

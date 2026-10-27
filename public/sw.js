@@ -1,4 +1,4 @@
-const CACHE_NAME = "notsan-offline-v1";
+const CACHE_NAME = "notsan-offline-v2";
 const APP_SHELL = ["/manifest.webmanifest", "/favicon.svg", "/app-icon-192.png", "/app-icon-512.png", "/fonts/atkinson-hyperlegible/atkinson-hyperlegible-400.woff2", "/fonts/atkinson-hyperlegible/atkinson-hyperlegible-700.woff2"];
 
 async function cacheShell() {
@@ -21,12 +21,15 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/") || url.pathname.includes("supabase")) return;
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/") || url.pathname.includes("supabase") || url.pathname.includes("webpack-hmr") || url.pathname.includes("@vite")) return;
   if (request.mode === "navigate") {
     event.respondWith(fetch(request).then((response) => { const copy = response.clone(); caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)); return response; }).catch(async () => (await caches.match(request)) || (await caches.match("/"))));
     return;
   }
   if (["script", "style", "font", "image"].includes(request.destination)) {
-    event.respondWith(caches.match(request).then((cached) => cached || fetch(request).then((response) => { if (response.ok) { const copy = response.clone(); caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)); } return response; })));
+    event.respondWith(caches.match(request).then((cached) => {
+      const fresh = fetch(request).then((response) => { if (response.ok) { const copy = response.clone(); caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)); } return response; });
+      return cached || fresh;
+    }));
   }
 });

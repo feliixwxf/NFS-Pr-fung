@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import DeviceViewportSupport from "./device-viewport-support";
+import { OfflineBootstrap } from "./offline-support";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -48,5 +50,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="de"><body>{children}</body></html>;
+  return <html lang="de"><body><DeviceViewportSupport /><OfflineBootstrap />{children}</body></html>;
 }

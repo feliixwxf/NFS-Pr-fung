@@ -8,7 +8,6 @@ import { getSupabaseClient } from "./lib/supabaseClient";
 import AccountAccess from "./account-access";
 import AccessCode from "./access-code";
 import AccountProfileSettings, { loadAccountAvatarUrl } from "./account-profile-settings";
-import { OfflineBootstrap } from "./offline-support";
 import { supplementalQuestions } from "./supplemental-questions";
 import { rechtskundeFlashcards, rechtskundeQuestions } from "./rechtskunde-data";
 import { kommunikationFlashcards, kommunikationQuestions } from "./kommunikation-data";
@@ -554,7 +553,6 @@ export default function Home() {
         </Suspense>
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
-      <OfflineBootstrap />
       <Suspense fallback={null}><AiExamTutor active userId={accountUserId} additionalKnowledge={legacyTutorKnowledge} siteOverview={`Verfügbare mündliche Prüfungsthemen: ${topics.join(", ")}. Schriftliche Lernbereiche: Rechtskunde, Organisation und Einsatztaktik, Kommunikation, Qualitätsmanagement, Terminologie, medizinische Diagnostik sowie Hygiene und Infektionsschutz. Weitere Bereiche der Seite: Multiple-Choice-Training, Medikamentenwirkung, Medikamentenrechnen und Anatomie.`} /></Suspense>
       {!headerMenuVisible && !mobileMenuOpen && <button ref={floatingMenuButtonRef} className="floating-menu-toggle" type="button" onClick={(event) => openMobileMenu(event.currentTarget)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Menü öffnen"><span aria-hidden="true"><i /><i /><i /></span>Menü</button>}
       {mobileMenuOpen && <><button className="mobile-menu-backdrop" type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen" /><aside ref={mobileMenuRef} id="mobile-menu" className="mobile-menu open" role="dialog" aria-modal="true" aria-label="Navigation"><header><button className="brand brand-home" type="button" onClick={() => changeView("start")} aria-label="Zum Hauptmenü"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></button><button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen">×</button></header><div className="mobile-menu-groups">{mobileNavGroups.map((group) => <section className="mobile-menu-group" key={group.label}><small>{group.label}</small><nav aria-label={group.label}>{group.items.map((id) => { const item = nav.find((entry) => entry.id === id)!; return <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)} aria-current={view === item.id ? "page" : undefined} aria-label={item.label}><span>{item.icon}</span><b>{mobileNavLabels[id] || item.label}</b></button>; })}</nav></section>)}</div><div className="mobile-menu-note"><span>☼</span><div><b>{topics.length} Themen angelegt</b><p>Deine gesamte Prüfungsvorbereitung an einem Ort.</p></div></div></aside></>}
