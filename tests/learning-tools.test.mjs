@@ -6,6 +6,7 @@ const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
 const plan = await readFile(new URL("../app/learning-plan.tsx", import.meta.url), "utf8");
 const cases = await readFile(new URL("../app/case-generator.tsx", import.meta.url), "utf8");
 const tutor = await readFile(new URL("../app/ai-exam-tutor.tsx", import.meta.url), "utf8");
+const barotrauma = await readFile(new URL("../app/barotrauma-lesson.tsx", import.meta.url), "utf8");
 const knowledge = await readFile(new URL("../app/free-tutor-knowledge.ts", import.meta.url), "utf8");
 const serviceWorker = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
 
@@ -42,6 +43,8 @@ test("case generator integrates oral follow-ups into every examination mode", ()
   assert.match(tutor, /Welche konkrete Kontraindikation oder Sicherheitsgrenze/);
   assert.match(tutor, /clinicalDoseValues/);
   assert.match(tutor, /Korrekt erkannt:/);
+  assert.match(tutor, /nameVfaReferences/);
+  assert.match(tutor, /VFA_NAME_BY_NUMBER/);
   assert.match(tutor, /Bitte wähle ein konkreteres Thema/);
   assert.doesNotMatch(tutor, />Nachfragen<\/button>/);
   assert.match(tutor, /mode === "exam" \|\| mode === "simulation" \|\| mode === "vfa"/);
@@ -56,6 +59,15 @@ test("case generator integrates oral follow-ups into every examination mode", ()
   assert.match(knowledge, /ekg-strip-lbbb/);
   assert.match(knowledge, /bundle-branch-b\.svg/);
   assert.match(cases, /Therapie und Dosierungen werden gegen die hinterlegten VFA-Inhalte geprüft/);
+});
+
+test("barotrauma explains the complete pressure injury mechanism in teachable steps", () => {
+  assert.match(barotrauma, /Pathophysiologie: Wie entsteht ein Barotrauma/);
+  assert.match(barotrauma, /Beim Abtauchen: Druck von außen/);
+  assert.match(barotrauma, /Beim Auftauchen: Luft dehnt sich aus/);
+  assert.match(barotrauma, /In verletzte Lungenvenen/);
+  assert.match(barotrauma, /Dekompressionskrankheit: ähnliches Ereignis, anderer Mechanismus/);
+  assert.match(barotrauma, /So kannst du es in der mündlichen Prüfung erzählen/);
 });
 
 test("offline worker caches the app shell and visited same-origin assets", () => {
