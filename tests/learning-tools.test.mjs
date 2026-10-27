@@ -47,6 +47,12 @@ test("case generator integrates oral follow-ups into every examination mode", ()
   assert.match(tutor, /point\.terms\.length <= 3/);
   assert.match(tutor, /fachliche Inhalt, nicht der Wortlaut/);
   assert.match(tutor, /keine weitergehende oder möglicherweise unpassende Angabe/);
+  assert.match(tutor, /rankedChatKnowledge/);
+  assert.match(tutor, /Rückfrage wegen mehrdeutiger Zuordnung/);
+  assert.match(tutor, /Rückfrage wegen zu allgemeiner Formulierung/);
+  assert.match(tutor, /entry\.topic\.startsWith\("Medikamentenrechnen ·"\)/);
+  assert.match(tutor, /chatContextEntryId/);
+  assert.match(tutor, /source\.scope === "chapter"/);
   assert.match(tutor, /nameVfaReferences/);
   assert.match(tutor, /VFA_NAME_BY_NUMBER/);
   assert.match(tutor, /Bitte wähle ein konkreteres Thema/);

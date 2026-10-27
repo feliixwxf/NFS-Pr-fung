@@ -20,7 +20,7 @@ type SpeechRecognitionLike = { lang: string; continuous: boolean; interimResults
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
 const STOP_WORDS = new Set([
-  "aber", "alle", "als", "also", "auch", "auf", "aus", "bei", "bereits", "bitte", "dabei", "dadurch", "das", "dass", "dem", "den", "der", "des", "die", "diese", "dieser", "dieses", "durch", "ein", "eine", "einem", "einen", "einer", "eines", "erklaere", "etwas", "folgen", "fur", "gibt", "haben", "hier", "ist", "kann", "kurz", "man", "mehr", "mir", "mit", "muss", "nach", "nenne", "oder", "sind", "sowie", "uber", "und", "von", "warum", "was", "welche", "welcher", "wie", "wird", "werden", "zum", "zur",
+  "aber", "alle", "als", "also", "auch", "auf", "aus", "bei", "bereits", "bitte", "dabei", "dadurch", "das", "dass", "dem", "den", "der", "des", "die", "diese", "dieser", "dieses", "durch", "ein", "eine", "einem", "einen", "einer", "eines", "erklaere", "etwas", "fur", "gibt", "haben", "hier", "ist", "kann", "kurz", "man", "mehr", "mir", "mit", "muss", "nach", "nenne", "oder", "sind", "sowie", "uber", "und", "von", "warum", "was", "welche", "welcher", "wie", "wird", "werden", "zum", "zur",
 ]);
 
 const ALIASES: Record<string, string> = {
@@ -128,6 +128,69 @@ function scoreEntry(entry: FreeTutorKnowledge, query: string) {
 
 function rankedKnowledge(query: string, knowledge: readonly FreeTutorKnowledge[]) {
   return knowledge.map((entry) => ({ entry, score: scoreEntry(entry, query) })).filter((match) => match.score > 0).sort((a, b) => b.score - a.score);
+}
+
+type ChatKnowledgeMatch = {
+  entry: FreeTutorKnowledge;
+  score: number;
+  questionHits: number;
+  metadataHits: number;
+  answerHits: number;
+  activeTopic: boolean;
+  contextual: boolean;
+};
+
+function isContextualChatQuery(query: string) {
+  const value = normalize(query);
+  return tokens(query).length <= 5 && /^(?:und\b|was\b|wie\b|warum\b|welche\b|welcher\b|wieso\b|dann\b|dabei\b|davon\b|dort\b|es\b)/.test(value);
+}
+
+function activeTopicMatches(entry: FreeTutorKnowledge, source: LearningSource | null) {
+  if (!source || source.scope !== "chapter") return false;
+  const sourceTitle = normalize(source.title);
+  const topic = normalize(entry.topic);
+  return topic.length >= 4 && (sourceTitle.includes(topic) || topic.includes(sourceTitle));
+}
+
+function rankedChatKnowledge(query: string, knowledge: readonly FreeTutorKnowledge[], source: LearningSource | null, contextEntryId: string) {
+  const queryTokens = tokens(query);
+  if (!queryTokens.length) return [];
+  const contextualQuery = Boolean(contextEntryId && isContextualChatQuery(query));
+  return knowledge.map((entry): ChatKnowledgeMatch | null => {
+    const question = normalize(entry.question);
+    const metadata = normalize(`${entry.topic} ${entry.area}`);
+    const answer = normalize(entry.answer);
+    const questionHits = queryTokens.filter((token) => containsToken(question, token)).length;
+    const metadataHits = queryTokens.filter((token) => containsToken(metadata, token)).length;
+    const answerHits = queryTokens.filter((token) => containsToken(answer, token)).length;
+    const activeTopic = activeTopicMatches(entry, source);
+    const contextual = contextualQuery && entry.id === contextEntryId;
+    const answerCoverage = answerHits / queryTokens.length;
+    const hasReliableSignal = questionHits > 0 || metadataHits > 0 || answerHits >= 2 && answerCoverage >= 0.6 || activeTopic && answerHits > 0 || contextual;
+    if (!hasReliableSignal) return null;
+    const coverage = Math.max(questionHits, metadataHits, answerHits) / queryTokens.length;
+    // MC-Erklärungen und Rechenfälle sind zum Prüfen gedacht, nicht als primäre
+    // Wissensquelle für freie Fragen. Sie bleiben als letzter Rückfall erhalten.
+    const lowPriorityPenalty = /^Multiple Choice\b/i.test(entry.area) ? 40 : entry.topic.startsWith("Medikamentenrechnen ·") ? 28 : 0;
+    const score = questionHits * 14 + metadataHits * 16 + answerHits * 2 + Math.round(coverage * 18) + (activeTopic ? 24 : 0) + (contextual ? 32 : 0) - lowPriorityPenalty;
+    return { entry, score, questionHits, metadataHits, answerHits, activeTopic, contextual };
+  }).filter((match): match is ChatKnowledgeMatch => Boolean(match && match.score > 0)).sort((left, right) => right.score - left.score);
+}
+
+function ambiguousChatTopics(matches: readonly ChatKnowledgeMatch[]) {
+  const best = matches[0];
+  if (!best || best.activeTopic || best.contextual || best.metadataHits >= 2 || best.questionHits >= 2) return [];
+  const alternative = matches.find((match) => normalize(match.entry.topic) !== normalize(best.entry.topic));
+  if (!alternative || best.score - alternative.score >= 8) return [];
+  return [best.entry.topic, alternative.entry.topic];
+}
+
+function needsScopedClarification(query: string, source: LearningSource | null, match: ChatKnowledgeMatch | undefined) {
+  if (!source || source.scope !== "chapter" || !match || match.contextual) return false;
+  const queryTokens = tokens(query);
+  const broadTerms = new Set(["befund", "befunde", "diagnose", "diagnostik", "folgen", "komplikation", "komplikationen", "massnahme", "massnahmen", "pathophysiologie", "symptom", "symptome", "therapie", "typisch", "ursache", "ursachen", "zeichen"]);
+  const namesCurrentTopic = tokens(source.title).some((token) => queryTokens.includes(token));
+  return !namesCurrentTopic && queryTokens.length > 0 && queryTokens.length <= 2 && queryTokens.every((token) => broadTerms.has(token));
 }
 
 function isVfaRequest(query: string) {
@@ -788,6 +851,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [adaptiveQuestion, setAdaptiveQuestion] = useState<AdaptiveFollowUp | null>(null);
   const [chatImageChallenge, setChatImageChallenge] = useState<FreeTutorKnowledge | null>(null);
+  const [chatContextEntryId, setChatContextEntryId] = useState("");
   const [lastEkgChallengeId, setLastEkgChallengeId] = useState("");
   const [simulationPhase, setSimulationPhase] = useState<"idle" | "prep" | "exam" | "finished">("idle");
   const [prepEndsAt, setPrepEndsAt] = useState<number | null>(null);
@@ -877,14 +941,14 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
 
   const openTutor = () => {
     const chapter = collectLearningMaterial(siteOverview);
-    if (chapter?.title !== source?.title) { setTurns([]); setExamPool([]); setExamIndex(0); setPendingNextEkgIndex(null); setInput(""); setReviewMode(false); setSessionScores([]); setSessionResults([]); setAdaptiveQuestion(null); }
+    if (chapter?.title !== source?.title) { setTurns([]); setExamPool([]); setExamIndex(0); setPendingNextEkgIndex(null); setInput(""); setReviewMode(false); setSessionScores([]); setSessionResults([]); setAdaptiveQuestion(null); setChatContextEntryId(""); }
     setSource(chapter);
     setError(chapter ? "" : "Die Lerninhalte konnten auf dieser Seite nicht geladen werden.");
     setOpen(true);
   };
 
   const reset = (nextMode: TutorMode = mode) => {
-    setMode(nextMode); setTurns([]); setExamPool([]); setExamIndex(0); setPendingNextEkgIndex(null); setInput(""); setError(""); setReviewMode(false); setSessionScores([]); setSessionResults([]); setAdaptiveQuestion(null); setChatImageChallenge(null); setSimulationPhase("idle"); setPrepEndsAt(null); setPrepRemaining(20 * 60); setSource(collectLearningMaterial(siteOverview));
+    setMode(nextMode); setTurns([]); setExamPool([]); setExamIndex(0); setPendingNextEkgIndex(null); setInput(""); setError(""); setReviewMode(false); setSessionScores([]); setSessionResults([]); setAdaptiveQuestion(null); setChatImageChallenge(null); setChatContextEntryId(""); setSimulationPhase("idle"); setPrepEndsAt(null); setPrepRemaining(20 * 60); setSource(collectLearningMaterial(siteOverview));
   };
 
   const questionText = (entry: FreeTutorKnowledge, index: number) => mode === "image"
@@ -960,13 +1024,31 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
       setInput("");
       return;
     }
-    const match = rankedKnowledge(value, knowledge)[0];
+    const chatMatches = rankedChatKnowledge(value, knowledge, source, chatContextEntryId);
+    const ambiguousTopics = ambiguousChatTopics(chatMatches);
+    if (ambiguousTopics.length) {
+      setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text: `Die Frage passt zu mehreren Lernbereichen. Meinst du „${ambiguousTopics[0]}“ oder „${ambiguousTopics[1]}“? Nenne bitte einen davon, damit ich nicht am Thema vorbeiantworte.`, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: "Rückfrage wegen mehrdeutiger Zuordnung" } }]);
+      setInput("");
+      return;
+    }
+    const match = chatMatches[0];
+    if (needsScopedClarification(value, source, match)) {
+      setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text: `Beziehst du dich auf „${source.title}“ allgemein oder auf ein bestimmtes Teilbild? Ergänze bitte kurz den Fachbegriff, zum Beispiel die konkrete Diagnose, Komplikation oder Patientengruppe. Dann antworte ich gezielt statt nur einen möglichen Unterpunkt auszuwählen.`, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: "Rückfrage wegen zu allgemeiner Formulierung" } }]);
+      setInput("");
+      return;
+    }
     let text = "";
     let sourceBasis = "";
-    if (match && match.score >= 16) { text = focusedKnowledgeAnswer(match.entry, value); sourceBasis = `Lernbestand · ${match.entry.topic} · ${match.entry.area}`; }
-    else { text = materialAnswer(source.material, value); sourceBasis = `${source.title} · sichtbarer Lesetext`; }
+    if (match && match.score >= 20) {
+      text = focusedKnowledgeAnswer(match.entry, value);
+      sourceBasis = `Lernbestand · ${match.entry.topic} · ${match.entry.area}`;
+      setChatContextEntryId(match.entry.id);
+    } else if (source.scope === "chapter") {
+      text = materialAnswer(source.material, value);
+      sourceBasis = `${source.title} · sichtbarer Lesetext`;
+    }
     if (!text) { text = "Dazu finde ich im hinterlegten Lernmaterial keinen eindeutigen Treffer. Öffne bitte das passende Kapitel und formuliere die Frage mit einem konkreten Fachbegriff erneut."; sourceBasis = "Kein sicherer Treffer"; }
-    setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: sourceBasis, source_href: match && match.score >= 16 ? match.entry.href : source.href } }]);
+    setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: sourceBasis, source_href: match && match.score >= 20 ? match.entry.href : source.href } }]);
     setInput("");
   };
 
