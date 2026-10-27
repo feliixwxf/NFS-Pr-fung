@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Neutraler EKG-Streifen</title>
+  <desc id="desc">Regelmäßige P-Wellen mit gleichbleibender Überleitungszeit; einzelne P-Wellen werden nicht auf die Kammer übergeleitet.</desc>
+  <defs>
+    <pattern id="small" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#f5cccc" stroke-width="0.7"/></pattern>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><rect width="50" height="50" fill="url(#small)"/><path d="M50 0H0V50" fill="none" stroke="#dc8989" stroke-width="1.2"/></pattern>
+    <path id="p" d="M0 180 H12 C20 180 22 162 32 162 C42 162 44 180 54 180 H70"/>
+    <path id="qrs" d="M0 180 H8 L14 191 L22 108 L30 216 L40 180 H62 C75 180 80 153 96 153 C112 153 118 180 132 180 H150"/>
+  </defs>
+  <rect width="1200" height="360" rx="18" fill="#fffdfd"/>
+  <rect x="8" y="8" width="1184" height="344" rx="16" fill="url(#grid)" stroke="#d78989"/>
+  <text x="28" y="48" fill="#27343b" font-family="Arial,sans-serif" font-size="24" font-weight="700">II</text>
+  <g fill="none" stroke="#17242b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M25 180 H55"/><use href="#p" x="55"/><path d="M125 180 H137"/><use href="#qrs" x="137"/>
+    <path d="M287 180 H285"/><use href="#p" x="285"/><path d="M355 180 H367"/><use href="#qrs" x="367"/>
+    <path d="M517 180 H515"/><use href="#p" x="515"/><path d="M585 180 H745"/>
+    <use href="#p" x="745"/><path d="M815 180 H827"/><use href="#qrs" x="827"/>
+    <path d="M977 180 H975"/><use href="#p" x="975"/><path d="M1045 180 H1057"/><use href="#qrs" x="1057"/>
+    <path d="M28 306v-20h10v40h10v-20h30"/>
+  </g>
+</svg>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, cloneElement, isValidElement, ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Children, cloneElement, isValidElement, lazy, ReactElement, ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { QuestionLearningRecord, QuestionProgress, readQuestionProgress, recordQuestionAnswer, restoreQuestionAnswer, summarizeQuestionProgress, progressMetrics, formatProgressPercent } from "./lib/questionProgress";
 import { readCompletedTopics, writeTopicCompletion } from "./lib/topicProgress";
 import { activateLocalUser, saveQuestionProgress, saveTopicProgress, syncLearningProgress } from "./lib/cloudProgress";
@@ -8,112 +8,115 @@ import { getSupabaseClient } from "./lib/supabaseClient";
 import AccountAccess from "./account-access";
 import AccessCode from "./access-code";
 import AccountProfileSettings, { loadAccountAvatarUrl } from "./account-profile-settings";
-import AiExamTutor from "./ai-exam-tutor";
-import { convertQuestionsToTutorKnowledge } from "./free-tutor-knowledge";
+import { OfflineBootstrap } from "./offline-support";
 import { supplementalQuestions } from "./supplemental-questions";
 import { rechtskundeFlashcards, rechtskundeQuestions } from "./rechtskunde-data";
-import KommunikationLesson from "./kommunikation-lesson";
 import { kommunikationFlashcards, kommunikationQuestions } from "./kommunikation-data";
-import OrganisationLesson from "./organisation-lesson";
 import { organisationFlashcards, organisationQuestions } from "./organisation-data";
-import QmLesson from "./qm-lesson";
 import { qmFlashcards, qmQuestions } from "./qm-data";
-import TerminologyLesson from "./terminologie-lesson";
 import { terminologyFlashcards, terminologyQuestions } from "./terminologie-data";
-import DiagnostikLesson from "./diagnostik-lesson";
 import { diagnostikFlashcards, diagnostikQuestions } from "./diagnostik-data";
-import HygieneLesson from "./hygiene-lesson";
 import { hygieneFlashcards, hygieneQuestions } from "./hygiene-data";
 import { hyperventilationFlashcards, hyperventilationQuestions } from "./hyperventilation-data";
 import { geburtFlashcards, geburtQuestions } from "./geburt-data";
 import { abdominaltraumaFlashcards, abdominaltraumaQuestions } from "./abdominaltrauma-data";
 import { thoraxtraumaFlashcards, thoraxtraumaQuestions } from "./thoraxtrauma-data";
 import { gallensteinkolikFlashcards, gallensteinkolikQuestions } from "./gallensteinkolik-data";
-import WirbelsaeulentraumaLesson from "./wirbelsaeulentrauma-lesson";
 import { wirbelsaeulentraumaFlashcards, wirbelsaeulentraumaQuestions } from "./wirbelsaeulentrauma-data";
-import ExtremitaetentraumaLesson from "./extremitaetentrauma-lesson";
 import { extremitaetentraumaFlashcards, extremitaetentraumaQuestions } from "./extremitaetentrauma-data";
-import EugLesson from "./eug-lesson";
 import { eugFlashcards, eugQuestions } from "./eug-data";
-import LungenoedemLesson from "./lungenoedem-lesson";
 import { lungenoedemFlashcards, lungenoedemQuestions } from "./lungenoedem-data";
-import RippenfrakturLesson from "./rippenfraktur-lesson";
 import { rippenfrakturFlashcards, rippenfrakturQuestions } from "./rippenfraktur-data";
-import VerbrennungLesson from "./verbrennung-lesson";
 import { verbrennungFlashcards, verbrennungQuestions } from "./verbrennung-data";
-import BronchoobstruktionLesson from "./bronchoobstruktion-lesson";
 import { bronchoFlashcards, bronchoQuestions } from "./bronchoobstruktion-data";
-import PneumonieLesson from "./pneumonie-lesson";
 import { pneumonieFlashcards, pneumonieQuestions } from "./pneumonie-data";
-import UnterkuehlungLesson from "./unterkuehlung-lesson";
 import { unterkuehlungFlashcards, unterkuehlungQuestions } from "./unterkuehlung-data";
-import KrampfanfallLesson from "./krampfanfall-lesson";
 import { krampfanfallFlashcards, krampfanfallQuestions } from "./krampfanfall-data";
-import KrampfanfallKindLesson from "./krampfanfall-kind-lesson";
 import { krampfanfallKindFlashcards, krampfanfallKindQuestions } from "./krampfanfall-kind-data";
-import VorhofflimmernLesson from "./vorhofflimmern-lesson";
 import { vorhofflimmernFlashcards, vorhofflimmernQuestions } from "./vorhofflimmern-data";
-import HypertensiverNotfallLesson from "./hypertensiver-notfall-lesson";
 import { hypertensiverNotfallFlashcards, hypertensiverNotfallQuestions } from "./hypertensiver-notfall-data";
-import PseudokruppEpiglottitisLesson from "./pseudokrupp-epiglottitis-lesson";
 import { pseudokruppEpiglottitisFlashcards, pseudokruppEpiglottitisQuestions } from "./pseudokrupp-epiglottitis-data";
-import AnginaPectorisLesson from "./angina-pectoris-lesson";
 import { anginaPectorisFlashcards, anginaPectorisQuestions } from "./angina-pectoris-data";
-import MyokardinfarktLesson from "./myokardinfarkt-lesson";
 import { myokardinfarktFlashcards, myokardinfarktQuestions } from "./myokardinfarkt-data";
-import VenenthromboseLesson from "./venenthrombose-lesson";
 import { venenthromboseFlashcards, venenthromboseQuestions } from "./venenthrombose-data";
-import PavkLesson from "./pavk-lesson";
 import { pavkFlashcards, pavkQuestions } from "./pavk-data";
-import OpiatintoxikationLesson from "./opiatintoxikation-lesson";
 import { opiatintoxikationFlashcards, opiatintoxikationQuestions } from "./opiatintoxikation-data";
-import PolytraumaLesson from "./polytrauma-lesson";
 import { polytraumaFlashcards, polytraumaQuestions } from "./polytrauma-data";
-import AkutesAbdomenLesson from "./akutes-abdomen-lesson";
 import { akutesAbdomenFlashcards, akutesAbdomenQuestions } from "./akutes-abdomen-data";
-import PankreatitisLesson from "./pankreatitis-lesson";
 import { pankreatitisFlashcards, pankreatitisQuestions } from "./pankreatitis-data";
-import UlkusblutungLesson from "./ulkusblutung-lesson";
 import { ulkusblutungFlashcards, ulkusblutungQuestions } from "./ulkusblutung-data";
-import SchussverletzungLesson from "./schussverletzung-lesson";
 import { schussverletzungFlashcards, schussverletzungQuestions } from "./schussverletzung-data";
-import StichverletzungLesson from "./stichverletzung-lesson";
 import { stichverletzungFlashcards, stichverletzungQuestions } from "./stichverletzung-data";
-import ExplosionsverletzungLesson from "./explosionsverletzung-lesson";
 import { explosionsverletzungFlashcards, explosionsverletzungQuestions } from "./explosionsverletzung-data";
-import AmputationsverletzungLesson from "./amputationsverletzung-lesson";
 import { amputationsverletzungFlashcards, amputationsverletzungQuestions } from "./amputationsverletzung-data";
-import AlkoholintoxikationLesson from "./alkoholintoxikation-lesson";
 import { alkoholintoxikationFlashcards, alkoholintoxikationQuestions } from "./alkoholintoxikation-data";
-import InstabileBradykardieLesson from "./instabile-bradykardie-lesson";
 import { instabileBradykardieFlashcards, instabileBradykardieQuestions } from "./instabile-bradykardie-data";
-import HerzrhythmusstoerungenLesson from "./herzrhythmusstoerungen-lesson";
 import { herzrhythmusstoerungenFlashcards, herzrhythmusstoerungenQuestions } from "./herzrhythmusstoerungen-data";
-import HerzbeuteltamponadeLesson from "./herzbeuteltamponade-lesson";
 import { herzbeuteltamponadeFlashcards, herzbeuteltamponadeQuestions } from "./herzbeuteltamponade-data";
-import ElektrounfallLesson from "./elektrounfall-lesson";
 import { elektrounfallFlashcards, elektrounfallQuestions } from "./elektrounfall-data";
-import BeckentraumaLesson from "./beckentrauma-lesson";
 import { beckentraumaFlashcards, beckentraumaQuestions } from "./beckentrauma-data";
-import BarotraumaLesson from "./barotrauma-lesson";
 import { barotraumaFlashcards, barotraumaQuestions } from "./barotrauma-data";
-import AnaphylaxieLesson from "./anaphylaxie-lesson";
 import { anaphylaxieFlashcards, anaphylaxieQuestions } from "./anaphylaxie-data";
-import SchockLesson from "./schock-lesson";
 import { schockFlashcards, schockQuestions } from "./schock-data";
 import GallensteinkolikPreparation from "./gallensteinkolik-preparation";
 import MetamizolRisikoaufklaerung from "./metamizol-risikoaufklaerung";
 import MedicationPreparation from "./medication-preparation";
-import MedicationTrainer from "./medikamentenrechnen/MedicationTrainer";
-import AnatomyLibrary from "./anatomy-library";
-import MedicationEffectsLibrary from "./medication-effects-library";
 import { topicSearchScore } from "./lib/contentSearch";
 import { dueQuestionIds } from "./lib/questionProgress";
 import { buildBalancedRound, markTopicOpened, readBookmarks, readTopicActivity, stableQuestionKey, writeBookmarks } from "./lib/learningQol";
 import { oralTopicReferenceLabel } from "./lib/oralTopicReferences";
 import { toggleMultipleChoiceSelection } from "./lib/multipleChoiceSelection";
 
-type View = "start" | "oral" | "written" | "quiz" | "progress" | "medication" | "medication-effects" | "anatomy";
+const AiExamTutor = lazy(() => import("./ai-exam-tutor"));
+const LearningPlan = lazy(() => import("./learning-plan"));
+const CaseGenerator = lazy(() => import("./case-generator"));
+const KommunikationLesson = lazy(() => import("./kommunikation-lesson"));
+const OrganisationLesson = lazy(() => import("./organisation-lesson"));
+const QmLesson = lazy(() => import("./qm-lesson"));
+const TerminologyLesson = lazy(() => import("./terminologie-lesson"));
+const DiagnostikLesson = lazy(() => import("./diagnostik-lesson"));
+const HygieneLesson = lazy(() => import("./hygiene-lesson"));
+const WirbelsaeulentraumaLesson = lazy(() => import("./wirbelsaeulentrauma-lesson"));
+const ExtremitaetentraumaLesson = lazy(() => import("./extremitaetentrauma-lesson"));
+const EugLesson = lazy(() => import("./eug-lesson"));
+const LungenoedemLesson = lazy(() => import("./lungenoedem-lesson"));
+const RippenfrakturLesson = lazy(() => import("./rippenfraktur-lesson"));
+const VerbrennungLesson = lazy(() => import("./verbrennung-lesson"));
+const BronchoobstruktionLesson = lazy(() => import("./bronchoobstruktion-lesson"));
+const PneumonieLesson = lazy(() => import("./pneumonie-lesson"));
+const UnterkuehlungLesson = lazy(() => import("./unterkuehlung-lesson"));
+const KrampfanfallLesson = lazy(() => import("./krampfanfall-lesson"));
+const KrampfanfallKindLesson = lazy(() => import("./krampfanfall-kind-lesson"));
+const VorhofflimmernLesson = lazy(() => import("./vorhofflimmern-lesson"));
+const HypertensiverNotfallLesson = lazy(() => import("./hypertensiver-notfall-lesson"));
+const PseudokruppEpiglottitisLesson = lazy(() => import("./pseudokrupp-epiglottitis-lesson"));
+const AnginaPectorisLesson = lazy(() => import("./angina-pectoris-lesson"));
+const MyokardinfarktLesson = lazy(() => import("./myokardinfarkt-lesson"));
+const VenenthromboseLesson = lazy(() => import("./venenthrombose-lesson"));
+const PavkLesson = lazy(() => import("./pavk-lesson"));
+const OpiatintoxikationLesson = lazy(() => import("./opiatintoxikation-lesson"));
+const PolytraumaLesson = lazy(() => import("./polytrauma-lesson"));
+const AkutesAbdomenLesson = lazy(() => import("./akutes-abdomen-lesson"));
+const PankreatitisLesson = lazy(() => import("./pankreatitis-lesson"));
+const UlkusblutungLesson = lazy(() => import("./ulkusblutung-lesson"));
+const SchussverletzungLesson = lazy(() => import("./schussverletzung-lesson"));
+const StichverletzungLesson = lazy(() => import("./stichverletzung-lesson"));
+const ExplosionsverletzungLesson = lazy(() => import("./explosionsverletzung-lesson"));
+const AmputationsverletzungLesson = lazy(() => import("./amputationsverletzung-lesson"));
+const AlkoholintoxikationLesson = lazy(() => import("./alkoholintoxikation-lesson"));
+const InstabileBradykardieLesson = lazy(() => import("./instabile-bradykardie-lesson"));
+const HerzrhythmusstoerungenLesson = lazy(() => import("./herzrhythmusstoerungen-lesson"));
+const HerzbeuteltamponadeLesson = lazy(() => import("./herzbeuteltamponade-lesson"));
+const ElektrounfallLesson = lazy(() => import("./elektrounfall-lesson"));
+const BeckentraumaLesson = lazy(() => import("./beckentrauma-lesson"));
+const BarotraumaLesson = lazy(() => import("./barotrauma-lesson"));
+const AnaphylaxieLesson = lazy(() => import("./anaphylaxie-lesson"));
+const SchockLesson = lazy(() => import("./schock-lesson"));
+const MedicationTrainer = lazy(() => import("./medikamentenrechnen/MedicationTrainer"));
+const AnatomyLibrary = lazy(() => import("./anatomy-library"));
+const MedicationEffectsLibrary = lazy(() => import("./medication-effects-library"));
+
+type View = "start" | "plan" | "cases" | "oral" | "written" | "quiz" | "progress" | "medication" | "medication-effects" | "anatomy";
 type TrainingTopic = "schock" | "elektrounfall" | "anaphylaxie" | "barotrauma" | "beckentrauma" | "amputationsverletzung" | "instabile-bradykardie" | "herzrhythmusstoerungen" | "herzbeuteltamponade" | "akutes-abdomen" | "akute-pankreatitis" | "ulkusblutung" | "schussverletzung" | "stichverletzung" | "explosionsverletzung" | "alkoholintoxikation" | "opiatintoxikation" | "venenthrombose" | "pavk" | "myokardinfarkt" | "polytrauma" | "bronchoobstruktion" | "pneumonie" | "pseudokrupp-epiglottitis" | "hypertensiver-notfall" | "vorhofflimmern" | "krampfanfall-kind" | "krampfanfall" | "unterkuehlung" | "rippenfraktur" | "verbrennung" | "lungenoedem" | "eug" | "extremitaetentrauma" | "wirbelsaeulentrauma" | "angina-pectoris" | "acs" | "apoplex" | "sht" | "lae" | "hyperventilation" | "geburt" | "thoraxtrauma" | "abdominaltrauma" | "hypoglykaemie" | "gallensteinkolik" | "nierensteinkolik" | "hodentorsion" | "rechtskunde" | "kommunikation" | "organisation" | "qualitaetsmanagement" | "terminologie" | "diagnostik" | "hygiene";
 type ReviewMode = "wrong" | "once" | "twice" | null;
 
@@ -160,6 +163,8 @@ const chapterSections = [
 
 const nav = [
   { id: "start" as View, label: "Start", icon: "⌂" },
+  { id: "plan" as View, label: "Mein Lernplan", icon: "☼" },
+  { id: "cases" as View, label: "Fallgenerator", icon: "F" },
   { id: "oral" as View, label: "Mündlich", icon: "◫" },
   { id: "written" as View, label: "Schriftlich", icon: "✎" },
   { id: "anatomy" as View, label: "Anatomie", icon: "◇" },
@@ -168,6 +173,19 @@ const nav = [
   { id: "medication-effects" as View, label: "Medikamentenwirkung", icon: "✦" },
   { id: "progress" as View, label: "Fortschritt", icon: "↗" },
 ];
+const mobileNavGroups: { label: string; items: View[] }[] = [
+  { label: "Lernen", items: ["start", "plan", "cases"] },
+  { label: "Prüfungsbereiche", items: ["oral", "written", "anatomy", "quiz"] },
+  { label: "Medikamente", items: ["medication-effects", "medication"] },
+  { label: "Auswertung", items: ["progress"] },
+];
+const mobileNavLabels: Partial<Record<View, string>> = {
+  plan: "Lernplan",
+  cases: "Fälle",
+  "medication-effects": "Wirkung",
+  medication: "Rechnen",
+  progress: "Lernstand",
+};
 const topicSlugByIndex: Record<number, string> = { 0: "myokardinfarkt", 1: "angina-pectoris", 2: "acs", 3: "apoplex", 4: "sht", 5: "pneumonie", 6: "venenthrombose", 7: "lae", 8: "ulkusblutung", 9: "copd", 10: "hyperventilation", 11: "geburt", 12: "asthma", 14: "akutes-abdomen", 16: "instabile-bradykardie", 17: "thoraxtrauma", 18: "abdominaltrauma", 19: "amputationsverletzung", 20: "beckentrauma", 21: "lungenoedem", 22: "extremitaetentrauma", 23: "vorhofflimmern", 24: "krampfanfall", 25: "schussverletzung", 26: "hypoglykaemie", 27: "elektrounfall", 28: "anaphylaxie", 29: "krampfanfall-kind", 30: "polytrauma", 31: "stichverletzung", 32: "schock", 33: "rippenfraktur", 34: "barotrauma", 35: "verbrennung", 36: "alkoholintoxikation", 37: "opiatintoxikation", 38: "gallensteinkolik", 39: "nierensteinkolik", 40: "pavk", 42: "hodentorsion", 43: "explosionsverletzung", 44: "akute-pankreatitis", 45: "herzrhythmusstoerungen", 46: "unterkuehlung", 47: "herzbeuteltamponade", 48: "pseudokrupp-epiglottitis" };
 const topicIndexBySlug = Object.fromEntries(Object.entries(topicSlugByIndex).map(([index, slug]) => [slug, Number(index)]));
 
@@ -197,6 +215,17 @@ function HeaderClock() {
   );
 }
 
+function AppLoadingScreen({ compact = false }: { compact?: boolean }) {
+  return <main className={compact ? "content-loading-screen" : "loading-screen"} role="status" aria-live="polite" aria-label="Lernbereich wird geladen">
+    <div className="loading-mark" aria-hidden="true">N</div>
+    <div className="loading-copy">
+      <b>{compact ? "Kapitel wird geöffnet" : "NotSan Prüfung wird vorbereitet"}</b>
+      <span>{compact ? "Die benötigten Lerninhalte werden geladen …" : "Lernstand und Inhalte werden geladen …"}</span>
+    </div>
+    <div className="loading-progress" aria-hidden="true"><i /></div>
+  </main>;
+}
+
 export default function Home() {
   const [signedIn, setSignedIn] = useState(false);
   const [ready, setReady] = useState(false);
@@ -213,6 +242,7 @@ export default function Home() {
   const floatingMenuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLElement>(null);
   const menuOpenerRef = useRef<HTMLButtonElement | null>(null);
+  const pendingTopScrollRef = useRef(false);
   const [accountUserId, setAccountUserId] = useState<string | null>(null);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [accountAvatarUrl, setAccountAvatarUrl] = useState<string | null>(null);
@@ -223,7 +253,27 @@ export default function Home() {
   const [passwordResetMessage, setPasswordResetMessage] = useState("");
   const contentLocationRef = useRef("start:none:none");
 
+  const scrollToPageTop = () => {
+    pendingTopScrollRef.current = true;
+    const apply = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      document.querySelector<HTMLElement>(".main-content")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
+    apply();
+    window.requestAnimationFrame(() => {
+      apply();
+      window.requestAnimationFrame(() => {
+        apply();
+        pendingTopScrollRef.current = false;
+      });
+    });
+  };
+
+  // Der persistierte Lernstand ist erst im Browser verfügbar und wird einmalig hydriert.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuestionProgress(readQuestionProgress());
     setCompletedTopics(readCompletedTopics());
     localStorage.removeItem("notsan-learned");
@@ -247,6 +297,8 @@ export default function Home() {
     else if (path.startsWith("/mc/")) { setView("quiz"); setTrainingTopic(path.split("/")[2] as TrainingTopic); }
     else if (path === "/mc") setView("quiz");
     else if (path === "/fortschritt") setView("progress");
+    else if (path === "/lernplan") setView("plan");
+    else if (path === "/falltraining") setView("cases");
   }, []);
 
   useEffect(() => {
@@ -345,7 +397,8 @@ export default function Home() {
       document.body.style.position = previousStyles.position;
       document.body.style.top = previousStyles.top;
       document.body.style.width = previousStyles.width;
-      window.scrollTo(0, scrollY);
+      if (pendingTopScrollRef.current) window.scrollTo(0, 0);
+      else window.scrollTo(0, scrollY);
       window.requestAnimationFrame(() => {
         const opener = menuOpenerRef.current;
         const visibleTrigger = [opener, floatingMenuButtonRef.current, headerMenuButtonRef.current].find((candidate) => {
@@ -363,7 +416,7 @@ export default function Home() {
     const contentLocation = `${view}:${selectedTopic ?? "none"}:${trainingTopic ?? "none"}`;
     if (contentLocationRef.current !== contentLocation) {
       contentLocationRef.current = contentLocation;
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      scrollToPageTop();
     }
   }, [view, selectedTopic, trainingTopic]);
 
@@ -384,6 +437,8 @@ export default function Home() {
       else if (window.location.pathname.startsWith("/mc/")) { setView("quiz"); setTrainingTopic(window.location.pathname.split("/")[2] as TrainingTopic); }
       else if (window.location.pathname === "/mc") { setView("quiz"); setTrainingTopic(null); }
       else if (window.location.pathname === "/fortschritt") setView("progress");
+      else if (window.location.pathname === "/lernplan") setView("plan");
+      else if (window.location.pathname === "/falltraining") setView("cases");
       else setView("start");
     };
     window.addEventListener("popstate", restoreViewFromPath);
@@ -397,8 +452,8 @@ export default function Home() {
     return () => window.removeEventListener("resize", closeOnWideScreen);
   }, [mobileMenuOpen]);
 
-  const changeView = (nextView: View) => { setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); const paths: Record<View, string> = { start: "/", oral: "/muendlich", written: "/schriftlich", quiz: "/mc", progress: "/fortschritt", medication: "/medikamentenrechnen", "medication-effects": "/medikamentenwirkung", anatomy: "/anatomie" }; window.history.pushState({}, "", paths[nextView]); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
-  const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", `/mc/${topic}`); };
+  const changeView = (nextView: View) => { scrollToPageTop(); setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); const paths: Record<View, string> = { start: "/", plan: "/lernplan", cases: "/falltraining", oral: "/muendlich", written: "/schriftlich", quiz: "/mc", progress: "/fortschritt", medication: "/medikamentenrechnen", "medication-effects": "/medikamentenwirkung", anatomy: "/anatomie" }; window.history.pushState({}, "", paths[nextView]); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
+  const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { scrollToPageTop(); setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", `/mc/${topic}`); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
       const completed = !current.includes(topicNumber);
@@ -443,7 +498,7 @@ export default function Home() {
     setQuestionProgress(readQuestionProgress());
     setCompletedTopics(readCompletedTopics());
   };
-  if (!ready || syncStatus === "syncing") return <main className="loading-screen" aria-label="Lernstand wird geladen" />;
+  if (!ready || syncStatus === "syncing") return <AppLoadingScreen />;
 
   if (passwordSetupKind && accountUserId) return <main className="login-page"><section className="login-brand"><div className="brand brand-light"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></div><div className="login-copy"><h1>{passwordSetupKind === "recovery" ? "Passwort zurücksetzen" : "Dein Lernkonto"}</h1><p>{passwordSetupKind === "recovery" ? "Wähle jetzt ein neues Passwort für dein Lernkonto." : "Lege dein Passwort fest. Danach wird dein Lernstand deinem Konto zugeordnet."}</p></div></section><section className="login-panel"><div className="login-card"><AccountAccess passwordSetupKind={passwordSetupKind} onDone={() => { setPasswordSetupKind(null); window.history.replaceState({}, "", "/"); }} /></div></section></main>;
 
@@ -485,7 +540,10 @@ export default function Home() {
             </div>
           </div>
         </header>
+        <Suspense fallback={<AppLoadingScreen compact />}>
         {view === "start" && <Dashboard setView={changeView} questionProgress={questionProgress} />}
+        {view === "plan" && <LearningPlan progress={questionProgress} completedTopics={completedTopics} topics={learningPlanTopics} userId={accountUserId} onTrain={(topic) => openTraining(topic as TrainingTopic)} onRead={(topic) => { setView("oral"); setSelectedTopic(topic); window.history.pushState({}, "", `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onProgress={() => changeView("progress")} onCases={() => changeView("cases")} />}
+        {view === "cases" && <CaseGenerator topics={caseGeneratorTopics} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={(topic) => { setSelectedTopic(topic); window.history.pushState({}, "", topic === null ? "/muendlich" : `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onOpenTraining={(topic) => openTraining(topic)} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
         {view === "written" && <WrittenLibrary onProgressChange={handleQuestionProgress} />}
         {view === "quiz" && <QuizTraining onProgressChange={handleQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); window.history.pushState({}, "", topic ? `/mc/${topic}` : "/mc"); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); window.history.pushState({}, "", "/fortschritt"); }} />}
@@ -493,11 +551,13 @@ export default function Home() {
         {view === "medication" && <MedicationTrainer key={accountUserId || "guest"} accountUserId={accountUserId} onSyncError={() => setSyncStatus("error")} />}
         {view === "medication-effects" && <MedicationEffectsLibrary />}
         {view === "anatomy" && <AnatomyLibrary />}
+        </Suspense>
         <footer><span>NotSan Prüfung · Dein Lernbegleiter</span><span>Themenliste nach DRK-Bildungswerk Thüringen · Inhalte folgen aus deinen Materialien.</span></footer>
       </main>
-      <AiExamTutor active userId={accountUserId} additionalKnowledge={legacyTutorKnowledge} siteOverview={`Verfügbare mündliche Prüfungsthemen: ${topics.join(", ")}. Schriftliche Lernbereiche: Rechtskunde, Organisation und Einsatztaktik, Kommunikation, Qualitätsmanagement, Terminologie, medizinische Diagnostik sowie Hygiene und Infektionsschutz. Weitere Bereiche der Seite: Multiple-Choice-Training, Medikamentenwirkung, Medikamentenrechnen und Anatomie.`} />
+      <OfflineBootstrap />
+      <Suspense fallback={null}><AiExamTutor active userId={accountUserId} additionalKnowledge={legacyTutorKnowledge} siteOverview={`Verfügbare mündliche Prüfungsthemen: ${topics.join(", ")}. Schriftliche Lernbereiche: Rechtskunde, Organisation und Einsatztaktik, Kommunikation, Qualitätsmanagement, Terminologie, medizinische Diagnostik sowie Hygiene und Infektionsschutz. Weitere Bereiche der Seite: Multiple-Choice-Training, Medikamentenwirkung, Medikamentenrechnen und Anatomie.`} /></Suspense>
       {!headerMenuVisible && !mobileMenuOpen && <button ref={floatingMenuButtonRef} className="floating-menu-toggle" type="button" onClick={(event) => openMobileMenu(event.currentTarget)} aria-expanded={mobileMenuOpen} aria-controls="mobile-menu" aria-label="Menü öffnen"><span aria-hidden="true"><i /><i /><i /></span>Menü</button>}
-      {mobileMenuOpen && <><button className="mobile-menu-backdrop" type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen" /><aside ref={mobileMenuRef} id="mobile-menu" className="mobile-menu open" role="dialog" aria-modal="true" aria-label="Navigation"><header><button className="brand brand-home" type="button" onClick={() => changeView("start")} aria-label="Zum Hauptmenü"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></button><button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen">×</button></header><small>MENÜ</small><nav aria-label="Mobile Navigation">{nav.map((item) => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)}><span>{item.icon}</span><b>{item.label}</b>{view === item.id && <i>Aktiv</i>}</button>)}</nav><div className="mobile-menu-note"><span>☼</span><div><b>{topics.length} Themen angelegt</b><p>Deine gesamte Prüfungsvorbereitung an einem Ort.</p></div></div></aside></>}
+      {mobileMenuOpen && <><button className="mobile-menu-backdrop" type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen" /><aside ref={mobileMenuRef} id="mobile-menu" className="mobile-menu open" role="dialog" aria-modal="true" aria-label="Navigation"><header><button className="brand brand-home" type="button" onClick={() => changeView("start")} aria-label="Zum Hauptmenü"><span className="brand-mark">N</span><span>NotSan <b>Prüfung</b></span></button><button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Menü schließen">×</button></header><div className="mobile-menu-groups">{mobileNavGroups.map((group) => <section className="mobile-menu-group" key={group.label}><small>{group.label}</small><nav aria-label={group.label}>{group.items.map((id) => { const item = nav.find((entry) => entry.id === id)!; return <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => changeView(item.id)} aria-current={view === item.id ? "page" : undefined} aria-label={item.label}><span>{item.icon}</span><b>{mobileNavLabels[id] || item.label}</b></button>; })}</nav></section>)}</div><div className="mobile-menu-note"><span>☼</span><div><b>{topics.length} Themen angelegt</b><p>Deine gesamte Prüfungsvorbereitung an einem Ort.</p></div></div></aside></>}
     </div>
   );
 }
@@ -518,6 +578,7 @@ function Dashboard({ setView, questionProgress }: { setView: (view: View) => voi
   const ringStyle = { background: total ? `conic-gradient(#c9574f 0deg ${wrongEnd}deg,#dc9344 ${wrongEnd}deg ${onceEnd}deg,#4f84a5 ${onceEnd}deg ${twiceEnd}deg,#4f8668 ${twiceEnd}deg 360deg)` : "#e8e5df" } as React.CSSProperties;
   return <section className="dashboard"><div className="welcome"><div><span className="eyebrow light">ABSCHLUSSPRÜFUNG NOTFALLSANITÄTER</span><h1>Wissen vertiefen. Sicherheit gewinnen.</h1><p>Die Abschlussprüfung im Blick, den Beruf vor Augen: Wiederhole Fachwissen, entdecke Zusammenhänge und bereite dich Schritt für Schritt auf deinen Abschluss vor.</p><div className="hero-actions"><button className="light-button" onClick={() => setView("oral")}>Vorbereitung starten <span>→</span></button></div></div><div className="hero-drk-badge" aria-label={`${formatProgressPercent(progress)} Bearbeitungsfortschritt`}><div className="drk-cross" aria-hidden="true"><i /><i /></div><div><b>{formatProgressPercent(progress)}</b><span>Bearbeitungsfortschritt</span><small>{metrics.answered} von {metrics.available} Fragen bearbeitet</small></div></div></div>
     <section className="dashboard-grid" aria-labelledby="preparation-title"><div className="block-title"><span className="eyebrow">Deine Bereiche</span><h2 id="preparation-title">Prüfungsvorbereitung</h2></div><div className="action-cards"><button type="button" onClick={() => setView("oral")}><span className="action-icon" aria-hidden="true">◫</span><div><h3>Mündlich</h3><p>Fachwissen strukturiert wiederholen und Zusammenhänge verstehen.</p><b>Themen öffnen →</b></div></button><button type="button" onClick={() => setView("written")}><span className="action-icon dark" aria-hidden="true">✎</span><div><h3>Schriftlich</h3><p>Gezielt auf die schriftliche Abschlussprüfung vorbereiten.</p><b>Vorbereitung öffnen →</b></div></button><button type="button" onClick={() => setView("quiz")}><span className="action-icon green" aria-hidden="true">✓</span><div><h3>MC-Training</h3><p>Prüfungsfragen beantworten und dein Wissen überprüfen.</p><b>Training starten →</b></div></button></div><div className="dashboard-group-label"><span className="eyebrow">Medikamente</span><p>Wirkungen lernen und Dosierungen sicher berechnen.</p></div><div className="stats-grid menu-shortcuts"><button type="button" onClick={() => setView("medication-effects")}><span className="stat-icon blue">✦</span><div><small>Medikamentenwirkung</small><b>Wirkung <em>lernen</em></b></div><span className="menu-shortcut-arrow">→</span></button><button type="button" onClick={() => setView("medication")}><span className="stat-icon green">💉</span><div><small>Medikamentenrechnen</small><b>Dosen <em>berechnen</em></b></div><span className="menu-shortcut-arrow">→</span></button></div></section>
+    <section className="dashboard-smart-tools" aria-labelledby="smart-tools-title"><div><span className="eyebrow">Persönlich trainieren</span><h2 id="smart-tools-title">Dein nächster sinnvoller Schritt</h2></div><div className="dashboard-smart-grid"><button type="button" onClick={() => setView("plan")}><span>☼</span><div><small>Automatisch angepasst</small><h3>Mein Lernplan</h3><p>Fällige Wiederholungen, Fehler und neue Themen passend zu deiner verfügbaren Zeit.</p><b>Heutigen Plan öffnen →</b></div></button><button type="button" onClick={() => setView("cases")}><span>F</span><div><small>Dynamisches Prüfungstraining</small><h3>Fallgenerator</h3><p>Einsatzlage wählen, frei antworten und dein Vorgehen Schritt für Schritt begründen.</p><b>Falltraining starten →</b></div></button></div></section>
     <section className="dashboard-learning-stat" aria-labelledby="learning-stat-title"><div className="dashboard-learning-copy"><span className="eyebrow">Deine Lernstatistik</span><h2 id="learning-stat-title">Auf einen Blick</h2><p>{total ? `${total} Fragen wurden bereits bearbeitet. Der Wiederholungsstand zeigt die aktuelle Stufe, nicht eine Prüfungsgarantie.` : "Sobald du die ersten MC-Fragen beantwortest, erscheint hier die Verteilung deines Lernstands."}</p><button type="button" onClick={() => setView("progress")}>Fortschritt im Detail <span>→</span></button></div><div className="dashboard-learning-chart"><div className="dashboard-learning-ring" style={ringStyle} role="img" aria-label={`${wrong} falsch, ${once} einmal richtig, ${twice} zweimal richtig, ${mastered} dreimal richtig`}><div><b>{total}</b><span>bearbeitet</span></div></div><div className="dashboard-learning-legend"><div><i className="wrong" /><span><b>{wrong}</b> Falsch</span></div><div><i className="once" /><span><b>{once}</b> 1× richtig</span></div><div><i className="twice" /><span><b>{twice}</b> 2× richtig</span></div><div><i className="mastered" /><span><b>{mastered}</b> 3× richtig</span></div></div></div></section>
   </section>;
 }
@@ -1678,6 +1739,7 @@ function NierensteinkolikMultipleChoiceFinale({ onProgressChange }: { onProgress
   return <section className="study-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Nierensteinkolik auf Prüfungsniveau testen</h2><p>Anatomie, Pathophysiologie, Warnzeichen, Differenzialdiagnostik und die Thüringer VFA 18 und 39.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>MC</span><div><small>21 Prüfungsfragen</small><h3>Multiple-Choice-Training</h3><p>Mehrere richtige Aussagen pro Aufgabe mit enger Abgrenzung und anspruchsvollen VFA-Entscheidungen.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>14</span><div><small>Alle Prüfungsbereiche</small><h3>Karteikarten-Prüfung</h3><p>Wissen frei herleiten und mit ausführlichen Musterantworten vergleichen.</p><b>Karteikarten auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <MultipleChoiceQuiz questionBank={nierensteinkolikQuestions} condition="Nierensteinkolik" onProgressChange={onProgressChange} /> : <FlashcardTraining sourceCards={nierensteinkolikFlashcards} condition="Nierensteinkolik" onProgressChange={onProgressChange} />}</>}</section>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function NierensteinkolikStudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
   const [mode, setMode] = useState<"quiz" | "flashcards" | null>(null);
   return <section className="study-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Nierensteinkolik auf Prüfungsniveau testen</h2><p>Anatomie, Pathophysiologie, Warnzeichen, Differenzialdiagnostik und sichere Versorgung.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>MC</span><div><small>21 Prüfungsfragen</small><h3>Multiple-Choice</h3><p>Vier Optionen, klare Mehrfachauswahl und nachvollziehbare Erklärungen.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>14</span><div><small>Alle Prüfungsbereiche</small><h3>Karteikarten-Prüfung</h3><p>Wissen frei herleiten und mit ausführlichen Musterantworten vergleichen.</p><b>Training auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <MultipleChoiceQuiz questionBank={nierensteinkolikQuestions} condition="Nierensteinkolik" onProgressChange={onProgressChange} /> : <FlashcardTraining sourceCards={nierensteinkolikFlashcards} condition="Nierensteinkolik" onProgressChange={onProgressChange} />}</>}</section>;
@@ -1943,6 +2005,27 @@ const hodentorsionQuestions: MultipleChoiceQuestion[] = [
   { id: "hoden-q-18", mode: "multiple", prompt: "Welche Übergabe zeigt bei vermuteter Hodentorsion die höchste fachliche Qualität?", options: [{ text: "Exakter Beginn, Verlauf, Seite, Ausstrahlung und Schmerzstärke", correct: true }, { text: "Inspektions- und Tastbefund einschließlich Hochstand und Seitenunterschied", correct: true }, { text: "Vegetative Zeichen, Vorereignisse, letzte Nahrungsaufnahme, Analgesie und Wirkung", correct: true }, { text: "Nur die Vermutung ‚akutes Skrotum‘ ohne Zeitangabe, Befunde oder Maßnahmen" }], source: "Die operative Zeitentscheidung braucht eine präzise Zeitachse, fokussierte Befunde, relevante Anamnese und den dokumentierten Maßnahmenverlauf.", difficulty: 3 },
   ...supplementalQuestions.hodentorsion,
 ];
+
+const legacyTutorRoutes: Record<string, string> = {
+  "Akutes Koronarsyndrom": "/muendlich/acs",
+  "Apoplex": "/muendlich/apoplex",
+  "Schädel-Hirn-Trauma": "/muendlich/sht",
+  "Lungenarterienembolie": "/muendlich/lae",
+  "Nierensteinkolik": "/muendlich/nierensteinkolik",
+  "Hypoglykämie": "/muendlich/hypoglykaemie",
+  "Hodentorsion": "/muendlich/hodentorsion",
+};
+
+function convertQuestionsToTutorKnowledge(topic: string, questions: readonly MultipleChoiceQuestion[]) {
+  return questions.map((question) => ({
+    id: `mc-${question.id}`,
+    topic,
+    area: `Multiple Choice · Schwierigkeit ${question.difficulty}`,
+    question: question.prompt,
+    answer: `${question.options.filter((option) => option.correct).map((option) => `• ${option.text}`).join("\n")}\n\nBegründung: ${question.source}`,
+    href: legacyTutorRoutes[topic],
+  }));
+}
 
 const legacyTutorKnowledge = [
   ...convertQuestionsToTutorKnowledge("Akutes Koronarsyndrom", acsMultipleChoiceQuestions),
@@ -2246,6 +2329,20 @@ const trainingQuestionBanks: Partial<Record<TrainingTopic, MultipleChoiceQuestio
   "akutes-abdomen": akutesAbdomenQuestions, opiatintoxikation: opiatintoxikationQuestions, venenthrombose: venenthromboseQuestions, pavk: pavkQuestions, myokardinfarkt: myokardinfarktQuestions, polytrauma: polytraumaQuestions, bronchoobstruktion: bronchoQuestions, pneumonie: pneumonieQuestions, "pseudokrupp-epiglottitis": pseudokruppEpiglottitisQuestions, "hypertensiver-notfall": hypertensiverNotfallQuestions, vorhofflimmern: vorhofflimmernQuestions, "krampfanfall-kind": krampfanfallKindQuestions, krampfanfall: krampfanfallQuestions, unterkuehlung: unterkuehlungQuestions, rippenfraktur: rippenfrakturQuestions, verbrennung: verbrennungQuestions, "wirbelsaeulentrauma": wirbelsaeulentraumaQuestions, extremitaetentrauma: extremitaetentraumaQuestions, "angina-pectoris": anginaPectorisQuestions, acs: acsMultipleChoiceQuestions, apoplex: apoplexMultipleChoiceQuestions, sht: shtMultipleChoiceQuestions, lae: laeMultipleChoiceQuestions, lungenoedem: lungenoedemQuestions, hyperventilation: hyperventilationQuestions, geburt: geburtQuestions, eug: eugQuestions, thoraxtrauma: thoraxtraumaQuestions, abdominaltrauma: abdominaltraumaQuestions, hypoglykaemie: hypoglykaemieQuestions, gallensteinkolik: gallensteinkolikQuestions, nierensteinkolik: nierensteinkolikQuestions, hodentorsion: hodentorsionQuestions, rechtskunde: rechtskundeQuestions,
 };
 
+const specialOralTopicIndexes: Partial<Record<TrainingTopic, number>> = { bronchoobstruktion: 12 };
+const learningPlanTopics = oralTrainingChapters.map((chapter) => ({
+  topic: chapter.topic,
+  number: chapter.number,
+  title: chapter.title,
+  questionIds: (trainingQuestionBanks[chapter.topic] || []).map((question) => question.id),
+  oralIndex: specialOralTopicIndexes[chapter.topic] ?? topicIndexBySlug[chapter.topic],
+}));
+const caseGeneratorTopics = oralTrainingChapters.map((chapter) => {
+  const number = Number.parseInt(chapter.number, 10);
+  const category = topicGroups.find((group) => (group.topicNumbers as readonly number[]).includes(number))?.name || "Weitere Notfallbilder";
+  return { topic: chapter.topic, title: chapter.title, category };
+});
+
 function getAvailableQuestionIds() {
   return [...new Set(Object.values(trainingQuestionBanks).flatMap((questions) => (questions || []).map((question) => question.id)))];
 }
@@ -2365,6 +2462,7 @@ function ChapterProgressCard({ title, category, questions, progress, onTrain }: 
 }
 
 function ProgressView({ progress, onTrain, onStart }: { progress: QuestionProgress; onTrain: (topic: TrainingTopic, mode?: ReviewMode) => void; onStart: () => void }) {
+  const [progressPageNow] = useState(() => Date.now());
   const chapters: Array<{ topic: TrainingTopic; title: string; category: string; questions: MultipleChoiceQuestion[] }> = [{ topic: "acs", title: "Akutes Koronarsyndrom", category: "Mündlich · Herz & Kreislauf · Thema 03", questions: acsMultipleChoiceQuestions }, { topic: "apoplex", title: "Schlaganfall", category: "Mündlich · Neurologie · Thema 04", questions: apoplexMultipleChoiceQuestions }, { topic: "sht", title: "Schädel-Hirn-Trauma", category: "Mündlich · Trauma · Thema 05", questions: shtMultipleChoiceQuestions }, { topic: "lae", title: "Lungenarterienembolie", category: "Mündlich · Herz & Kreislauf · Thema 08", questions: laeMultipleChoiceQuestions }, { topic: "hyperventilation", title: "Hyperventilationssyndrom", category: "Mündlich · Atmung & Atemwege · Thema 11", questions: hyperventilationQuestions }, { topic: "geburt", title: "Geburt und Neugeborenenversorgung", category: "Mündlich · Gynäkologie & Geburt · Thema 12", questions: geburtQuestions }, { topic: "hypoglykaemie", title: "Hypoglykämie", category: "Mündlich · Stoffwechsel · Thema 27", questions: hypoglykaemieQuestions }, { topic: "hodentorsion", title: "Hodentorsion", category: "Mündlich · Urologie · Thema 43", questions: hodentorsionQuestions }, { topic: "akute-pankreatitis", title: "Akute Pankreatitis", category: "Mündlich · Abdomen & Verdauung · Thema 45", questions: pankreatitisQuestions }, { topic: "rechtskunde", title: "Rechtskunde", category: "Schriftlich · Rechtskunde", questions: rechtskundeQuestions }];
   chapters.push({ topic: "kommunikation", title: "Kommunikation & Interaktion", category: "Schriftlich · Kommunikation", questions: kommunikationQuestions });
   chapters.push({ topic: "organisation", title: "Organisation & Einsatztaktik", category: "Schriftlich · Organisation", questions: organisationQuestions });
@@ -2425,7 +2523,7 @@ function ProgressView({ progress, onTrain, onStart }: { progress: QuestionProgre
   const availableQuestionIds = [...new Set(chapters.flatMap((chapter) => chapter.questions.map((question) => question.id)))];
   const metrics = progressMetrics(progress, availableQuestionIds);
   const due = dueQuestionIds(startedProgress).length;
-  const stale = Object.values(startedProgress).filter((item) => Date.now() - Date.parse(item.updatedAt) >= 30 * 86400000).length;
+  const stale = Object.values(startedProgress).filter((item) => progressPageNow - Date.parse(item.updatedAt) >= 30 * 86400000).length;
   /* Alte Fortschrittsansicht, durch die getrennte Bearbeitungs- und Festigungsanzeige ersetzt.
   return <section className="page-section progress-page"><div className="section-heading"><div><span className="eyebrow">GEZIELT WIEDERHOLEN</span><h1>Hier geht’s weiter.</h1><p>Konzentriere dich auf die Fragen, die du noch nicht sicher beantwortest.</p></div></div><div className="progress-overview"><div className="progress-ring-stat"><div className="progress-ring" style={{ "--progress": `${summary.average * 3.6}deg` } as React.CSSProperties}><div><b>{summary.average}%</b></div></div><span>Wiederholungsstand</span></div><div><span className="eyebrow">DEIN LERNSTAND</span><h2>{summary.total ? `${wrong + once + twice} Fragen können gezielt wiederholt werden` : "Dein Fortschritt beginnt hier."}</h2><p>{summary.total ? `${metrics.answered} von ${metrics.available} verfügbaren Fragen bearbeitet · ${wrong} falsch · ${once} einmal · ${twice} zweimal · ${mastered} dreimal richtig` : "Du hast noch keine Fragen beantwortet. Starte jetzt dein erstes MC-Training; danach findest du hier gezielte Wiederholungen."}</p><div className="progress-track large"><span style={{ width: `${summary.average}%` }} /></div>{summary.total ? <p className="due-summary"><b>{due} heute fällig</b> (getrennt vom Lernstand) · {stale} länger als 30 Tage nicht geübt. Intervalle: 1, 3, 7, 14 und 30 Tage; sie sind eine einfache Produktlogik.</p> : null}{!summary.total && <button className="primary-button progress-start" onClick={onStart}>Erstes MC-Training starten</button>}</div></div>{startedChapters.length ? <div className="chapter-progress-list">{startedChapters.map((chapter) => <ChapterProgressCard key={chapter.topic} title={chapter.title} category={chapter.category} questions={chapter.questions} progress={progress} onTrain={(mode) => onTrain(chapter.topic, mode)} />)}</div> : <div className="progress-empty"><span>↗</span><div><h2>Noch keine Fragen beantwortet</h2><p>Deine begonnenen MC-Kapitel erscheinen nach dem ersten Training automatisch hier.</p></div></div>}<div className="progress-rule"><span>↺</span><div><b>Gezielte Wiederholung</b><p>Fälligkeit und Lernstufe sind getrennt. Falsche sowie ein- oder zweimal richtige Fragen lassen sich jederzeit freiwillig wiederholen.</p></div></div></section>;
   */

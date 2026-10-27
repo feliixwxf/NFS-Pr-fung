@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Neutrales Zwölf-Kanal-EKG</title>
+  <desc id="desc">Zwölf Ableitungen mit verbreiterten QRS-Komplexen, überwiegend negativen Komplexen in V1 bis V3 sowie breiten gekerbten R-Zacken in den linksseitigen Ableitungen.</desc>
+  <defs>
+    <pattern id="small" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#f6d9d9" stroke-width="0.7"/></pattern>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><rect width="50" height="50" fill="url(#small)"/><path d="M50 0H0V50" fill="none" stroke="#df9a9a" stroke-width="1.1"/></pattern>
+    <path id="lateralR" d="M0 80h18q8 0 12-10q5-10 10 0q4 10 12 10h15l7 8l10-45l14-22l14 19l13-14l13 52l13 2h10q12 0 18 16q8 18 18 0q7-16 20-16h3"/>
+    <path id="deepQS" d="M0 80h18q8 0 12-10q5-10 10 0q4 10 12 10h15l8 8l12 35l14 28l13-18l13 10l15-63h10q12 0 18-16q8-18 18 0q7 16 20 16h2"/>
+    <path id="transition" d="M0 80h18q8 0 12-10q5-10 10 0q4 10 12 10h15l8 8l11-34l13 72l14-45l12 18l13-19h12q12 0 18-14q8-18 18 0q7 14 20 14h2"/>
+  </defs>
+  <rect width="1200" height="760" rx="18" fill="#fffdfd"/>
+  <rect x="8" y="8" width="1184" height="744" rx="16" fill="url(#grid)" stroke="#d78989"/>
+  <g font-family="Arial,sans-serif" font-size="21" font-weight="700" fill="#27343b">
+    <text x="25" y="48">I</text><text x="320" y="48">aVR</text><text x="615" y="48">V1</text><text x="910" y="48">V4</text>
+    <text x="25" y="273">II</text><text x="320" y="273">aVL</text><text x="615" y="273">V2</text><text x="910" y="273">V5</text>
+    <text x="25" y="498">III</text><text x="320" y="498">aVF</text><text x="615" y="498">V3</text><text x="910" y="498">V6</text>
+  </g>
+  <g fill="none" stroke="#17242b" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(48 70)"><use href="#lateralR"/></g>
+    <g transform="translate(343 70) scale(1 -1) translate(0 -160)"><use href="#transition"/></g>
+    <g transform="translate(638 70)"><use href="#deepQS"/></g>
+    <g transform="translate(933 70)"><use href="#transition"/></g>
+    <g transform="translate(48 295)"><use href="#transition"/></g>
+    <g transform="translate(343 295)"><use href="#lateralR"/></g>
+    <g transform="translate(638 295)"><use href="#deepQS"/></g>
+    <g transform="translate(933 295)"><use href="#lateralR"/></g>
+    <g transform="translate(48 520) scale(1 -1) translate(0 -160)"><use href="#transition"/></g>
+    <g transform="translate(343 520)"><use href="#transition"/></g>
+    <g transform="translate(638 520)"><use href="#deepQS"/></g>
+    <g transform="translate(933 520)"><use href="#lateralR"/></g>
+    <path d="M25 714v-20h10v40h10v-20h35"/>
+  </g>
+</svg>

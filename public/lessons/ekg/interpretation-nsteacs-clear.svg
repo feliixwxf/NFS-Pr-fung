@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="660" viewBox="0 0 1200 660" role="img" aria-labelledby="title desc">
+  <title id="title">Neutrales Zwölf-Kanal-EKG</title>
+  <desc id="desc">Zwölf-Kanal-EKG mit horizontalen ST-Senkungen in mehreren zusammengehörigen Ableitungen, ohne eingeblendete Diagnose.</desc>
+  <defs>
+    <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#f6cccc" stroke-width="0.7"/>
+    </pattern>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <rect width="50" height="50" fill="url(#smallGrid)"/>
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#df8f8f" stroke-width="1.2"/>
+    </pattern>
+    <path id="normalBeat" d="M0 0 L18 0 Q23 -9 28 0 L37 0 L41 8 L45 -42 L49 18 L54 0 L73 0 Q84 -18 95 0 L112 0"/>
+    <path id="depressedBeat" d="M0 0 L18 0 Q23 -9 28 0 L37 0 L41 8 L45 -42 L49 18 L54 0 L58 13 L78 13 Q88 2 98 13 L112 0"/>
+    <path id="invertedBeat" d="M0 0 L18 0 Q23 -7 28 0 L37 0 L41 7 L45 -36 L49 16 L54 0 L58 11 L78 11 Q88 24 98 11 L112 0"/>
+  </defs>
+  <rect width="1200" height="660" fill="#fffdfd"/>
+  <rect x="10" y="10" width="1180" height="640" rx="18" fill="url(#grid)" stroke="#d98b8b"/>
+  <g fill="#2f3740" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">
+    <text x="28" y="56">I</text><text x="328" y="56">aVR</text><text x="628" y="56">V1</text><text x="928" y="56">V4</text>
+    <text x="28" y="266">II</text><text x="328" y="266">aVL</text><text x="628" y="266">V2</text><text x="928" y="266">V5</text>
+    <text x="28" y="476">III</text><text x="328" y="476">aVF</text><text x="628" y="476">V3</text><text x="928" y="476">V6</text>
+  </g>
+  <g fill="none" stroke="#17222d" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(55 135)"><use href="#depressedBeat"/><use href="#depressedBeat" x="118"/></g>
+    <g transform="translate(355 135) scale(1 -1)"><use href="#normalBeat"/><use href="#normalBeat" x="118"/></g>
+    <g transform="translate(655 135)"><use href="#normalBeat"/><use href="#normalBeat" x="118"/></g>
+    <g transform="translate(955 135)"><use href="#depressedBeat"/><use href="#depressedBeat" x="118"/></g>
+    <g transform="translate(55 345)"><use href="#depressedBeat"/><use href="#depressedBeat" x="118"/></g>
+    <g transform="translate(355 345)"><use href="#normalBeat"/><use href="#normalBeat" x="118"/></g>
+    <g transform="translate(655 345)"><use href="#normalBeat"/><use href="#normalBeat" x="118"/></g>
+    <g transform="translate(955 345)"><use href="#depressedBeat"/><use href="#depressedBeat" x="118"/></g>
+    <g transform="translate(55 555)"><use href="#normalBeat"/><use href="#normalBeat" x="118"/></g>
+    <g transform="translate(355 555)"><use href="#normalBeat"/><use href="#normalBeat" x="118"/></g>
+    <g transform="translate(655 555)"><use href="#invertedBeat"/><use href="#invertedBeat" x="118"/></g>
+    <g transform="translate(955 555)"><use href="#depressedBeat"/><use href="#depressedBeat" x="118"/></g>
+  </g>
+  <path d="M30 620 v-20 h10 v40 h10 v-20 h28" fill="none" stroke="#17222d" stroke-width="3"/>
+</svg>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { isCorrect, parseGermanNumber } from "../lib/medicationCalculations";
 import { medicationCases, medicationRules, sourceIssues, type Category } from "../lib/medicationData";
 import { readMedicationProgress, recordMedicationAnswer, type MedicationProgress } from "../lib/medicationProgress";
@@ -52,8 +52,7 @@ export default function MedicationTrainer({ accountUserId, onSyncError }: { acco
  const [errors,setErrors]=useState<Record<string,string>>({});
  const inputRefs=useRef<Record<string,HTMLInputElement|null>>({});
  const submitting=useRef(false);
- const [caseOrder,setCaseOrder]=useState(()=>medicationCases);
- useEffect(()=>{setCaseOrder(createShuffledCaseOrder())},[]);
+ const [caseOrder]=useState(createShuffledCaseOrder);
  const ruleGroups=useMemo(()=>Array.from(new Set(medicationRules.map(r=>r.drug))),[]);
  const pool=useMemo(()=>caseOrder.filter(c=>(group==="Alle"||c.group===group)&&(category==="Alle"||c.category===category)&&(drug==="Alle"||medicationRules.find(r=>r.id===c.ruleId)?.drug===drug)&&(!wrongOnly||progress[c.id]?.correct<progress[c.id]?.attempts)),[caseOrder,group,category,drug,wrongOnly,progress]);
  const session=useMemo(()=>length==="frei"?pool:pool.slice(0,Number(length)),[pool,length]);

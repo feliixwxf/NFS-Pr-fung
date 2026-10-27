@@ -3,7 +3,7 @@ import type { ComponentType, ReactNode } from "react";
 type FigureProps = { src: string; alt: string; caption: string; wide?: boolean };
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
-export default function PseudokruppEpiglottitisLesson({ Figure, Vfa, children }: Props) {
+export default function PseudokruppEpiglottitisLesson({ Vfa, children }: Props) {
   const section = (number: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Kindernotfall · zwei obere Atemwegsbilder</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
   const versus = (left: ReactNode, right: ReactNode) => <div className="pe-vs-grid"><div className="pe-vs-side epiglottitis"><small>Epiglottitis · oberhalb der Stimmritze</small>{left}</div><div className="pe-vs-side pseudokrupp"><small>Pseudokrupp · unterhalb der Stimmritze</small>{right}</div></div>;
   const causeStrip = <div className="pe-cause-strip"><div><small>Epiglottitis · bakteriell</small><b>Haemophilus influenzae Typ b (Hib)</b><span>Klassischer Erreger; auch andere Bakterien wie Pneumokokken oder Streptokokken kommen vor. Hib ist trotz Impfung nicht der einzige mögliche Erreger.</span></div><div><small>Pseudokrupp · viral</small><b>Parainfluenzavirus, besonders Typ 1 und 2</b><span>Auch andere Atemwegsviren können die subglottische Entzündung auslösen.</span></div></div>;

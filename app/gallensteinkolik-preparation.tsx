@@ -41,8 +41,6 @@ const preparations = {
   },
 } as const;
 
-const format = (value: number) => String(value).replace(".", ",");
-
 export default function GallensteinkolikPreparation() {
   const [selected, setSelected] = useState<Preparation>("butylscopolamin");
   const item = preparations[selected];

@@ -10,16 +10,20 @@ import tseslint from "typescript-eslint";
 const eslintConfig = defineConfig([
   globalIgnores([
     ".next/**",
+    ".vinext/**",
+    ".wrangler/**",
     "dist/**",
     "out/**",
     "build/**",
+    "public/**",
+    "source-material/**",
     "next-env.d.ts",
   ]),
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   react.configs.flat.recommended,
   react.configs.flat["jsx-runtime"],
-  reactHooks.configs.flat["recommended-latest"],
+  reactHooks.configs.flat.recommended,
   jsxA11y.flatConfigs.recommended,
   next.configs["core-web-vitals"],
   {

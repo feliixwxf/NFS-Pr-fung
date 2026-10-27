@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Neutrales Zwölf-Kanal-EKG</title>
+  <desc id="desc">Zwölf Ableitungen mit verbreiterten QRS-Komplexen, terminaler positiver Zacke in V1 und V2 sowie breiter terminaler S-Zacke in den linksseitigen Ableitungen.</desc>
+  <defs>
+    <pattern id="small" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#f6d9d9" stroke-width="0.7"/></pattern>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><rect width="50" height="50" fill="url(#small)"/><path d="M50 0H0V50" fill="none" stroke="#df9a9a" stroke-width="1.1"/></pattern>
+    <path id="normal" d="M0 80h18q8 0 12-10q5-10 10 0q4 10 12 10h16l5 8l7-45l9 72l10-35h24q12 0 18-16q8-18 18 0q7 16 20 16h11"/>
+    <path id="rsr" d="M0 80h18q8 0 12-10q5-10 10 0q4 10 12 10h14l6 10l8-35l12 62l10-41l13-26l12 52l12-22h12q12 0 18 15q8 18 18 0q7-15 20-15h5"/>
+    <path id="wideS" d="M0 80h18q8 0 12-10q5-10 10 0q4 10 12 10h14l7 8l10-50l12 38l13 8l14 43l13-47h12q12 0 18-14q8-18 18 0q7 14 20 14h5"/>
+    <path id="wide" d="M0 80h18q8 0 12-10q5-10 10 0q4 10 12 10h14l8 9l10-48l12 72l13-38l12 5h14q12 0 18-15q8-18 18 0q7 15 20 15h4"/>
+  </defs>
+  <rect width="1200" height="760" rx="18" fill="#fffdfd"/>
+  <rect x="8" y="8" width="1184" height="744" rx="16" fill="url(#grid)" stroke="#d78989"/>
+  <g font-family="Arial,sans-serif" font-size="21" font-weight="700" fill="#27343b">
+    <text x="25" y="48">I</text><text x="320" y="48">aVR</text><text x="615" y="48">V1</text><text x="910" y="48">V4</text>
+    <text x="25" y="273">II</text><text x="320" y="273">aVL</text><text x="615" y="273">V2</text><text x="910" y="273">V5</text>
+    <text x="25" y="498">III</text><text x="320" y="498">aVF</text><text x="615" y="498">V3</text><text x="910" y="498">V6</text>
+  </g>
+  <g fill="none" stroke="#17242b" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(48 70)"><use href="#wideS"/></g>
+    <g transform="translate(343 70) scale(1 -1) translate(0 -160)"><use href="#wide"/></g>
+    <g transform="translate(638 70)"><use href="#rsr"/></g>
+    <g transform="translate(933 70)"><use href="#wide"/></g>
+    <g transform="translate(48 295)"><use href="#wide"/></g>
+    <g transform="translate(343 295)"><use href="#wideS"/></g>
+    <g transform="translate(638 295)"><use href="#rsr"/></g>
+    <g transform="translate(933 295)"><use href="#wideS"/></g>
+    <g transform="translate(48 520)"><use href="#wide"/></g>
+    <g transform="translate(343 520)"><use href="#wide"/></g>
+    <g transform="translate(638 520)"><use href="#wide"/></g>
+    <g transform="translate(933 520)"><use href="#wideS"/></g>
+    <path d="M25 714v-20h10v40h10v-20h35"/>
+  </g>
+</svg>

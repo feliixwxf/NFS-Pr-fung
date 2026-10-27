@@ -14,8 +14,8 @@ test("zusätzliche VFA-43-Fragen prüfen Dosis, Zeit und Notfallsituationen", ()
   const bank = readFileSync(new URL("../app/geburt-data.ts", import.meta.url), "utf8");
   const supplements = readFileSync(new URL("../app/supplemental-questions.ts", import.meta.url), "utf8");
   const ids = [...bank.matchAll(/id: "(geburt-q-\d+)"/g)].map((match) => match[1]);
-  assert.equal(ids.length, 22);
-  assert.equal(new Set(ids).size, 22);
+  assert.equal(ids.length, 25);
+  assert.equal(new Set(ids).size, 25);
   assert.equal([...supplements.matchAll(/question\("geburt-extra-\d+"/g)].length, 3);
   for (const id of ["geburt-q-19", "geburt-q-20", "geburt-q-21", "geburt-q-22"]) {
     assert.ok(ids.includes(id), id);

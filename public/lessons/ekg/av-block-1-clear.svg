@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Neutraler EKG-Streifen</title>
+  <desc id="desc">Regelmäßiger Rhythmus mit deutlich verlängertem und konstantem Abstand zwischen P-Welle und QRS-Komplex.</desc>
+  <defs>
+    <pattern id="small" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#f5cccc" stroke-width="0.7"/></pattern>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><rect width="50" height="50" fill="url(#small)"/><path d="M50 0H0V50" fill="none" stroke="#dc8989" stroke-width="1.2"/></pattern>
+    <path id="beat" d="M0 180 H35 C43 180 45 163 55 163 C65 163 67 180 76 180 H125 L132 190 L140 112 L148 216 L158 180 H182 C194 180 198 153 214 153 C230 153 236 180 250 180 H270"/>
+  </defs>
+  <rect width="1200" height="360" rx="18" fill="#fffdfd"/>
+  <rect x="8" y="8" width="1184" height="344" rx="16" fill="url(#grid)" stroke="#d78989"/>
+  <text x="28" y="48" fill="#27343b" font-family="Arial,sans-serif" font-size="24" font-weight="700">II</text>
+  <g fill="none" stroke="#17242b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <use href="#beat" x="40"/><use href="#beat" x="310"/><use href="#beat" x="580"/><use href="#beat" x="850"/>
+    <path d="M28 306v-20h10v40h10v-20h30"/>
+  </g>
+</svg>
