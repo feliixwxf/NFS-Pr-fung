@@ -1159,7 +1159,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     }
     let text = "";
     let sourceBasis = "";
-    let sourceHref = source.href;
+    let sourceHref: string | undefined = source.href;
     if (match && match.score >= 20) {
       const composed = composeKnowledgeAnswer(chatMatches, value);
       text = composed.text;
