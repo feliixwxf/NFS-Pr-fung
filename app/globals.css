@@ -765,6 +765,15 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .rib-fracture-grid span{display:block;color:#5a7075;font-size:12px;line-height:1.6}
 .rippenfraktur-lesson .source-figure img{background:#fff;object-fit:contain;height:auto}
 .hypertensiver-notfall-lesson .htn-syringe{margin:30px 0;padding:22px;border:1px solid #d5e6e3;border-radius:18px;background:linear-gradient(135deg,#f7fbfa,#fff)}
+.hypertensiver-notfall-lesson .htn-threshold-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0}
+.hypertensiver-notfall-lesson .htn-threshold-grid article{min-width:0;padding:20px;border:1px solid #cfe2df;border-radius:17px;background:linear-gradient(145deg,#f3faf8,#fff);box-shadow:0 8px 22px rgba(33,73,80,.06)}
+.hypertensiver-notfall-lesson .htn-threshold-grid article:last-child{border-color:#d9d8ea;background:linear-gradient(145deg,#f7f6fc,#fff)}
+.hypertensiver-notfall-lesson .htn-threshold-grid small{display:block;margin-bottom:9px;color:#567f79;font-size:10px;font-weight:850;letter-spacing:.07em;text-transform:uppercase}
+.hypertensiver-notfall-lesson .htn-threshold-grid article:last-child small{color:#6d6791}
+.hypertensiver-notfall-lesson .htn-threshold-grid h3{margin:0;color:#214950;font-size:18px;line-height:1.35}
+.hypertensiver-notfall-lesson .htn-threshold-grid h3 em{color:#6b7e82;font-style:normal;font-weight:700}
+.hypertensiver-notfall-lesson .htn-threshold-grid p{margin:10px 0 0;color:#526b71;font-size:13px;line-height:1.65}
+.hypertensiver-notfall-lesson .htn-subsection-heading{margin-top:36px;padding-top:24px;border-top:1px solid #dce8e8}
 .hypertensiver-notfall-lesson .htn-hemodynamics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:17px 0}
 .hypertensiver-notfall-lesson .htn-hemodynamics>div{min-width:0;padding:16px;border:1px solid #dce8e8;border-radius:15px;background:#f6f9f9}
 .hypertensiver-notfall-lesson .htn-hemodynamics small,.hypertensiver-notfall-lesson .htn-transport small{display:block;margin-bottom:7px;color:#638b91;font-size:10px;font-weight:850;letter-spacing:.07em;text-transform:uppercase}
@@ -806,7 +815,7 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .hypertensiver-notfall-lesson .htn-syringe>p{margin:14px 0 8px;font-size:13px;line-height:1.6}
 .hypertensiver-notfall-lesson .htn-syringe-caution{color:#647579;font-size:11px;line-height:1.6}
 @media(max-width:650px){.hypertensiver-notfall-lesson .htn-syringe{padding:16px}.hypertensiver-notfall-lesson .htn-syringe-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:650px){.hypertensiver-notfall-lesson .htn-hemodynamics,.hypertensiver-notfall-lesson .htn-transport,.hypertensiver-notfall-lesson .htn-regulation-grid,.hypertensiver-notfall-lesson .htn-autonomic-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.hypertensiver-notfall-lesson .htn-threshold-grid,.hypertensiver-notfall-lesson .htn-hemodynamics,.hypertensiver-notfall-lesson .htn-transport,.hypertensiver-notfall-lesson .htn-regulation-grid,.hypertensiver-notfall-lesson .htn-autonomic-grid{grid-template-columns:1fr}}
 .pe-lesson .pe-vs-grid,.pe-lesson .pe-vfa-dose{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0 22px}
 .pe-lesson .pe-vs-side,.pe-lesson .pe-vfa-dose>div{min-width:0;padding:19px;border:1px solid #dce8ec;border-radius:17px;background:#f5f9fa}
 .pe-lesson .pe-vs-side.epiglottitis{border-top:4px solid #bd655b;background:#fff8f6}
@@ -915,6 +924,7 @@ footer { margin-top:auto; display:flex; justify-content:space-between; gap:30px;
 .topic-reader .universal-prep-body>p span{color:#678183}
 .topic-reader .universal-prep-body .universal-prep-note{color:#677679}
 .topic-reader .universal-prep-caution{display:block;margin-top:12px;color:#748487;font-size:10px;line-height:1.55}
+.topic-reader .universal-prep-print-list{display:none}
 @media(max-width:650px){.topic-reader .universal-prep>summary{padding:15px}.topic-reader .universal-prep-body{padding:2px 14px 16px}.topic-reader .universal-prep-values{grid-template-columns:1fr}.topic-reader .universal-prep-route{flex-direction:column}.topic-reader .universal-prep-route i{transform:rotate(90deg)}}
 .krampfanfall-kind-lesson .child-fact-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:20px 0 18px}
 .krampfanfall-kind-lesson .child-fact-grid>div{min-width:0;padding:17px;border:1px solid #dce9e7;border-radius:13px;background:#f4faf8}
@@ -1104,7 +1114,10 @@ button{min-height:44px}
   .mobile-menu-note p{display:none}
 }
 @media(max-width:760px){
+  html,body,.app-shell,.main-content{width:100%;max-width:100vw;overflow-x:clip}
+  .main-content{min-width:0;align-items:stretch}
   .page-section,.quiz-page,.topic-reader{width:calc(100% - 24px);margin-top:26px}
+  .page-section,.quiz-page,.topic-reader,.dashboard,.learning-plan-page,.case-generator-page{margin-right:auto;margin-left:auto}
   .topbar{height:66px;padding-inline:14px}.topbar .status-pill{display:none}
   .section-heading{align-items:start}.section-heading h1{font-size:clamp(30px,10vw,40px)}
   .section-heading p{font-size:14px}.source-badge{align-self:start}
@@ -1828,6 +1841,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .hygiene-infection-chain span{display:flex;min-width:0;flex:1;flex-direction:column;justify-content:center;padding:14px;border:1px solid #d0e2df;border-radius:15px;background:#f5faf8;color:#5a7074;font-size:.78rem;line-height:1.4;text-align:center}
 .hygiene-infection-chain b{display:block;margin-bottom:4px;color:#173f47;font-size:.88rem}
 .hygiene-infection-chain i{align-self:center;color:#205f67;font-style:normal;font-weight:900}
+.hygiene-five-moments{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0 22px}
+.hygiene-five-moments article{min-width:0;padding:15px;border:1px solid #d1e3df;border-radius:16px;background:#f5faf8}
+.hygiene-five-moments span{display:grid;width:30px;height:30px;margin-bottom:10px;place-items:center;border-radius:10px;background:#205f67;color:#fff;font-weight:900}
+.hygiene-five-moments b{display:block;color:#173f47;font-size:.84rem;line-height:1.35}
+.hygiene-five-moments p{margin:7px 0 0!important;color:#5a7074;font-size:.78rem;line-height:1.5}
+@media(max-width:1000px){.hygiene-five-moments{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.hygiene-five-moments{grid-template-columns:1fr}}
 @media(max-width:800px){.hygiene-infection-chain{display:grid;grid-template-columns:1fr 1fr}.hygiene-infection-chain i{display:none}}
 @media(max-width:660px){.hygiene-transmission-grid{grid-template-columns:1fr}.hygiene-transmission-grid article{padding:17px}.hygiene-infection-chain{grid-template-columns:1fr}}
 @media(max-width:390px){.hygiene-transmission-grid article{grid-template-columns:36px minmax(0,1fr);gap:11px}.hygiene-transmission-grid article>span{width:34px;height:34px}}
@@ -1930,3 +1950,74 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 .exam-preparation-bar{display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:18px;padding:14px 20px;border-top:1px solid #bed8d2;border-bottom:1px solid #bed8d2;background:#edf7f4}.exam-preparation-bar>div{display:grid;grid-template-columns:auto auto;gap:2px 12px;align-items:center}.exam-preparation-bar small{grid-column:1;color:#39776f;font-size:9px;font-weight:900;letter-spacing:.1em}.exam-preparation-bar b{grid-row:1/3;grid-column:2;color:#173f45;font-size:27px;font-variant-numeric:tabular-nums}.exam-preparation-bar span{grid-column:1;color:#5f767a;font-size:10px}.exam-preparation-bar button{min-height:42px;padding:10px 15px;border:0;border-radius:11px;background:#205f67;color:#fff;font:inherit;font-size:10px;font-weight:900;cursor:pointer}.exam-preparation-bar.elapsed{background:#fff2e9;border-color:#efc5b1}.exam-preparation-bar.elapsed b{color:#a34830}.exam-dimension-grid{grid-column:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.exam-dimension-grid>div{padding:9px 10px;border:1px solid #d7e5e2;border-radius:10px;background:#f8fbfa}.exam-dimension-grid span{display:flex;justify-content:space-between;gap:8px;color:#294d53;font-size:10px}.exam-dimension-grid span strong{color:#1f6e64}.exam-dimension-grid i{display:block;height:5px;margin:6px 0;border-radius:999px;background:#dbe8e5;overflow:hidden}.exam-dimension-grid em{display:block;height:100%;border-radius:inherit;background:#3d8a80}.exam-dimension-grid small{display:block;color:#6b7e82;font-size:8px;line-height:1.35}.ai-tutor-feedback section.partial{border-color:#e8d69e;background:#fffaf0}.ai-tutor-feedback section.partial b{color:#88651d}.exam-review-action{display:flex;flex:0 0 auto;align-items:center;justify-content:space-between;gap:14px;padding:13px 18px;border-top:1px solid #d8c98e;background:#fffaf0}.exam-review-action>div{display:grid;gap:2px;color:#304e55}.exam-review-action b{font-size:11px}.exam-review-action span{color:#6b7c80;font-size:9px}.exam-review-action button{min-height:40px;padding:9px 14px;border:0;border-radius:10px;background:#276d66;color:#fff;font:inherit;font-size:10px;font-weight:900;cursor:pointer}.ai-tutor-conversation article.oral-follow-up,.ai-tutor-conversation article.exam-summary{position:relative;margin-top:32px;padding-top:20px}.ai-tutor-conversation article.oral-follow-up:after,.ai-tutor-conversation article.exam-summary:after{position:absolute;top:-9px;left:50%;padding:3px 10px;border-radius:999px;font-size:.61rem;font-weight:900;letter-spacing:.08em;transform:translateX(-50%);white-space:nowrap}.ai-tutor-conversation article.oral-follow-up:after{border:1px solid #a9cfca;background:#edf7f5;color:#286d69;content:"PRÜFER-NACHFRAGE"}.ai-tutor-conversation article.exam-summary:after{border:1px solid #d8bd7d;background:#fff8df;color:#75561d;content:"GESAMTBEWERTUNG"}.ai-tutor-conversation article.exam-summary>div{border:2px solid #ddc787;background:#fffdf5}
 @media(max-width:800px){.dashboard-smart-grid,.learning-plan-settings,.case-generator-controls,.exam-mode-grid{grid-template-columns:1fr}.learning-plan-list article{grid-template-columns:38px 46px minmax(0,1fr)}.learning-plan-list article>button{grid-column:2/-1;width:100%}.offline-status-card{grid-template-columns:48px minmax(0,1fr)}.offline-status-card>button{grid-column:1/-1;width:100%}.case-generator-preview{grid-template-columns:1fr;padding:25px}.case-generator-preview>span{min-height:110px;border-radius:18px}.case-generator-actions{align-items:stretch;flex-direction:column}.case-generator-actions button{width:100%}.exam-preparation-bar,.exam-review-action{align-items:stretch;flex-direction:column}.exam-preparation-bar button,.exam-review-action button{width:100%}.exam-dimension-grid{grid-column:1;grid-template-columns:1fr}}
 @media(max-width:530px){.learning-plan-page,.case-generator-page{width:calc(100% - 24px);margin-top:22px}.dashboard-smart-tools{padding:20px 16px}.dashboard-smart-grid{grid-template-columns:1fr}.dashboard-smart-grid>button{grid-template-columns:44px minmax(0,1fr);padding:17px}.dashboard-smart-grid>button>span{width:42px;height:42px}.learning-plan-list article{grid-template-columns:34px minmax(0,1fr);gap:10px;padding:16px}.learning-plan-icon{grid-column:1;width:34px;height:34px}.learning-plan-list article>div:nth-of-type(2){grid-column:2;grid-row:1/3}.learning-plan-list article>button{grid-column:1/-1}.offline-status-card{grid-template-columns:1fr;padding:18px}.case-generator-preview h2{font-size:23px}}
+
+/* Mündliche Kapitel als scharfe, gut lesbare A4-Lernunterlage */
+/* Kein Browser-Kopf/-Fußbereich: So erscheinen weder Datum noch URL im PDF. */
+@page{size:A4 portrait;margin:0}
+@media print{
+  html,body{width:auto!important;min-width:0!important;height:auto!important;min-height:0!important;overflow:visible!important;background:#fff!important;color:#182b31!important;font-family:Arial,"Helvetica Neue",sans-serif!important;font-size:10pt!important;line-height:1.45!important}
+  body.printing-topic{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body.printing-topic .app-shell{display:block!important;min-height:0!important;background:#fff!important}
+  body.printing-topic :is(.sidebar,.topbar,.floating-menu-toggle,.mobile-menu,.mobile-menu-backdrop,.ai-tutor-launcher-group,.ai-tutor-backdrop,.chapter-qol,.back-button,.study-finale,.chapter-completion,.main-content>footer){display:none!important}
+  body.printing-topic .main-content{display:block!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important}
+  body.printing-topic .topic-print-root{display:block!important;width:100%!important;margin:0!important;padding:0!important}
+  body.printing-topic .topic-print-root>.page-section,
+  body.printing-topic .topic-print-root .topic-reader{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important;box-shadow:none!important}
+  body.printing-topic .topic-print-root .lesson-article{width:100%!important;margin:0!important;padding:13mm 12mm 15mm!important;border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  body.printing-topic .topic-print-root *{box-sizing:border-box;max-width:100%}
+  body.printing-topic .topic-print-root .reader-hero{min-height:0!important;margin:0 0 7mm!important;padding:7mm 8mm!important;border:0!important;border-radius:4mm!important;background:#173845!important;color:#fff!important;box-shadow:none!important;break-after:avoid-page;page-break-after:avoid}
+  body.printing-topic .topic-print-root .reader-hero h1{margin:1.5mm 0 0!important;color:#fff!important;font-size:24pt!important;line-height:1.08!important;letter-spacing:-.03em!important}
+  body.printing-topic .topic-print-root .reader-hero :is(.eyebrow,.reader-status,p,span,small){color:#fff!important}
+  body.printing-topic .topic-print-root .reader-status{display:none!important}
+  body.printing-topic .topic-print-root :is(.lesson-hero,.rib-hero,.legal-hero){min-height:0!important;margin:0 0 6mm!important;padding:6mm!important;border-radius:3mm!important;box-shadow:none!important;break-after:avoid-page;page-break-after:avoid}
+  body.printing-topic .topic-print-root :is(.lesson-section,.rib-section,.reader-accordion,.legal-section){position:static!important;display:block!important;height:auto!important;max-height:none!important;margin:0 0 6mm!important;padding:4.5mm 0 0!important;overflow:visible!important;border:0!important;border-top:1.2pt solid #c9d6d2!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;break-inside:auto;page-break-inside:auto}
+  body.printing-topic .topic-print-root .lesson-article>:is(.lesson-section,.rib-section,.reader-accordion,.legal-section):first-of-type{border-top:0!important;padding-top:0!important}
+  body.printing-topic .topic-print-root details,
+  body.printing-topic .topic-print-root details[open]{display:block!important;height:auto!important;overflow:visible!important}
+  body.printing-topic .topic-print-root details>summary{display:block!important;margin:0 0 3mm!important;list-style:none!important;break-after:avoid-page;page-break-after:avoid}
+  body.printing-topic .topic-print-root details>summary::-webkit-details-marker{display:none!important}
+  body.printing-topic .topic-print-root details>summary>i{display:none!important}
+  body.printing-topic .topic-print-root details>*:not(summary),
+  body.printing-topic .topic-print-root .qol-collapsed>*{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;overflow:visible!important}
+  body.printing-topic .topic-print-root :is(h1,h2,h3,h4){color:#173845!important;break-after:avoid-page;page-break-after:avoid;orphans:3;widows:3}
+  body.printing-topic .topic-print-root h2{margin-top:0!important;font-size:17pt!important;line-height:1.18!important}
+  body.printing-topic .topic-print-root h3{font-size:12.5pt!important;line-height:1.25!important}
+  body.printing-topic .topic-print-root :is(p,li,td,th){font-size:9.5pt!important;line-height:1.45!important;orphans:3;widows:3}
+  body.printing-topic .topic-print-root :is(figure,.lesson-figure,.image-viewer,.medication-card,.medication-preparation,.legal-grid>*,.legal-compare>*){break-inside:avoid-page;page-break-inside:avoid}
+  body.printing-topic .topic-print-root :is(article,aside,.lesson-prose,ul,ol){break-inside:auto!important;page-break-inside:auto!important}
+  body.printing-topic .topic-print-root .collapsible-figure{display:block!important;margin:4mm auto!important;overflow:visible!important;border:1px solid #d8dfdc!important;border-radius:3mm!important;background:#fff!important;break-inside:avoid-page;page-break-inside:avoid}
+  body.printing-topic .topic-print-root .collapsible-figure:not(.vfa-collapsible){width:100%!important;max-width:170mm!important}
+  body.printing-topic .topic-print-root .collapsible-figure>summary{display:none!important}
+  body.printing-topic .topic-print-root .collapsible-figure :is(.source-figure,.vfa-page){display:block!important;margin:0!important;overflow:visible!important;border:0!important;break-inside:avoid-page;page-break-inside:avoid}
+  body.printing-topic .topic-print-root .image-open-button{display:block!important;width:100%!important;min-height:0!important;margin:0!important;padding:3mm!important;overflow:visible!important;border:0!important;background:#fff!important;text-align:center!important}
+  body.printing-topic .topic-print-root .image-open-button>span,
+  body.printing-topic .topic-print-root .collapsible-figure figcaption span{display:none!important}
+  body.printing-topic .topic-print-root .collapsible-figure figcaption{padding:2.5mm 3mm!important;border-top:1px solid #d8dfdc!important;background:#f5f8f7!important;color:#36525a!important}
+  body.printing-topic .topic-print-root .vfa-collapsible figcaption{display:none!important}
+  body.printing-topic .topic-print-root :is(img,svg,canvas){display:block!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:118mm!important;margin-right:auto!important;margin-left:auto!important;object-fit:contain!important;object-position:center!important;filter:none!important}
+  body.printing-topic .topic-print-root .collapsible-figure img{max-height:118mm!important}
+  body.printing-topic .topic-print-root .vfa-collapsible{break-before:page!important;page-break-before:always!important}
+  body.printing-topic .topic-print-root .vfa-collapsible img{max-height:190mm!important}
+  body.printing-topic .topic-print-root .universal-prep{display:block!important;visibility:visible!important;opacity:1!important;break-before:page!important;page-break-before:always!important;break-inside:auto!important;page-break-inside:auto!important;border:1px solid #cbdad6!important;border-radius:3mm!important;background:#f8fbfa!important}
+  body.printing-topic .topic-print-root .universal-prep>summary{display:flex!important;break-after:avoid-page;page-break-after:avoid}
+  body.printing-topic .topic-print-root .universal-prep-body{display:none!important}
+  body.printing-topic .topic-print-root .universal-prep-print-list{display:block!important;height:auto!important;max-height:none!important;padding:4mm!important;overflow:visible!important;visibility:visible!important;opacity:1!important;border-top:1px solid #dfece9!important}
+  body.printing-topic .topic-print-root .universal-prep-print-list>*{visibility:visible!important;opacity:1!important}
+  body.printing-topic .topic-print-root .universal-prep-print-list>section{display:block!important;margin:0 0 4mm!important;padding:4mm!important;border:1px solid #d8e6e3!important;border-radius:3mm!important;background:#fff!important;break-inside:avoid-page!important;page-break-inside:avoid!important}
+  body.printing-topic .topic-print-root .universal-prep-print-list>section>h3{margin:0 0 3mm!important;color:#194b4c!important}
+  body.printing-topic .topic-print-root .universal-prep-print-list>section>p{margin:3mm 0 0!important;color:#365e61!important}
+  body.printing-topic .topic-print-root .universal-prep-print-list :is(.universal-prep-values,.universal-prep-route,.universal-prep-drawing){break-inside:avoid-page!important;page-break-inside:avoid!important}
+  body.printing-topic .topic-print-root .universal-prep-print-list .universal-prep-drawing svg{width:100%!important;min-width:0!important;max-height:42mm!important}
+  body.printing-topic .topic-print-root figure{margin:4mm auto!important}
+  body.printing-topic .topic-print-root figcaption{font-size:8pt!important;line-height:1.35!important}
+  body.printing-topic .topic-print-root table{width:100%!important;border-collapse:collapse!important;font-size:8.5pt!important;break-inside:auto!important;page-break-inside:auto!important}
+  body.printing-topic .topic-print-root thead{display:table-row-group!important}
+  body.printing-topic .topic-print-root tfoot{display:table-row-group!important}
+  body.printing-topic .topic-print-root tr{break-inside:avoid-page!important;page-break-inside:avoid!important}
+  body.printing-topic .topic-print-root :is(th,td){padding:2.2mm!important;border:1px solid #ccd7d3!important;vertical-align:top!important}
+  body.printing-topic .topic-print-root [class*="-grid"]{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:3mm!important}
+  body.printing-topic .topic-print-root [class*="-grid"]>*{min-width:0!important;break-inside:avoid-page;page-break-inside:avoid}
+  body.printing-topic .topic-print-root a{color:#173845!important;text-decoration:none!important}
+  body.printing-topic .topic-print-root button{box-shadow:none!important}
+  body.printing-topic .topic-print-root :is(.section-picker-menu,.change-study-mode,.quiz-open-actions,.image-modal,.lightbox,.lesson-source){display:none!important}
+}

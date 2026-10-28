@@ -4,8 +4,9 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { freeTutorKnowledge, type FreeTutorKnowledge, type TutorQuestionImage } from "./free-tutor-knowledge";
 import { vfaLibrary, type VfaReference } from "./vfa-library";
 import { saveLocalTutorWeaknesses, syncTutorWeaknesses, updateTutorWeakness } from "./lib/tutorWeaknessProgress";
+import { classifyTutorFollowUp, isTutorSolutionRequest, sameTutorTopic } from "./lib/tutor-routing";
 
-type TutorMode = "exam" | "simulation" | "vfa" | "image" | "question";
+type TutorMode = "exam" | "simulation" | "image" | "question";
 type TutorScope = "chapter" | "site";
 type TutorDimension = { label: string; score: number; note: string };
 type TutorResult = { evaluation: string; strengths: string[]; partial_points?: string[]; missing_points: string[]; score: number; source_basis: string; source_href?: string; dimensions?: TutorDimension[] };
@@ -138,7 +139,39 @@ type ChatKnowledgeMatch = {
   answerHits: number;
   activeTopic: boolean;
   contextual: boolean;
+  explicitTopic: boolean;
+  intentHits: number;
 };
+
+type KnowledgeIntent = "definition" | "pathophysiology" | "symptoms" | "diagnostics" | "measures" | "complications" | "differentials" | "anatomy" | "dose" | "effect" | "contraindications" | "side-effects" | "interactions";
+
+const KNOWLEDGE_INTENTS: Array<{ id: KnowledgeIntent; query: RegExp; entry: RegExp }> = [
+  { id: "definition", query: /\b(defin|was ist|bedeutet)\w*\b/, entry: /\b(definition|begriff|bedeutung)\w*\b/ },
+  { id: "pathophysiology", query: /\b(pathophysiolog|entsteh|wie kommt es|was passiert im koerper|mechanismus)\w*\b/, entry: /\b(pathophysiolog|entsteh|mechanismus|ablauf)\w*\b/ },
+  { id: "symptoms", query: /\b(symptom|zeichen|klin|woran erkenn|beschwerde)\w*\b/, entry: /\b(symptom|zeichen|klin|befund|beschwerde)\w*\b/ },
+  { id: "diagnostics", query: /\b(diagnost|untersuch|befund|ekg|labor|mess)\w*\b/, entry: /\b(diagnost|untersuch|befund|ekg|labor|mess)\w*\b/ },
+  { id: "measures", query: /\b(massnahm|therapie|behandlung|vorgehen|praeklin|rettungsdienst)\w*\b/, entry: /\b(massnahm|therapie|behandlung|vorgehen|praeklin|rettungsdienst)\w*\b/ },
+  { id: "complications", query: /\b(komplikation|gefahr|folge)\w*\b/, entry: /\b(komplikation|gefahr|folge)\w*\b/ },
+  { id: "differentials", query: /\b(differenzial|differential|dd|abgrenz)\w*\b/, entry: /\b(differenzial|differential|dd|abgrenz)\w*\b/ },
+  { id: "anatomy", query: /\b(anatom|aufbau|organ|gefaess|kreislauf)\w*\b/, entry: /\b(anatom|aufbau|organ|gefaess|kreislauf)\w*\b/ },
+  { id: "dose", query: /\b(dosier|dosis|wie viel|wieviel|aufzieh|zubereit|konzentration|applikation|gabe)\w*\b/, entry: /\b(dosier|dosis|aufzieh|zubereit|konzentration|applikation|gabe|regel)\w*\b/ },
+  { id: "effect", query: /\b(wirk|wirkprinzip|rezeptor)\w*\b/, entry: /\b(wirk|wirkprinzip|rezeptor)\w*\b/ },
+  { id: "contraindications", query: /\b(kontraindikation|gegenanzeige|ki)\w*\b/, entry: /\b(kontraindikation|gegenanzeige|ki)\w*\b/ },
+  { id: "side-effects", query: /\b(nebenwirkung|unerwuenschte wirkung|nw)\w*\b/, entry: /\b(nebenwirkung|unerwuenschte wirkung|nw)\w*\b/ },
+  { id: "interactions", query: /\b(wechselwirkung|interaktion)\w*\b/, entry: /\b(wechselwirkung|interaktion)\w*\b/ },
+];
+
+const GENERIC_TOPIC_TOKENS = new Set(["akut", "akute", "akuter", "erwachsene", "erwachsener", "kind", "medikament", "notfall", "thema", "vfa"]);
+
+function requestedKnowledgeIntents(query: string) {
+  const value = normalize(query);
+  return KNOWLEDGE_INTENTS.filter((intent) => intent.query.test(value));
+}
+
+function explicitlyNamesTopic(entry: FreeTutorKnowledge, queryTokens: readonly string[]) {
+  const topicTokens = tokens(entry.topic).filter((token) => token.length >= 4 && !GENERIC_TOPIC_TOKENS.has(token));
+  return topicTokens.some((topicToken) => queryTokens.some((queryToken) => queryToken === topicToken || queryToken.length >= 6 && (topicToken.includes(queryToken) || queryToken.includes(topicToken))));
+}
 
 function isContextualChatQuery(query: string) {
   const value = normalize(query);
@@ -156,6 +189,7 @@ function rankedChatKnowledge(query: string, knowledge: readonly FreeTutorKnowled
   const queryTokens = tokens(query);
   if (!queryTokens.length) return [];
   const contextualQuery = Boolean(contextEntryId && isContextualChatQuery(query));
+  const requestedIntents = requestedKnowledgeIntents(query);
   return knowledge.map((entry): ChatKnowledgeMatch | null => {
     const question = normalize(entry.question);
     const metadata = normalize(`${entry.topic} ${entry.area}`);
@@ -165,6 +199,9 @@ function rankedChatKnowledge(query: string, knowledge: readonly FreeTutorKnowled
     const answerHits = queryTokens.filter((token) => containsToken(answer, token)).length;
     const activeTopic = activeTopicMatches(entry, source);
     const contextual = contextualQuery && entry.id === contextEntryId;
+    const explicitTopic = explicitlyNamesTopic(entry, queryTokens);
+    const intentText = normalize(`${entry.area} ${entry.question} ${entry.answer}`);
+    const intentHits = requestedIntents.filter((intent) => intent.entry.test(intentText)).length;
     const answerCoverage = answerHits / queryTokens.length;
     const hasReliableSignal = questionHits > 0 || metadataHits > 0 || answerHits >= 2 && answerCoverage >= 0.6 || activeTopic && answerHits > 0 || contextual;
     if (!hasReliableSignal) return null;
@@ -172,8 +209,9 @@ function rankedChatKnowledge(query: string, knowledge: readonly FreeTutorKnowled
     // MC-Erklärungen und Rechenfälle sind zum Prüfen gedacht, nicht als primäre
     // Wissensquelle für freie Fragen. Sie bleiben als letzter Rückfall erhalten.
     const lowPriorityPenalty = /^Multiple Choice\b/i.test(entry.area) ? 40 : entry.topic.startsWith("Medikamentenrechnen ·") ? 28 : 0;
-    const score = questionHits * 14 + metadataHits * 16 + answerHits * 2 + Math.round(coverage * 18) + (activeTopic ? 24 : 0) + (contextual ? 32 : 0) - lowPriorityPenalty;
-    return { entry, score, questionHits, metadataHits, answerHits, activeTopic, contextual };
+    const missingIntentPenalty = requestedIntents.length > 0 && intentHits === 0 ? 24 : 0;
+    const score = questionHits * 14 + metadataHits * 16 + answerHits * 2 + Math.round(coverage * 18) + (activeTopic ? 24 : 0) + (contextual ? 32 : 0) + (explicitTopic ? 30 : 0) + intentHits * 28 - lowPriorityPenalty - missingIntentPenalty;
+    return { entry, score, questionHits, metadataHits, answerHits, activeTopic, contextual, explicitTopic, intentHits };
   }).filter((match): match is ChatKnowledgeMatch => Boolean(match && match.score > 0)).sort((left, right) => right.score - left.score);
 }
 
@@ -602,6 +640,49 @@ function focusedKnowledgeAnswer(entry: FreeTutorKnowledge, query: string) {
   return `Antwort\n${matchingLines.join("\n")}`;
 }
 
+function isBroadKnowledgeRequest(query: string) {
+  if (requestedKnowledgeIntents(query).length > 0) return false;
+  const value = normalize(query);
+  return /\b(erklaer|ueberblick|zusammenfass|pruefungsrelevant|wichtig|alles|komplett|erzaehl|lernen)\w*\b/.test(value)
+    || /\b(was muss ich|was sollte ich|was gehoert)\b/.test(value);
+}
+
+function conciseKnowledgeText(entry: FreeTutorKnowledge) {
+  const clean = entry.answer.replace(/\n\n(?:Begründung|Warum):\s*[\s\S]+$/i, "").trim();
+  if (clean.length <= 850) return clean;
+  const shortened = clean.slice(0, 850);
+  const lastBoundary = Math.max(shortened.lastIndexOf(". "), shortened.lastIndexOf("\n"));
+  return `${shortened.slice(0, lastBoundary >= 500 ? lastBoundary + 1 : 850).trim()} …`;
+}
+
+function composeKnowledgeAnswer(matches: readonly ChatKnowledgeMatch[], query: string) {
+  const best = matches[0];
+  if (!best) return { text: "", entries: [] as FreeTutorKnowledge[] };
+  if (!isBroadKnowledgeRequest(query)) {
+    return { text: focusedKnowledgeAnswer(best.entry, query), entries: [best.entry] };
+  }
+
+  const topic = normalize(best.entry.topic);
+  const seenAreas = new Set<string>();
+  const entries = matches
+    .filter((match) => normalize(match.entry.topic) === topic)
+    .filter((match) => !/^Multiple Choice\b/i.test(match.entry.area) && !match.entry.topic.startsWith("Medikamentenrechnen ·"))
+    .filter((match) => match.score >= Math.max(20, best.score - 34))
+    .filter((match) => {
+      const area = normalize(match.entry.area);
+      if (seenAreas.has(area)) return false;
+      seenAreas.add(area);
+      return true;
+    })
+    .slice(0, 3)
+    .map((match) => match.entry);
+  const selected = entries.length ? entries : [best.entry];
+  const text = selected.length === 1
+    ? structuredKnowledgeAnswer(selected[0])
+    : `Antwort\n${selected.map((entry) => `${entry.area}\n${conciseKnowledgeText(entry)}`).join("\n\n")}`;
+  return { text, entries: selected };
+}
+
 const IMPORTANT_TEXT_PATTERN = /(\b(?:Wirkung|Wechselwirkungen?|Kontraindikationen?|Nebenwirkungen?|Dosierung|Zubereitung|Reanimation|Atemweg|Atmung|Kreislauf|Bewusstsein|Bradykardie|Tachykardie|Hypotonie|Hypertonie|Dyspnoe|Atemdepression|Kammerflimmern|Blutung|Schock|ROSC|cABCDE|ABCDE|SAMPLER|OPQRST|GCS|SpO₂|SpO2|etCO₂|etCO2)\b|\b\d+(?:[.,]\d+)?\s?(?:mg|µg|g|ml|l|min|mmHg|cmH₂O|J|IE|%)(?:\/(?:kgKG|kg|h|min))?\b)/gi;
 
 function emphasizeImportantText(text: string) {
@@ -731,35 +812,75 @@ function chooseCasePool(focus: string, difficulty: string, knowledge: readonly F
 }
 
 function chooseExamPool(focus: string, knowledge: readonly FreeTutorKnowledge[]) {
-  const ranked = rankedKnowledge(focus, knowledge);
+  const oralKnowledge = knowledge.filter((entry) => !/^Multiple Choice\b/i.test(entry.area) && !entry.topic.startsWith("Medikamentenrechnen ·"));
+  const ranked = rankedKnowledge(focus, oralKnowledge);
   const topScore = ranked[0]?.score || 0;
-  const focused = ranked.filter((match) => match.score >= Math.max(12, topScore * 0.45)).map((match) => match.entry);
+  const primaryTopic = ranked[0]?.entry.topic;
+  const primaryTopicNormalized = normalize(primaryTopic || "");
+  const sameTopic = ranked.filter((match) => {
+    const topic = normalize(match.entry.topic);
+    return Boolean(primaryTopicNormalized && sameTutorTopic(topic, primaryTopicNormalized));
+  });
+  const focusedMatches = sameTopic.length ? sameTopic : ranked;
+  const focused = focusedMatches.filter((match) => match.score >= Math.max(12, topScore * 0.35)).map((match) => match.entry);
   const pool = focused;
   if (!pool.length) return [];
   const offset = Math.floor(Math.random() * pool.length);
   return [...pool.slice(offset), ...pool.slice(0, offset)].slice(0, 8);
 }
 
-const VFA_VERSION = "Thüringer VFA 2026/2027";
-const ORAL_FOLLOW_UPS = [
-  "Begründen Sie Ihre Entscheidung: Warum ist dieser Punkt für den Patienten wichtig?",
-  "Welche gefährliche Differenzialdiagnose müssen Sie jetzt noch ausschließen?",
-  "Welche Komplikation erwarten Sie, wenn sich der Zustand verschlechtert?",
-  "Was würde sich bei einem Kind, älteren Menschen oder einer Schwangeren verändern?",
-  "Wie kontrollieren Sie die Wirkung Ihrer Maßnahmen und wann eskalieren Sie?",
-];
-
-function chooseVfaPool(focus: string, knowledge: readonly FreeTutorKnowledge[]) {
-  const ranked = rankedKnowledge(focus, knowledge.filter(isVfaExamEntry));
-  const topScore = ranked[0]?.score || 0;
-  const base = ranked.filter((match) => match.score >= Math.max(12, topScore * 0.45)).map((match) => match.entry);
-  return base.slice(0, 6);
+function oralFollowUp(entry: FreeTutorKnowledge, index: number, caseBased = false) {
+  const question = entry.question.trim().replace(/\s+/g, " ");
+  if (index === 0 || !caseBased) return question;
+  return `Bezogen auf den beschriebenen Fall und das Thema „${entry.topic}": ${question}`;
 }
 
-function oralFollowUp(entry: FreeTutorKnowledge, index: number) {
-  if (index === 0) return entry.question;
-  const prompt = ORAL_FOLLOW_UPS[(index - 1) % ORAL_FOLLOW_UPS.length];
-  return `${prompt}\n\n${entry.question}`;
+function isHintRequest(value: string) {
+  const request = normalize(value);
+  const shortRequest = request.split(" ").filter(Boolean).length <= 12;
+  return shortRequest && /\b(?:hilfe|hilf|helfen|tipp|tip|hinweis|keine ahnung|weiss es nicht|komme nicht weiter|komm nicht weiter)\b/.test(request);
+}
+
+function isClarificationRequest(value: string) {
+  const request = normalize(value);
+  return request.split(" ").filter(Boolean).length <= 14
+    && /\b(?:frage nicht verstanden|verstehe die frage nicht|was meinst du|anders formulieren|formulier(?:e)? (?:die frage )?anders|einfacher fragen|genauer fragen)\b/.test(request);
+}
+
+function clarifyQuestion(entry: FreeTutorKnowledge, caseBased: boolean) {
+  const context = caseBased ? `Bezogen auf den beschriebenen Patienten mit „${entry.topic}"` : `Zum Thema „${entry.topic}"`;
+  const area = entry.area.replace(/^Multiple Choice\s*·?\s*/i, "");
+  const subject = normalize(`${area} ${entry.question}`);
+  if (/pathophysi|entsteh|mechanismus/.test(subject)) return `${context}: Erklären Sie in einer kurzen Kette, wodurch die Erkrankung ausgelöst wird, was sich im Körper verändert und welche klinische Folge daraus entsteht.`;
+  if (/diagnos|symptom|zeichen|befund|erkenn/.test(subject)) return `${context}: Nennen Sie die entscheidenden präklinischen Befunde, mit denen Sie die Verdachtsdiagnose stützen.`;
+  if (/differenzial|abgrenz|unterschied/.test(subject)) return `${context}: Nennen Sie die wichtigste gefährliche Alternative und einen Befund, der bei der Abgrenzung hilft.`;
+  if (/massnahme|therapie|vorgehen|versorgung/.test(subject)) return `${context}: Welche nächste rettungsdienstliche Maßnahme führen Sie durch, und welcher konkrete Befund begründet sie?`;
+  if (/komplikation|gefahr/.test(subject)) return `${context}: Welche zeitkritische Komplikation müssen Sie erkennen, und welches frühe Zeichen erwarten Sie?`;
+  if (/definition|bedeutet/.test(subject)) return `${context}: Formulieren Sie die Definition in einem Satz und nennen Sie das entscheidende Merkmal.`;
+  return `${context}: ${entry.question}`;
+}
+
+function hintForEntry(entry: FreeTutorKnowledge) {
+  const context = normalize(`${entry.area} ${entry.question}`);
+  if (/dosier|dosis|mg|µg|mcg|ml|ie|konzentration|aufzieh/.test(context)) {
+    return "Achte zuerst darauf, welche Wirkstoffmenge gefragt ist und welche Konzentration vorliegt. Für das Volumen hilft: benötigte Dosis ÷ Konzentration. Nenne am Ende immer Wert und Einheit.";
+  }
+  if (/vfa|verfahren|algorithmus|vorgehen|massnahme|therapie/.test(context)) {
+    return "Ordne deine Antwort in vier Schritte: Indikation erkennen, Sicherheitsgrenzen prüfen, konkrete Maßnahme nennen und anschließend Wirkung beziehungsweise Zustand kontrollieren.";
+  }
+  if (/pathophysi|entsteh|mechanismus|warum/.test(context)) {
+    return "Baue eine kurze Ursache-Wirkungs-Kette: Auslöser → Veränderung im Körper → klinisches Zeichen → rettungsdienstliche Bedeutung.";
+  }
+  if (/differenzial|abgrenz|unterschied/.test(context)) {
+    return "Vergleiche nicht alles gleichzeitig. Nenne zuerst das eine Merkmal, das die beiden wichtigsten Möglichkeiten präklinisch am besten voneinander trennt.";
+  }
+  if (/diagnos|symptom|zeichen|befund|erkenn/.test(context)) {
+    return "Gehe strukturiert vor: Leitsymptom, ein objektiver Befund und anschließend die zeitkritische Gefahr, die du damit erkennen oder ausschließen willst.";
+  }
+  const firstPoint = answerKeyPoints(entry.answer)[0]?.text;
+  return firstPoint
+    ? `Beginne mit diesem Teilaspekt: ${shortenPoint(firstPoint)}. Ergänze danach nur die unmittelbare Bedeutung für den beschriebenen Patienten.`
+    : `Ordne deine Antwort direkt nach „${entry.area}": erst den konkreten Fachpunkt nennen, dann seine Bedeutung für den Patienten in einem Satz erklären.`;
 }
 
 function adaptiveFollowUp(entry: FreeTutorKnowledge, result: TutorResult, index: number): AdaptiveFollowUp {
@@ -768,31 +889,21 @@ function adaptiveFollowUp(entry: FreeTutorKnowledge, result: TutorResult, index:
     || result.partial_points?.[0]
     || answerKeyPoints(entry.answer)[Math.min(index, Math.max(0, answerKeyPoints(entry.answer).length - 1))]?.text
     || entry.answer;
-  const targetText = normalize(target);
-  const prompt = incorrectDose || /dosier|dosis|mg|µg|mcg|ml|ie|aufzieh|konzentration/.test(targetText)
-    ? `Welche genaue Dosierung ist in diesem Fall vorgesehen? Nennen Sie nur Dosis, Einheit, Applikationsweg und – falls verlangt – Aufziehvolumen oder Wiederholung.`
-    : /kontra|gegenanzeige|allerg|sicherheitsgrenze/.test(targetText)
-      ? `Welche konkrete Kontraindikation oder Sicherheitsgrenze müssen Sie vor dieser Maßnahme prüfen, und welche Konsequenz hat ein positiver Befund?`
-      : /symptom|befund|diagnos|erkenn|zeichen/.test(targetText)
-        ? `Welcher konkrete Befund fehlt noch für Ihre Verdachtsdiagnose, und wie erheben Sie ihn präklinisch?`
-        : /differenzial|abgrenz|ausschliess/.test(targetText)
-          ? `Welche gefährliche Differenzialdiagnose müssen Sie hier noch ausschließen, und welcher Befund hilft bei der Abgrenzung?`
-          : /komplikation|gefahr|verschlechter/.test(targetText)
-            ? `Welche konkrete Komplikation kann als Nächstes auftreten, und woran würden Sie diese früh erkennen?`
-            : /reevalu|kontroll|monitor|wirkung|abbruch|eskal/.test(targetText)
-              ? `Welche konkrete Wirkung oder Verschlechterung kontrollieren Sie nach Ihrer Maßnahme, und wann müssen Sie abbrechen oder eskalieren?`
-              : /transport|zielklinik|übergabe|notarzt/.test(targetText)
-                ? `Welche konkrete Transport- oder Eskalationsentscheidung treffen Sie jetzt, und welcher Befund begründet sie?`
-                : /pathophysi|entsteh|mechanismus|rezeptor/.test(targetText)
-                  ? `Erklären Sie den noch fehlenden Mechanismus in einer kurzen Ursache-Wirkungs-Kette und nennen Sie die rettungsdienstliche Folge.`
-                  : /definition|bedeutet|unterschied|abgrenz/.test(targetText)
-                    ? `Formulieren Sie die gesuchte Definition in einem Satz und nennen Sie das entscheidende Unterscheidungsmerkmal.`
-                    : `Beantworten Sie die Ausgangsfrage noch einmal konkret: „${entry.question}“ Nennen Sie den wichtigsten bislang fehlenden Fachpunkt und begründen Sie ihn in einem Satz.`;
+  const followUpKind = classifyTutorFollowUp(entry.area, entry.question, target, incorrectDose);
+  const prompts: Record<ReturnType<typeof classifyTutorFollowUp>, string> = {
+    dose: `Welche genaue Dosierung ist in dieser Frage vorgesehen? Nennen Sie nur Dosis, Einheit, Applikationsweg und – falls verlangt – Aufziehvolumen oder Wiederholung.`,
+    contraindication: `Welche konkrete Kontraindikation oder Sicherheitsgrenze gehört zu dieser Frage, und welche Konsequenz hat ein positiver Befund?`,
+    finding: `Welcher konkrete Befund fehlt noch für die gestellte Frage, und wie erheben Sie ihn präklinisch?`,
+    differential: `Welche gefährliche Differenzialdiagnose gehört zu dieser Frage, und welcher Befund hilft bei der Abgrenzung?`,
+    complication: `Welche konkrete Komplikation gehört zu diesem Krankheitsbild, und woran würden Sie diese früh erkennen?`,
+    reevaluation: `Welche konkrete Wirkung oder Verschlechterung kontrollieren Sie nach der genannten Maßnahme, und wann müssen Sie eskalieren?`,
+    transport: `Welche konkrete Transport- oder Eskalationsentscheidung gehört zu diesem Fall, und welcher Befund begründet sie?`,
+    mechanism: `Erklären Sie den noch fehlenden Mechanismus dieser Frage in einer kurzen Ursache-Wirkungs-Kette.`,
+    definition: `Formulieren Sie den fehlenden Kernpunkt zur ursprünglichen Frage in einem klaren Satz.`,
+    target: `Zur Frage „${entry.question}“ fehlt noch genau dieser Teil: „${shortenPoint(target)}“. Erklären Sie ausschließlich diesen Punkt.`,
+  };
+  const prompt = prompts[followUpKind];
   return { entry: { ...entry, question: prompt, answer: target }, prompt };
-}
-
-function vfaQuestionText(entry: FreeTutorKnowledge, index: number) {
-  return `VFA-Prüfung · Frage ${index + 1}\n${entry.topic} · ${entry.area}\n\n${entry.question}\n\nAntworten Sie gezielt nur auf diese Frage. Bei Zahlen gehören Wert und Einheit zusammen.`;
 }
 
 function examDimensions(entry: FreeTutorKnowledge, response: string, result: TutorResult): TutorDimension[] {
@@ -906,11 +1017,11 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
   useEffect(() => {
     const launchFromPage = (event: Event) => {
       const detail = (event as CustomEvent<{ mode?: TutorMode; focus?: string; difficulty?: string }>).detail;
-      if (!detail?.mode || !["simulation", "vfa"].includes(detail.mode)) return;
+      if (detail?.mode !== "simulation") return;
       const chapter = collectLearningMaterial(siteOverview);
       const focus = detail.focus?.trim() || "zufälliger präklinischer Notfall";
       const difficulty = detail.difficulty || "prüfungsnah";
-      const pool = detail.mode === "vfa" ? chooseVfaPool(focus, knowledge) : chooseCasePool(focus, difficulty, knowledge).slice(0, 6);
+      const pool = chooseCasePool(focus, difficulty, knowledge).slice(0, 6);
       const first = pool[0];
       setSource(chapter);
       setMode(detail.mode);
@@ -924,15 +1035,11 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
       setExamPool(pool);
       setExamIndex(0);
       setInput("");
-      setSimulationPhase(detail.mode === "simulation" ? "prep" : "exam");
-      setPrepEndsAt(detail.mode === "simulation" ? Date.now() + 20 * 60 * 1000 : null);
+      setSimulationPhase("prep");
+      setPrepEndsAt(Date.now() + 20 * 60 * 1000);
       setPrepRemaining(20 * 60);
       setError(first ? "" : "Zu diesem Schwerpunkt wurden keine Lernkarten gefunden.");
-      setTurns(first ? [{ role: "assistant", text: detail.mode === "simulation"
-        ? `Prüfungssimulation – ${first.topic}\nVorbereitungszeit: 20 Minuten\n\n${caseScenario(first.topic)}\n\nArbeitsauftrag\nBereiten Sie eine strukturierte Fallvorstellung mit Verdachtsdiagnose, Prioritäten, Diagnostik, Maßnahmen, Transportentscheidung und relevanter VFA vor. Die Prüferfragen beginnen erst nach der Vorbereitungsphase.`
-        : detail.mode === "vfa"
-          ? `${VFA_VERSION}\n${vfaQuestionText(first, 0)}`
-          : first.question }] : []);
+      setTurns(first ? [{ role: "assistant", text: `Prüfungssimulation – ${first.topic}\nVorbereitungszeit: 20 Minuten\n\n${caseScenario(first.topic)}\n\nArbeitsauftrag\nBereiten Sie eine strukturierte Fallvorstellung mit Verdachtsdiagnose, Prioritäten, Diagnostik, Maßnahmen, Transportentscheidung und relevanter VFA vor. Die Prüferfragen beginnen erst nach der Vorbereitungsphase.` }] : []);
     };
     window.addEventListener("notsan-open-tutor", launchFromPage);
     return () => window.removeEventListener("notsan-open-tutor", launchFromPage);
@@ -953,10 +1060,8 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
 
   const questionText = (entry: FreeTutorKnowledge, index: number) => mode === "image"
     ? ekgQuestionText(entry)
-    : mode === "vfa"
-      ? `${index > 0 ? `Prüfer-Nachfrage ${index + 1}\n` : ""}${VFA_VERSION}\n${vfaQuestionText(entry, index)}`
-      : mode === "simulation"
-        ? `${index === 0 ? `Fallbeispiel – ${entry.topic}\n${caseScenario(entry.topic)}\n\n` : `Prüfer-Nachfrage ${index + 1}\n`}${oralFollowUp(entry, index)}`
+    : mode === "simulation"
+      ? `${index === 0 ? `Fallbeispiel – ${entry.topic}\n${caseScenario(entry.topic)}\n\n` : `Prüfer-Nachfrage ${index + 1}\n`}${oralFollowUp(entry, index, true)}`
       : index === 0
         ? entry.question
         : `Prüfer-Nachfrage ${index + 1}\n${oralFollowUp(entry, index)}`;
@@ -972,14 +1077,14 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
   const startExam = () => {
     if (!source) return;
     const basePool = mode === "image" ? knowledge.filter(isEkgChallengeEntry) : knowledge;
-    const selectedPool = mode === "vfa"
-      ? chooseVfaPool(input.trim() || source.title, basePool)
+    const selectedPool = mode === "image"
+      ? basePool
       : mode === "simulation"
         ? chooseCasePool(input.trim() || source.title, "prüfungsnah", basePool).slice(0, 6)
         : chooseExamPool(input.trim() || source.title, basePool);
     const pool = mode === "image" ? prioritizeWeakEkgEntries(selectedPool, weakEntryIds) : selectedPool;
     const first = pool[0];
-    setReviewMode(false); setSessionScores([]); setSessionResults([]); setAdaptiveQuestion(null); setExamPool(pool); setExamIndex(0); setPendingNextEkgIndex(null); setSimulationPhase(mode === "simulation" ? "prep" : "exam"); setPrepEndsAt(mode === "simulation" ? Date.now() + 20 * 60 * 1000 : null); setPrepRemaining(20 * 60); setTurns(first ? [{ role: "assistant", text: mode === "simulation" ? `Prüfungssimulation – ${first.topic}\nVorbereitungszeit: 20 Minuten\n\n${caseScenario(first.topic)}\n\nArbeitsauftrag\nBereiten Sie eine strukturierte Fallvorstellung mit Verdachtsdiagnose, Prioritäten, Diagnostik, Maßnahmen, Transportentscheidung und relevanter VFA vor.` : questionText(first, 0), kind: mode === "image" ? "ekg-question" : undefined, questionImage: mode === "image" ? neutralEkgImage(first) : first.image }] : []); setInput(""); setError(first ? "" : mode === "vfa" ? "Zu diesem Schwerpunkt ist keine eigene VFA-Prüfungsfrage hinterlegt. Wähle ein konkretes VFA-Thema wie ACS, Anaphylaxie, Krampfanfall oder Entlastungspunktion." : "Zu diesem Schwerpunkt wurden keine eindeutig passenden Lernkarten gefunden. Bitte wähle ein konkreteres Thema.");
+    setReviewMode(false); setSessionScores([]); setSessionResults([]); setAdaptiveQuestion(null); setExamPool(pool); setExamIndex(0); setPendingNextEkgIndex(null); setSimulationPhase(mode === "simulation" ? "prep" : "exam"); setPrepEndsAt(mode === "simulation" ? Date.now() + 20 * 60 * 1000 : null); setPrepRemaining(20 * 60); setTurns(first ? [{ role: "assistant", text: mode === "simulation" ? `Prüfungssimulation – ${first.topic}\nVorbereitungszeit: 20 Minuten\n\n${caseScenario(first.topic)}\n\nArbeitsauftrag\nBereiten Sie eine strukturierte Fallvorstellung mit Verdachtsdiagnose, Prioritäten, Diagnostik, Maßnahmen, Transportentscheidung und relevanter VFA vor.` : questionText(first, 0), kind: mode === "image" ? "ekg-question" : undefined, questionImage: mode === "image" ? neutralEkgImage(first) : first.image }] : []); setInput(""); setError(first ? "" : mode === "image" ? "Es sind derzeit keine EKG-Streifen hinterlegt." : "Zu diesem Schwerpunkt wurden keine eindeutig passenden Lernkarten gefunden. Bitte wähle ein konkreteres Thema.");
   };
 
   const startWeakReview = () => {
@@ -1008,10 +1113,25 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
       return;
     }
     if (chatImageChallenge) {
+      if (isTutorSolutionRequest(value)) {
+        const label = ekgFindingSpec(chatImageChallenge)?.label || chatImageChallenge.topic;
+        setTurns((current) => [...current,
+          { role: "user", text: value },
+          { role: "assistant", kind: "ekg-solution", text: `Auflösung\nEKG-Befund: ${label}\n\nDiese Auflösung gehört ausschließlich zum aktuell gezeigten EKG-Streifen.`, ekgSolution: ekgSolutionFor(chatImageChallenge) },
+        ]);
+        setChatImageChallenge(null);
+        setInput("");
+        return;
+      }
       const result = evaluateEkgFinding(chatImageChallenge, value);
       const response = `Auflösung\nEKG-Befund: ${ekgFindingSpec(chatImageChallenge)?.label || chatImageChallenge.topic}\n\nAuswertung\n${result.score}/5 Punkte · ${result.evaluation}`;
       setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", kind: "ekg-solution", text: response, result: { ...result, source_href: chatImageChallenge.href }, ekgSolution: ekgSolutionFor(chatImageChallenge) }]);
       setChatImageChallenge(null);
+      setInput("");
+      return;
+    }
+    if (isTutorSolutionRequest(value)) {
+      setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text: "Im Lernchat ist gerade keine Prüfungsaufgabe offen. Starte zuerst eine mündliche Prüfung oder ein EKG-Training; dort zeigt „Lösung“ immer nur die Auflösung der aktuell sichtbaren Aufgabe." }]);
       setInput("");
       return;
     }
@@ -1039,22 +1159,59 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     }
     let text = "";
     let sourceBasis = "";
+    let sourceHref = source.href;
     if (match && match.score >= 20) {
-      text = focusedKnowledgeAnswer(match.entry, value);
-      sourceBasis = `Lernbestand · ${match.entry.topic} · ${match.entry.area}`;
+      const composed = composeKnowledgeAnswer(chatMatches, value);
+      text = composed.text;
+      sourceBasis = composed.entries.length > 1
+        ? `Lernbestand · ${match.entry.topic} · ${composed.entries.map((entry) => entry.area).join(" · ")}`
+        : `Lernbestand · ${match.entry.topic} · ${match.entry.area}`;
+      sourceHref = composed.entries[0]?.href || match.entry.href;
       setChatContextEntryId(match.entry.id);
     } else if (source.scope === "chapter") {
       text = materialAnswer(source.material, value);
       sourceBasis = `${source.title} · sichtbarer Lesetext`;
     }
     if (!text) { text = "Dazu finde ich im hinterlegten Lernmaterial keinen eindeutigen Treffer. Öffne bitte das passende Kapitel und formuliere die Frage mit einem konkreten Fachbegriff erneut."; sourceBasis = "Kein sicherer Treffer"; }
-    setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: sourceBasis, source_href: match && match.score >= 20 ? match.entry.href : source.href } }]);
+    setTurns((current) => [...current, { role: "user", text: value }, { role: "assistant", text, result: { evaluation: "", strengths: [], missing_points: [], score: 0, source_basis: sourceBasis, source_href: sourceHref } }]);
     setInput("");
   };
 
   const answerExam = (value: string) => {
     if (!currentEntry) return;
     const assessmentEntry = adaptiveQuestion?.entry || currentEntry;
+    if (isTutorSolutionRequest(value)) {
+      const ekgOnly = mode === "image" && isEkgChallengeEntry(assessmentEntry);
+      const solutionText = ekgOnly
+        ? `Auflösung\nEKG-Befund: ${ekgFindingSpec(assessmentEntry)?.label || assessmentEntry.topic}`
+        : `Musterlösung\n${assessmentEntry.answer.replace(/\n\n(?:Begründung|Warum):\s*[\s\S]+$/i, "").trim()}\n\nWarum diese Antwort?\n${answerRationale(assessmentEntry)}`;
+      setTurns((current) => [...current,
+        { role: "user", text: value },
+        { role: "assistant", kind: ekgOnly ? "ekg-solution" : "oral-follow-up", text: solutionText, ekgSolution: ekgOnly ? ekgSolutionFor(assessmentEntry) : undefined },
+      ]);
+      if (ekgOnly && examPool.length > 0) setPendingNextEkgIndex((examIndex + 1) % examPool.length);
+      setAdaptiveQuestion(null);
+      setInput("");
+      return;
+    }
+    if (isClarificationRequest(value)) {
+      const clarified = clarifyQuestion(assessmentEntry, mode === "simulation");
+      setTurns((current) => [...current,
+        { role: "user", text: value },
+        { role: "assistant", kind: "oral-follow-up", text: `Klarer formuliert\n${clarified}\n\nDie Frage bleibt ohne Bewertung offen.`, questionImage: currentEntry.image },
+      ]);
+      setInput("");
+      return;
+    }
+    if (isHintRequest(value)) {
+      const currentPrompt = adaptiveQuestion?.prompt || oralFollowUp(currentEntry, examIndex, mode === "simulation");
+      setTurns((current) => [...current,
+        { role: "user", text: value },
+        { role: "assistant", kind: "oral-follow-up", text: `Tipp\n${hintForEntry(assessmentEntry)}\n\nDie Frage bleibt bestehen:\n${currentPrompt}`, questionImage: currentEntry.image },
+      ]);
+      setInput("");
+      return;
+    }
     const answeringAdaptiveQuestion = Boolean(adaptiveQuestion);
     const ekgOnly = mode === "image" && isEkgChallengeEntry(assessmentEntry);
     const baseResult = ekgOnly ? evaluateEkgFinding(assessmentEntry, value) : evaluateAnswer(assessmentEntry, value);
@@ -1085,7 +1242,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     setSessionResults(updatedResults);
     const nextPool = ekgOnly && result.score <= 3 ? scheduleEkgRetry(examPool, examIndex, currentEntry) : examPool;
     if (nextPool.length !== examPool.length) setExamPool(nextPool);
-    const sequentialMode = mode === "exam" || mode === "simulation" || mode === "vfa";
+    const sequentialMode = mode === "exam" || mode === "simulation";
 
     if (sequentialMode && !answeringAdaptiveQuestion && result.score <= 3) {
       const followUp = adaptiveFollowUp(currentEntry, result, examIndex);
@@ -1124,13 +1281,13 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
       return;
     }
     setTurns((current) => {
-      const assessedTurn: TutorTurn = { role: "assistant", text: response, result: { ...result, source_href: currentEntry.href }, vfaImages: mode === "vfa" ? findVfaReferences(currentEntry.topic, currentEntry.question) : undefined };
+      const assessedTurn: TutorTurn = { role: "assistant", text: response, result: { ...result, source_href: currentEntry.href } };
       const average = updatedScores.reduce((sum, score) => sum + score, 0) / updatedScores.length;
       const secureAnswers = updatedResults.filter((entry) => entry.score >= 4).length;
       const criticalErrors = updatedResults.filter((entry) => entry.safetyRelevant && entry.score <= 2).length;
       const focusAreas = [...new Set(updatedResults.flatMap((entry) => entry.missing).filter(Boolean))].slice(0, 3);
       const summary: TutorTurn[] = sequentialFinished
-        ? [{ role: "assistant", kind: "exam-summary", text: `${mode === "simulation" ? "Prüfungssimulation beendet" : mode === "vfa" ? "VFA-Prüfung beendet" : "Fragerunde beendet"}\n\nGesamtergebnis: ${average.toFixed(1)} von 5 Punkten im Durchschnitt.\nSicher beantwortet: ${secureAnswers} von ${updatedResults.length} Antworten.\nKritische Sicherheitslücken: ${criticalErrors}.\n${focusAreas.length ? `Gezielt wiederholen:\n${focusAreas.map((area) => `• ${area}`).join("\n")}` : "Keine offenen Kernpunkte in dieser Runde."}\n\n${average >= 4 ? "Die wesentlichen Inhalte wurden sicher und prüfungsnah dargestellt." : average >= 2.5 ? "Die Grundlage ist vorhanden. Wiederhole jetzt gezielt die markierten Lücken." : "Wichtige Kernpunkte fehlen noch. Starte direkt eine Wiederholungsrunde."}` }]
+        ? [{ role: "assistant", kind: "exam-summary", text: `${mode === "simulation" ? "Prüfungssimulation beendet" : "Fragerunde beendet"}\n\nGesamtergebnis: ${average.toFixed(1)} von 5 Punkten im Durchschnitt.\nSicher beantwortet: ${secureAnswers} von ${updatedResults.length} Antworten.\nKritische Sicherheitslücken: ${criticalErrors}.\n${focusAreas.length ? `Gezielt wiederholen:\n${focusAreas.map((area) => `• ${area}`).join("\n")}` : "Keine offenen Kernpunkte in dieser Runde."}\n\n${average >= 4 ? "Die wesentlichen Inhalte wurden sicher und prüfungsnah dargestellt." : average >= 2.5 ? "Die Grundlage ist vorhanden. Wiederhole jetzt gezielt die markierten Lücken." : "Wichtige Kernpunkte fehlen noch. Starte direkt eine Wiederholungsrunde."}` }]
         : [];
       const continuation: TutorTurn[] = sequentialMode && next && !sequentialFinished && !finishedWeakRound
         ? [{ role: "assistant", kind: "oral-follow-up", text: questionText(next, nextIndex), questionImage: next.image }]
@@ -1190,8 +1347,8 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
       <button className="ai-tutor-dismiss-layer" type="button" onClick={() => setOpen(false)} aria-label="Lernprüfer schließen" />
       <section ref={dialogRef} className="ai-tutor-dialog" role="dialog" aria-modal="true" aria-label="Kostenloser Lernprüfer" tabIndex={-1}>
         <header><div><small>KOSTENLOS · OHNE EXTERNE KI</small><h2>Lernprüfer</h2><p>{source?.title || "Kein Kapitel geöffnet"}</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Lernprüfer schließen">×</button></header>
-        <div className="ai-tutor-tabs" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected={mode === "simulation"} className={mode === "simulation" ? "active" : ""} onClick={() => reset("simulation")}>Prüfungssimulation</button><button type="button" role="tab" aria-selected={mode === "vfa"} className={mode === "vfa" ? "active" : ""} onClick={() => reset("vfa")}>VFA-Prüfung</button><button type="button" role="tab" aria-selected={mode === "exam"} className={mode === "exam" ? "active" : ""} onClick={() => reset("exam")}>Mündliche Prüfung</button><button type="button" role="tab" aria-selected={mode === "image"} className={mode === "image" ? "active" : ""} onClick={() => reset("image")}>EKG-Training</button><button type="button" role="tab" aria-selected={mode === "question"} className={mode === "question" ? "active" : ""} onClick={() => reset("question")}>Lernchat</button></div>
-        {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "simulation" ? "20′" : mode === "vfa" ? "VFA" : mode === "exam" ? "01" : mode === "image" ? "EKG" : "?"}</span><div><h3>{mode === "simulation" ? "Komplette Prüfung starten" : mode === "vfa" ? "VFA-Prüfung starten" : mode === "exam" ? "Prüfung starten" : mode === "image" ? "EKG-Streifen trainieren" : "Im Lernmaterial suchen"}</h3><p>{mode === "simulation" ? "Du erhältst einen Fall, 20 Minuten Vorbereitungszeit und anschließend sechs bewertete Prüfungsschritte mit gezielten Nachfragen." : mode === "vfa" ? `Du erhältst bis zu sechs konkrete Einzelfragen aus dem hinterlegten VFA-Bestand ${VFA_VERSION}. Es werden keine Multiple-Choice-Texte als freie Frage verwendet; Zahlen werden zusammen mit ihrer Einheit geprüft.` : mode === "exam" ? "Der Lernprüfer bewertet deine freie Antwort und stellt danach passende Nachfragen zu Begründung, Differenzialdiagnosen, Komplikationen und Reevaluation. Synonyme und übliche Abkürzungen werden berücksichtigt." : mode === "image" ? "In diesem Modus erscheinen ausschließlich EKG-Streifen ohne eingeblendete Lösung. Benenne nur den Rhythmus oder das gefragte Ischämiemuster." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode !== "question" && <>{source.scope === "site" && mode !== "image" && <label className="ai-tutor-focus">{mode === "vfa" ? "VFA oder Krankheitsbild" : "Prüfungsthema"}<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Anaphylaxie oder Krampfanfall" /></label>}<div className="ai-tutor-start-actions"><button type="button" disabled={source.scope === "site" && mode !== "image" && !input.trim()} onClick={startExam}>{mode === "simulation" ? "20-Minuten-Simulation starten →" : mode === "vfa" ? "VFA-Prüfung starten →" : mode === "image" ? "Ersten EKG-Streifen öffnen →" : "Erste Prüfungsfrage stellen →"}</button>{mode === "exam" && <button className="secondary" type="button" disabled={!weakEntries.length} onClick={startWeakReview}>Schwächen wiederholen{weakEntries.length ? ` (${weakEntries.length})` : ""}</button>}</div></>}</div></div>}
+        <div className="ai-tutor-tabs" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected={mode === "simulation"} className={mode === "simulation" ? "active" : ""} onClick={() => reset("simulation")}>Prüfungssimulation</button><button type="button" role="tab" aria-selected={mode === "exam"} className={mode === "exam" ? "active" : ""} onClick={() => reset("exam")}>Mündliche Prüfung</button><button type="button" role="tab" aria-selected={mode === "image"} className={mode === "image" ? "active" : ""} onClick={() => reset("image")}>EKG-Training</button><button type="button" role="tab" aria-selected={mode === "question"} className={mode === "question" ? "active" : ""} onClick={() => reset("question")}>Lernchat</button></div>
+        {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "simulation" ? "20′" : mode === "exam" ? "01" : mode === "image" ? "EKG" : "?"}</span><div><h3>{mode === "simulation" ? "Komplette Prüfung starten" : mode === "exam" ? "Prüfung starten" : mode === "image" ? "EKG-Streifen trainieren" : "Im Lernmaterial suchen"}</h3><p>{mode === "simulation" ? "Du erhältst einen Fall, 20 Minuten Vorbereitungszeit und anschließend sechs bewertete Prüfungsschritte mit gezielten Nachfragen." : mode === "exam" ? "Der Lernprüfer bewertet deine freie Antwort und stellt danach passende Nachfragen zu Begründung, Differenzialdiagnosen, Komplikationen und Reevaluation. Synonyme und übliche Abkürzungen werden berücksichtigt." : mode === "image" ? "In diesem Modus erscheinen ausschließlich EKG-Streifen ohne eingeblendete Lösung. Benenne nur den Rhythmus oder das gefragte Ischämiemuster." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode !== "question" && <>{source.scope === "site" && mode !== "image" && <label className="ai-tutor-focus">Prüfungsthema<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Anaphylaxie oder Krampfanfall" /></label>}<div className="ai-tutor-start-actions"><button type="button" disabled={source.scope === "site" && mode !== "image" && !input.trim()} onClick={startExam}>{mode === "simulation" ? "20-Minuten-Simulation starten →" : mode === "image" ? "Ersten EKG-Streifen öffnen →" : "Erste Prüfungsfrage stellen →"}</button>{mode === "exam" && <button className="secondary" type="button" disabled={!weakEntries.length} onClick={startWeakReview}>Schwächen wiederholen{weakEntries.length ? ` (${weakEntries.length})` : ""}</button>}</div></>}</div></div>}
         <div className="ai-tutor-conversation" aria-live="polite">
           {turns.map((turn, index) => <article className={`${turn.role}${turn.kind ? ` ${turn.kind}` : ""}`} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.ekgSolution && <figure className="ai-tutor-ekg-solution"><a href={turn.ekgSolution.image.src} target="_blank" rel="noreferrer"><img src={turn.ekgSolution.image.src} alt={`Aufgelöster EKG-Befund: ${turn.ekgSolution.label}`} loading="lazy" /></a><figcaption><b>{turn.ekgSolution.label}</b>{turn.ekgSolution.highlights.length > 0 && <div className="ai-tutor-lead-highlights">{turn.ekgSolution.highlights.map((highlight) => <div className={highlight.tone} key={`${highlight.tone}-${highlight.leads}`}><strong>{highlight.leads}</strong><span>{highlight.explanation}</span></div>)}</div>}</figcaption></figure>}{turn.questionImage && <figure className="ai-tutor-question-image"><a href={turn.questionImage.src} target="_blank" rel="noreferrer"><img src={turn.questionImage.src} alt={turn.questionImage.alt} loading="lazy" /></a><figcaption>{turn.questionImage.caption} · zum Vergrößern antippen</figcaption></figure>}{turn.vfaImages && turn.vfaImages.length > 0 && <div className="ai-tutor-vfa-grid">{turn.vfaImages.map((vfa) => <a href={vfa.src} target="_blank" rel="noreferrer" key={vfa.src}><img src={vfa.src} alt={vfa.title} loading="lazy" /><b>{vfa.title}</b><small>Zum Vergrößern öffnen ↗</small></a>)}</div>}{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>{mode === "image" ? "EKG-Befund" : "Kernpunkte"}</small></div>{turn.result.evaluation && <p>{nameVfaReferences(turn.result.evaluation)}</p>}{turn.result.dimensions && <div className="exam-dimension-grid">{turn.result.dimensions.map((dimension) => <div key={dimension.label}><span><b>{dimension.label}</b><strong>{dimension.score}/5</strong></span><i><em style={{ width: `${dimension.score * 20}%` }} /></i><small>{nameVfaReferences(dimension.note)}</small></div>)}</div>}{turn.result.strengths.length > 0 && <section><b>{mode === "image" ? "Befundbewertung" : "Das war enthalten"}</b><ul>{turn.result.strengths.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}{turn.result.partial_points && turn.result.partial_points.length > 0 && <section className="partial"><b>Teilweise erkannt</b><ul>{turn.result.partial_points.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>{mode === "image" ? "Richtige Lösung" : "Das solltest du ergänzen"}</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {nameVfaReferences(turn.result.source_basis)}</small>}{turn.role === "assistant" && turn.result?.source_href && <a className="ai-tutor-source-link" href={turn.result.source_href}>Passendes Lernkapitel öffnen →</a>}</div></article>)}
           <div ref={endRef} />
@@ -1199,7 +1356,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
         {mode === "simulation" && simulationPhase === "prep" && <div className={`exam-preparation-bar ${prepRemaining === 0 ? "elapsed" : ""}`}><div><small>VORBEREITUNGSZEIT</small><b>{String(Math.floor(prepRemaining / 60)).padStart(2, "0")}:{String(prepRemaining % 60).padStart(2, "0")}</b><span>{prepRemaining > 0 ? "Notizen anfertigen und Fallvorstellung strukturieren." : "Die Vorbereitungszeit ist abgelaufen."}</span></div><button type="button" onClick={beginSimulationExam}>{prepRemaining > 0 ? "Prüfung vorzeitig beginnen" : "Mündliche Prüfung beginnen"} →</button></div>}
         {simulationPhase === "finished" && weakEntries.length > 0 && <div className="exam-review-action"><div><b>Lücken direkt festigen</b><span>Wiederhole jetzt nur die Fragen, die noch nicht sicher beantwortet wurden.</span></div><button type="button" onClick={startWeakReview}>Gezielte Wiederholung starten →</button></div>}
         {mode === "image" && pendingNextEkgIndex !== null && <div className="ai-tutor-next-ekg"><p>Sieh dir zuerst die Auflösung in Ruhe an.</p><button type="button" onClick={continueEkgTraining}>Nächsten EKG-Streifen öffnen →</button></div>}
-        {source && simulationPhase !== "prep" && (mode === "question" || currentEntry && pendingNextEkgIndex === null) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "question" ? "Deine Frage" : mode === "vfa" ? "Deine freie VFA-Antwort" : mode === "simulation" || mode === "exam" ? "Deine Antwort an den Prüfer" : mode === "image" ? "Dein EKG-Befund" : "Deine freie Antwort"}</label><div className="ai-tutor-input-wrap"><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "question" ? "Stelle eine Wissensfrage zur NotSan-Prüfung …" : mode === "image" ? "Nur den Rhythmus oder das Ischämiemuster benennen …" : "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …"} />{speechSupported && <button className={`ai-tutor-mic ${listening ? "listening" : ""}`} type="button" onClick={toggleSpeech} aria-pressed={listening} aria-label={listening ? "Spracheingabe beenden" : "Antwort einsprechen"}>{listening ? "■ Aufnahme stoppen" : "🎙 Antwort einsprechen"}</button>}</div><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "question" ? "Suchen →" : "Antwort prüfen →"}</button></div></form>}
+        {source && simulationPhase !== "prep" && (mode === "question" || currentEntry && pendingNextEkgIndex === null) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "question" ? "Deine Frage" : mode === "simulation" || mode === "exam" ? "Deine Antwort an den Prüfer" : mode === "image" ? "Dein EKG-Befund" : "Deine freie Antwort"}</label><div className="ai-tutor-input-wrap"><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "question" ? "Stelle eine Wissensfrage zur NotSan-Prüfung …" : mode === "image" ? "Nur den Rhythmus oder das Ischämiemuster benennen …" : "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …"} />{speechSupported && <button className={`ai-tutor-mic ${listening ? "listening" : ""}`} type="button" onClick={toggleSpeech} aria-pressed={listening} aria-label={listening ? "Spracheingabe beenden" : "Antwort einsprechen"}>{listening ? "■ Aufnahme stoppen" : "🎙 Antwort einsprechen"}</button>}</div><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "question" ? "Suchen →" : "Antwort prüfen →"}</button></div></form>}
         {error && <p className="ai-tutor-error" role="alert">{error}</p>}
         <footer><span>{knowledge.length} Lerninhalte · {weakEntries.length} in Wiederholung{sessionScores.length ? ` · Ø ${(sessionScores.reduce((sum, score) => sum + score, 0) / sessionScores.length).toFixed(1)}/5` : ""}</span><button type="button" onClick={() => reset()}>{mode === "question" ? "Chat leeren" : "Training zurücksetzen"}</button></footer>
       </section>

@@ -53,6 +53,7 @@ export default function LearningPlan({
   onTrain,
   onRead,
   onProgress,
+  onDueReview,
   onCases,
 }: {
   progress: QuestionProgress;
@@ -62,6 +63,7 @@ export default function LearningPlan({
   onTrain: (topic: string) => void;
   onRead: (oralIndex: number) => void;
   onProgress: () => void;
+  onDueReview: () => void;
   onCases: () => void;
 }) {
   const storageKey = `notsan-learning-plan-v1:${userId || "local"}`;
@@ -91,7 +93,7 @@ export default function LearningPlan({
   const minutes = settings.dailyMinutes;
   const examDays = daysUntil(settings.examDate);
   const today = [
-    dueIds.size ? { icon: "↺", label: "Wiederholen", title: `${dueIds.size} fällige Frage${dueIds.size === 1 ? "" : "n"}`, text: `Etwa ${Math.min(15, Math.max(5, Math.round(minutes * .35)))} Minuten für Inhalte, deren Wiederholung heute fällig ist.`, action: "Wiederholung öffnen", run: onProgress } : null,
+    dueIds.size ? { icon: "↺", label: "Wiederholen", title: `${dueIds.size} fällige Frage${dueIds.size === 1 ? "" : "n"}`, text: dueIds.size > 2 ? "Alle heute fälligen Fragen sind bereits gemeinsam ausgewählt. Du kannst die komplette Wiederholungsrunde mit einem Klick öffnen." : `Etwa ${Math.min(15, Math.max(5, Math.round(minutes * .35)))} Minuten für Inhalte, deren Wiederholung heute fällig ist.`, action: dueIds.size > 2 ? `Alle ${dueIds.size} auswählen` : "Wiederholung öffnen", run: dueIds.size > 2 ? onDueReview : onProgress } : null,
     weak ? { icon: "◎", label: "Schwerpunkt", title: weak.title, text: weak.answered ? `${weak.wrong} zuletzt falsch · ${weak.due} heute fällig. Trainiere gezielt statt wahllos.` : "Beginne mit einem prüfungsrelevanten Themenblock.", action: "MC-Training starten", run: () => onTrain(weak.topic) } : null,
     fresh ? { icon: "+", label: "Neuer Stoff", title: fresh.title, text: `Plane etwa ${Math.max(10, Math.round(minutes * .4))} Minuten für Lesen, Verstehen und anschließende Selbstkontrolle ein.`, action: "Kapitel lesen", run: () => onRead(fresh.oralIndex!) } : null,
     { icon: "F", label: "Transfer", title: "Ein Fallbeispiel", text: "Wende das Gelernte in einer dynamischen Einsatzlage an und begründe dein Vorgehen.", action: "Fall generieren", run: onCases },

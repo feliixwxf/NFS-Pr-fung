@@ -117,7 +117,7 @@ const MedicationEffectsLibrary = lazy(() => import("./medication-effects-library
 
 type View = "start" | "plan" | "cases" | "oral" | "written" | "quiz" | "progress" | "medication" | "medication-effects" | "anatomy";
 type TrainingTopic = "schock" | "elektrounfall" | "anaphylaxie" | "barotrauma" | "beckentrauma" | "amputationsverletzung" | "instabile-bradykardie" | "herzrhythmusstoerungen" | "herzbeuteltamponade" | "akutes-abdomen" | "akute-pankreatitis" | "ulkusblutung" | "schussverletzung" | "stichverletzung" | "explosionsverletzung" | "alkoholintoxikation" | "opiatintoxikation" | "venenthrombose" | "pavk" | "myokardinfarkt" | "polytrauma" | "bronchoobstruktion" | "pneumonie" | "pseudokrupp-epiglottitis" | "hypertensiver-notfall" | "vorhofflimmern" | "krampfanfall-kind" | "krampfanfall" | "unterkuehlung" | "rippenfraktur" | "verbrennung" | "lungenoedem" | "eug" | "extremitaetentrauma" | "wirbelsaeulentrauma" | "angina-pectoris" | "acs" | "apoplex" | "sht" | "lae" | "hyperventilation" | "geburt" | "thoraxtrauma" | "abdominaltrauma" | "hypoglykaemie" | "gallensteinkolik" | "nierensteinkolik" | "hodentorsion" | "rechtskunde" | "kommunikation" | "organisation" | "qualitaetsmanagement" | "terminologie" | "diagnostik" | "hygiene";
-type ReviewMode = "wrong" | "once" | "twice" | null;
+type ReviewMode = "wrong" | "once" | "twice" | "due" | null;
 
 const topics = [
   "Myokardinfarkt", "Angina Pectoris", "Akutes Koronarsyndrom", "Apoplex", "Schädelhirntrauma",
@@ -272,6 +272,14 @@ export default function Home() {
 
   // Der persistierte Lernstand ist erst im Browser verfügbar und wird einmalig hydriert.
   useEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    const alignInitialViewport = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.documentElement.scrollLeft = 0;
+      document.body.scrollLeft = 0;
+      document.querySelector<HTMLElement>(".main-content")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuestionProgress(readQuestionProgress());
     setCompletedTopics(readCompletedTopics());
@@ -298,6 +306,13 @@ export default function Home() {
     else if (path === "/fortschritt") setView("progress");
     else if (path === "/lernplan") setView("plan");
     else if (path === "/falltraining") setView("cases");
+    const initialFrame = window.requestAnimationFrame(() => window.requestAnimationFrame(alignInitialViewport));
+    window.addEventListener("pageshow", alignInitialViewport);
+    return () => {
+      window.cancelAnimationFrame(initialFrame);
+      window.removeEventListener("pageshow", alignInitialViewport);
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
   }, []);
 
   useEffect(() => {
@@ -427,6 +442,7 @@ export default function Home() {
 
   useEffect(() => {
     const restoreViewFromPath = () => {
+      scrollToPageTop();
       if (window.location.pathname.startsWith("/anatomie")) setView("anatomy");
       else if (window.location.pathname === "/medikamentenrechnen") setView("medication");
       else if (window.location.pathname === "/medikamentenwirkung") setView("medication-effects");
@@ -453,6 +469,7 @@ export default function Home() {
 
   const changeView = (nextView: View) => { scrollToPageTop(); setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); const paths: Record<View, string> = { start: "/", plan: "/lernplan", cases: "/falltraining", oral: "/muendlich", written: "/schriftlich", quiz: "/mc", progress: "/fortschritt", medication: "/medikamentenrechnen", "medication-effects": "/medikamentenwirkung", anatomy: "/anatomie" }; window.history.pushState({}, "", paths[nextView]); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
   const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { scrollToPageTop(); setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", `/mc/${topic}`); };
+  const openDueReview = () => { scrollToPageTop(); setTrainingTopic(null); setReviewMode("due"); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", "/mc?filter=faellig"); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
       const completed = !current.includes(topicNumber);
@@ -541,7 +558,7 @@ export default function Home() {
         </header>
         <Suspense fallback={<AppLoadingScreen compact />}>
         {view === "start" && <Dashboard setView={changeView} questionProgress={questionProgress} />}
-        {view === "plan" && <LearningPlan progress={questionProgress} completedTopics={completedTopics} topics={learningPlanTopics} userId={accountUserId} onTrain={(topic) => openTraining(topic as TrainingTopic)} onRead={(topic) => { setView("oral"); setSelectedTopic(topic); window.history.pushState({}, "", `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onProgress={() => changeView("progress")} onCases={() => changeView("cases")} />}
+        {view === "plan" && <LearningPlan progress={questionProgress} completedTopics={completedTopics} topics={learningPlanTopics} userId={accountUserId} onTrain={(topic) => openTraining(topic as TrainingTopic)} onRead={(topic) => { setView("oral"); setSelectedTopic(topic); window.history.pushState({}, "", `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onProgress={() => changeView("progress")} onDueReview={openDueReview} onCases={() => changeView("cases")} />}
         {view === "cases" && <CaseGenerator topics={caseGeneratorTopics} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={(topic) => { setSelectedTopic(topic); window.history.pushState({}, "", topic === null ? "/muendlich" : `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onOpenTraining={(topic) => openTraining(topic)} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
         {view === "written" && <WrittenLibrary onProgressChange={handleQuestionProgress} />}
@@ -729,12 +746,13 @@ function RechtskundeLesson({ onBack, onProgressChange }: { onBack: () => void; o
 
 type TopicReaderProps = { topicNumber: number; onBack: () => void; onOpenTraining: (topic: TrainingTopic) => void; onProgressChange: (progress: QuestionProgress) => void; completed: boolean; onToggleComplete: () => void };
 
-function ChapterActionIcon({ name }: { name: "read" | "listen" | "quiz" | "cards" }) {
+function ChapterActionIcon({ name }: { name: "read" | "listen" | "quiz" | "cards" | "print" }) {
   const paths = {
     read: <><path d="M3.5 5.5c2.8-.9 5.2-.4 7.5 1.2v11.8c-2.3-1.6-4.7-2-7.5-1.2z"/><path d="M20.5 5.5c-2.8-.9-5.2-.4-7.5 1.2v11.8c2.3-1.6 4.7-2 7.5-1.2z"/><path d="M12 7v11.5"/></>,
     listen: <><path d="M5 10v4h3l4 3V7l-4 3z"/><path d="M15 9.2a4 4 0 0 1 0 5.6"/><path d="M17.8 6.7a7.5 7.5 0 0 1 0 10.6"/></>,
     quiz: <><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 5.8 1.2 1.3 2-2.4M3.5 11.8l1.2 1.3 2-2.4M3.5 17.8l1.2 1.3 2-2.4"/></>,
     cards: <><rect x="4" y="6" width="13" height="14" rx="2"/><path d="M8 6V4.5A1.5 1.5 0 0 1 9.5 3H19a1.5 1.5 0 0 1 1.5 1.5V16a2 2 0 0 1-2 2H17"/></>,
+    print: <><path d="M7 8V3.5h10V8"/><path d="M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/><path d="M17.5 11.5h.01"/></>,
   };
   return <svg className="chapter-action-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
@@ -757,7 +775,7 @@ function TopicReader(props: TopicReaderProps) {
     markTopicOpened(props.topicNumber + 1);
     const root = rootRef.current;
     if (!root) return;
-    const sections = [...root.querySelectorAll<HTMLElement>(".rib-section, .lesson-section, .reader-accordion, .legal-section")];
+    const sections = [...root.querySelectorAll<HTMLElement>(".rib-section, .lesson-section, .reader-accordion, .legal-section, details")];
     const saved: Record<string, boolean> = JSON.parse(localStorage.getItem(storageKey) || "{}");
     const links = sections.map((section, index) => {
       const heading = section.querySelector<HTMLElement>("h2");
@@ -780,6 +798,67 @@ function TopicReader(props: TopicReaderProps) {
     if (section instanceof HTMLDetailsElement) section.open = open;
     else section.classList.toggle("qol-collapsed", !open);
   });
+  const printChapter = async () => {
+    const root = rootRef.current;
+    if (!root || typeof window === "undefined") return;
+    const sections = [...root.querySelectorAll<HTMLElement>(".rib-section, .lesson-section, .reader-accordion, .legal-section")];
+    const sectionState = sections.map(section => ({
+      section,
+      open: section instanceof HTMLDetailsElement ? section.open : undefined,
+      collapsed: section.classList.contains("qol-collapsed"),
+    }));
+    const previousTitle = document.title;
+    const images = [...root.querySelectorAll<HTMLImageElement>("img")];
+    const imageState = images.map(image => ({ image, loading: image.getAttribute("loading") }));
+    let restored = false;
+    let fallbackTimer = 0;
+    const restore = () => {
+      if (restored) return;
+      restored = true;
+      window.clearTimeout(fallbackTimer);
+      document.body.classList.remove("printing-topic");
+      root.classList.remove("topic-print-root");
+      document.title = previousTitle;
+      imageState.forEach(({ image, loading }) => loading === null ? image.removeAttribute("loading") : image.setAttribute("loading", loading));
+      sectionState.forEach(({ section, open, collapsed }) => {
+        if (section instanceof HTMLDetailsElement && typeof open === "boolean") section.open = open;
+        section.classList.toggle("qol-collapsed", collapsed);
+      });
+    };
+
+    sectionState.forEach(({ section }) => {
+      if (section instanceof HTMLDetailsElement) section.open = true;
+      section.classList.remove("qol-collapsed");
+    });
+    // Der sichtbare Titel steht bereits im Kapitelkopf. Ein leerer Dokumenttitel
+    // verhindert, dass Browser ihn zusätzlich auf jeder PDF-Seite wiederholen.
+    document.title = "";
+    document.body.classList.add("printing-topic");
+    root.classList.add("topic-print-root");
+    images.forEach(image => image.setAttribute("loading", "eager"));
+
+    // Lazy geladene Kapitelbilder müssen vor dem Öffnen der Druckvorschau fertig
+    // sein. Sonst fehlen sie in Safari/Chrome gelegentlich oder werden erst nach
+    // der Seitenaufteilung nachgeladen und verschieben anschließend den Text.
+    const imageReady = Promise.all(images.map(async image => {
+      if (!image.complete) await new Promise<void>(resolve => {
+        image.addEventListener("load", () => resolve(), { once: true });
+        image.addEventListener("error", () => resolve(), { once: true });
+      });
+      try { await image.decode?.(); } catch { /* Ein defektes Bild blockiert den übrigen PDF-Export nicht. */ }
+    }));
+    const timeout = new Promise<void>(resolve => window.setTimeout(resolve, 4_000));
+    await Promise.race([imageReady, timeout]);
+    try { await document.fonts?.ready; } catch { /* Systemschrift bleibt als sichere Druckalternative erhalten. */ }
+
+    window.addEventListener("afterprint", restore, { once: true });
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      window.print();
+      // afterprint ist der reguläre Rückweg. Der lange Fallback verhindert, dass
+      // ein Browser ohne dieses Ereignis dauerhaft im Drucklayout verbleibt.
+      fallbackTimer = window.setTimeout(restore, 120_000);
+    }));
+  };
   const jumpTo = (id: string) => {
     const target = document.getElementById(id);
     if (!target) return;
@@ -881,7 +960,7 @@ function TopicReader(props: TopicReaderProps) {
     sections[lessonIndex] = cloneElement(lesson, undefined, ...((props.topicNumber === 8 || props.topicNumber === 19 || props.topicNumber === 25 || props.topicNumber === 31 || props.topicNumber === 43 || props.topicNumber === 44) ? [...lessonChildren, preparation] : [preparation, ...lessonChildren]));
   }
   else if (heroIndex >= 0) sections.splice(lessonIndex + 1, 0, preparation);
-  const controls = <nav className="chapter-qol" aria-label="Kapitelaktionen">{typeof window !== "undefined" && new URLSearchParams(window.location.search).get("return") === "training" && <button type="button" className="return-training" onClick={() => window.close()}>← Zurück zum Training</button>}<div className="chapter-primary-actions"><button type="button" className={activeChapterAction === "read" ? "active" : ""} aria-current={activeChapterAction === "read" ? "location" : undefined} onClick={() => jumpTo(sectionLinks[0]?.id)}><ChapterActionIcon name="read"/><span>Lesen</span></button><button type="button" className={isSpeaking ? "speaking" : ""} onClick={toggleReading} aria-pressed={isSpeaking}><ChapterActionIcon name="listen"/><span>{isSpeaking ? "Vorlesen stoppen" : "Vorlesen"}</span></button>{slug && <button type="button" onClick={() => props.onOpenTraining(slug)}><ChapterActionIcon name="quiz"/><span>MC üben</span></button>}<button type="button" className={activeChapterAction === "cards" ? "active" : ""} aria-current={activeChapterAction === "cards" ? "location" : undefined} onClick={openFlashcards}><ChapterActionIcon name="cards"/><span>Karteikarten</span></button></div><span className="chapter-action-divider" aria-hidden="true"/><div className="chapter-secondary-actions">{sectionLinks.length > 1 && <div className="section-picker"><button type="button" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(open => !open)}>Abschnitt wählen <span className="section-picker-chevron" aria-hidden="true">⌄</span></button>{sectionMenuOpen && <div className="section-picker-menu">{sectionLinks.map(link => <button type="button" key={link.id} onClick={() => jumpTo(link.id)}>{link.title}</button>)}</div>}</div>}<div className="collapse-actions"><button type="button" onClick={() => setAll(false)}>Alles einklappen</button><button type="button" onClick={() => setAll(true)}>Alles ausklappen</button></div></div></nav>;
+  const controls = <nav className="chapter-qol" aria-label="Kapitelaktionen">{typeof window !== "undefined" && new URLSearchParams(window.location.search).get("return") === "training" && <button type="button" className="return-training" onClick={() => window.close()}>← Zurück zum Training</button>}<div className="chapter-primary-actions"><button type="button" className={activeChapterAction === "read" ? "active" : ""} aria-current={activeChapterAction === "read" ? "location" : undefined} onClick={() => jumpTo(sectionLinks[0]?.id)}><ChapterActionIcon name="read"/><span>Lesen</span></button><button type="button" className={isSpeaking ? "speaking" : ""} onClick={toggleReading} aria-pressed={isSpeaking}><ChapterActionIcon name="listen"/><span>{isSpeaking ? "Vorlesen stoppen" : "Vorlesen"}</span></button>{slug && <button type="button" onClick={() => props.onOpenTraining(slug)}><ChapterActionIcon name="quiz"/><span>MC üben</span></button>}<button type="button" className={activeChapterAction === "cards" ? "active" : ""} aria-current={activeChapterAction === "cards" ? "location" : undefined} onClick={openFlashcards}><ChapterActionIcon name="cards"/><span>Karteikarten</span></button><button type="button" onClick={printChapter} title="Als A4-PDF speichern oder drucken" aria-label="Kapitel als A4-PDF speichern oder drucken"><ChapterActionIcon name="print"/><span>PDF</span></button></div><span className="chapter-action-divider" aria-hidden="true"/><div className="chapter-secondary-actions">{sectionLinks.length > 1 && <div className="section-picker"><button type="button" aria-expanded={sectionMenuOpen} onClick={() => setSectionMenuOpen(open => !open)}>Abschnitt wählen <span className="section-picker-chevron" aria-hidden="true">⌄</span></button>{sectionMenuOpen && <div className="section-picker-menu">{sectionLinks.map(link => <button type="button" key={link.id} onClick={() => jumpTo(link.id)}>{link.title}</button>)}</div>}</div>}<div className="collapse-actions"><button type="button" onClick={() => setAll(false)}>Alles einklappen</button><button type="button" onClick={() => setAll(true)}>Alles ausklappen</button></div></div></nav>;
   sections.splice(heroIndex + 1, 0, controls);
   return <div ref={rootRef}>{cloneElement(chapter, undefined, ...sections)}</div>;
 }
@@ -2175,14 +2254,14 @@ function shuffledQuestions(questionBank: MultipleChoiceQuestion[], previous: Mul
   return next;
 }
 
-function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standalone = false, onTrainingStateChange }: { questionBank: MultipleChoiceQuestion[]; condition: string; onProgressChange: (progress: QuestionProgress) => void; standalone?: boolean; onTrainingStateChange?: (state: { current: number; total: number } | null) => void }) {
+function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standalone = false, onTrainingStateChange, initialRoundSize = 10 }: { questionBank: MultipleChoiceQuestion[]; condition: string; onProgressChange: (progress: QuestionProgress) => void; standalone?: boolean; onTrainingStateChange?: (state: { current: number; total: number } | null) => void; initialRoundSize?: 5 | 10 | "all" }) {
   const [questions, setQuestions] = useState<MultipleChoiceQuestion[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selections, setSelections] = useState<Record<string, number[]>>({});
   const [answeredKeys, setAnsweredKeys] = useState<string[]>([]);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [finished, setFinished] = useState(false);
-  const [roundSize, setRoundSize] = useState<5 | 10 | "all">(10);
+  const [roundSize, setRoundSize] = useState<5 | 10 | "all">(initialRoundSize);
   const [wrongQuestions, setWrongQuestions] = useState<MultipleChoiceQuestion[]>([]);
   const [bookmarks, setBookmarks] = useState<string[]>(() => readBookmarks());
   const [skipStreak, setSkipStreak] = useState(0);
@@ -2273,7 +2352,7 @@ const oralTrainingChapters: Array<{ topic: TrainingTopic; number: string; title:
   { topic: "schock", number: "33", title: "Schock", text: "Blut und Sauerstofftransport, vier Schockformen, neurogener Schock, Mikrozirkulation, Differenzialdiagnostik und Thüringer Trauma-VFA." },
   { topic: "bronchoobstruktion", number: "10/13", title: "Asthma bronchiale vs. COPD", text: "Beide obstruktiven Atemwegserkrankungen vergleichen und VFA 21/06 anwenden." },
   { topic: "pseudokrupp-epiglottitis", number: "49", title: "Pseudokrupp vs. Epiglottitis", text: "Zwei obere Atemwegsnotfälle klar unterscheiden und Thüringer VFA 24 anwenden." },
-  { topic: "hypertensiver-notfall", number: "14", title: "Hypertensiver Notfall", text: "Grenzwerte, Organschäden, RAAS und Thüringer VFA 16/17." },
+  { topic: "hypertensiver-notfall", number: "14", title: "Hypertensiver Notfall", text: "Grenzwerte, Organbeteiligung, RAAS sowie Urapidil- und Nifedipin-Algorithmus." },
   { topic: "vorhofflimmern", number: "24", title: "Vorhofflimmern", text: "Herz-Erregungsleitung, EKG, Embolierisiko, hämodynamische Entscheidung und Thüringer VFA 20." },
   { topic: "krampfanfall-kind", number: "30", title: "Krampfanfall Kind (< 30 kg)", text: "Fieberkrampf, kindliche Red Flags, Gewichtstabelle, Diazepam und Midazolam nach Thüringer VFA 30." },
   { topic: "krampfanfall", number: "25", title: "Krampfanfall Erwachsener", text: "Anfallsformen, Status, Differenzialdiagnosen, Midazolam nach Thüringer VFA 29 und B2A." },
@@ -2414,6 +2493,17 @@ function QuizTraining({ onProgressChange, progress, selectedTopic, reviewMode, s
   const [track, setTrack] = useState<"oral" | "written">("oral");
   const [trainingProgress, setTrainingProgress] = useState<{ current: number; total: number } | null>(null);
   const [mixedQuestions, setMixedQuestions] = useState<MultipleChoiceQuestion[] | null>(null);
+  if (reviewMode === "due") {
+    const dueIds = new Set(dueQuestionIds(progress));
+    const seen = new Set<string>();
+    const dueQuestions = Object.entries(trainingQuestionBanks).flatMap(([topic, questions]) => questions.flatMap((question) => {
+      if (!dueIds.has(question.id) || seen.has(question.id)) return [];
+      seen.add(question.id);
+      const chapter = oralTrainingChapters.find((item) => item.topic === topic);
+      return [{ ...question, sourceTopic: topic as TrainingTopic, sourceTitle: chapter?.title || topic }];
+    }));
+    return <section className={`quiz-page mc-training-page ${trainingProgress ? "is-active" : ""}`}><button className="back-button" onClick={() => { setTrainingProgress(null); onReviewBack(); }}>← Zurück zum Lernstand</button>{trainingProgress ? <div className="active-training-heading"><div><span className="eyebrow">Fällige Wiederholung</span><h1>Alle fälligen Fragen</h1></div><b>Frage {trainingProgress.current} von {trainingProgress.total}</b></div> : <div className="section-heading"><div><span className="eyebrow">Lernplan · Wiederholen</span><h1>Alle fälligen Fragen sind ausgewählt.</h1><p>Die Runde enthält alle heute fälligen Fragen aus deinen begonnenen Themen. Du musst keine Kapitel einzeln auswählen.</p></div><div className="source-badge"><b>{dueQuestions.length}</b><span>fällig</span></div></div>}{dueQuestions.length || trainingProgress ? <MultipleChoiceQuiz standalone initialRoundSize="all" questionBank={dueQuestions} condition="Fällige Wiederholung" onProgressChange={onProgressChange} onTrainingStateChange={setTrainingProgress} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine Fragen mehr fällig</h2><p>Dein Lernplan wird nach der nächsten Fälligkeit automatisch aktualisiert.</p></div></div>}</section>;
+  }
   if (selectedTopic === "opiatintoxikation") {
     const filteredBank = reviewMode === "wrong" ? opiatintoxikationQuestions.filter((question) => progress[question.id]?.correctCount === 0) : reviewMode === "once" ? opiatintoxikationQuestions.filter((question) => progress[question.id]?.correctCount === 1) : reviewMode === "twice" ? opiatintoxikationQuestions.filter((question) => progress[question.id]?.correctCount === 2) : opiatintoxikationQuestions;
     const questionBank = reviewMode ? filteredBank : opiatintoxikationQuestions;

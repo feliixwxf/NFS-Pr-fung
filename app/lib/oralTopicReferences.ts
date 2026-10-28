@@ -18,7 +18,7 @@ export const oralTopicReferenceLabels: Record<number, string> = {
   11: "Atemregulation · Säure-Basen-Haushalt",
   12: "VFA 41 · 42 · 43 · ERC 49",
   13: "VFA 21 · 06 · B2A",
-  14: "VFA 16 · 17 · B2A",
+  14: "Urapidil · Nifedipin · B2A",
   15: "VFA 39 · B2A · Metamizol/Butylscopolamin",
   16: "VFA 35 · 36 · 38 · B2A/B2B",
   17: "VFA 19 · B2A",

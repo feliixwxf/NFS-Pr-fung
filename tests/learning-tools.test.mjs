@@ -26,22 +26,21 @@ test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(plan, /Der Tagesplan bleibt heute gleich und wechselt morgen/);
 });
 
-test("case generator integrates oral follow-ups into every examination mode", () => {
+test("case generator and tutor keep follow-ups scoped to the active examination", () => {
   assert.match(cases, /notsan-open-tutor/);
-  assert.match(cases, /Komplette Prüfungssimulation/);
-  assert.match(cases, /VFA-Prüfung/);
+  assert.match(cases, /Eine vollständige mündliche Prüfung/);
+  assert.doesNotMatch(cases, /VFA-Prüfung/);
   assert.doesNotMatch(cases, /<b>Mündliche Nachfragen<\/b>/);
-  assert.match(cases, /Nachfragen sind automatisch in jedem Prüfungsmodus enthalten/);
+  assert.match(cases, /Gezielte Nachfragen gehören automatisch zur Prüfung/);
   assert.match(tutor, /window\.addEventListener\("notsan-open-tutor"/);
   assert.match(tutor, /Vorbereitungszeit: 20 Minuten/);
-  assert.match(tutor, /VFA_VERSION = "Thüringer VFA 2026\/2027"/);
-  assert.match(tutor, /ORAL_FOLLOW_UPS/);
   assert.match(tutor, /adaptiveFollowUp/);
+  assert.match(tutor, /classifyTutorFollowUp/);
+  assert.match(tutor, /sameTutorTopic/);
   assert.match(tutor, /Die vollständige Auflösung folgt nach der gezielten Nachfrage/);
   assert.match(tutor, /examDimensions/);
   assert.match(tutor, /partial_points/);
   assert.match(tutor, /Kritische Sicherheitslücken/);
-  assert.match(tutor, /knowledge\.filter\(isVfaExamEntry\)/);
   assert.match(tutor, /!entry\.id\.startsWith\("mc-"\)/);
   assert.doesNotMatch(tutor, /Kernpunkt aus dem Bereich/);
   assert.match(tutor, /Welche konkrete Kontraindikation oder Sicherheitsgrenze/);
@@ -60,9 +59,10 @@ test("case generator integrates oral follow-ups into every examination mode", ()
   assert.match(tutor, /VFA_NAME_BY_NUMBER/);
   assert.match(tutor, /Bitte wähle ein konkreteres Thema/);
   assert.doesNotMatch(tutor, />Nachfragen<\/button>/);
-  assert.match(tutor, /mode === "exam" \|\| mode === "simulation" \|\| mode === "vfa"/);
+  assert.match(tutor, /mode === "exam" \|\| mode === "simulation"/);
+  assert.doesNotMatch(tutor, /mode === "vfa"/);
   assert.match(tutor, /chooseCasePool\(input\.trim\(\) \|\| source\.title/);
-  assert.match(tutor, /chooseVfaPool\(input\.trim\(\) \|\| source\.title/);
+  assert.doesNotMatch(tutor, /chooseVfaPool/);
   assert.match(tutor, /VFA-geprüfter Lernbestand/);
   assert.match(tutor, /questionId: string/);
   assert.match(tutor, /sessionResults\.find\(\(entry\) => entry\.questionId === currentEntry\.id\)/);
@@ -107,4 +107,16 @@ test("iPad viewport support handles keyboard, split view, touch and standalone m
   assert.match(styles, /@media \(hover:none\) and \(pointer:coarse\)/);
   assert.match(styles, /@media \(display-mode:standalone\)/);
   assert.match(styles, /min-width:701px\) and \(max-width:900px/);
+});
+
+test("topic PDF export waits for images and uses break-safe A4 rules", () => {
+  assert.match(page, /await Promise\.race\(\[imageReady, timeout\]\)/);
+  assert.match(page, /await document\.fonts\?\.ready/);
+  assert.match(styles, /@page\{size:A4 portrait;margin:0\}/);
+  assert.match(styles, /box-decoration-break:clone/);
+  assert.match(styles, /thead\{display:table-row-group!important\}/);
+  assert.match(styles, /tr\{break-inside:avoid-page!important/);
+  assert.doesNotMatch(styles, /:is\(article,aside,figure,table/);
+  assert.match(styles, /\.vfa-collapsible\{break-before:page!important/);
+  assert.match(styles, /\.universal-prep-print-list\{display:block!important/);
 });
