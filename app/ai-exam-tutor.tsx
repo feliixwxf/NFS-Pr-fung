@@ -920,13 +920,23 @@ function examDimensions(entry: FreeTutorKnowledge, response: string, result: Tut
   ];
 }
 
+function shuffleEntries<T>(pool: readonly T[]) {
+  const shuffled = [...pool];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
+  }
+  return shuffled;
+}
+
 function prioritizeWeakEkgEntries(pool: readonly FreeTutorKnowledge[], weakEntryIds: readonly string[]) {
+  const randomized = shuffleEntries(pool);
   const weakIds = new Set(weakEntryIds);
-  const weak = pool.filter((entry) => weakIds.has(entry.id));
-  if (!weak.length) return [...pool];
-  const ordered = [...pool];
-  weak.forEach((entry, index) => ordered.splice(Math.min(ordered.length, 3 + index * 4), 0, entry));
-  return ordered;
+  const weak = randomized.filter((entry) => weakIds.has(entry.id));
+  if (!weak.length) return randomized;
+  const remaining = randomized.filter((entry) => !weakIds.has(entry.id));
+  weak.forEach((entry, index) => remaining.splice(Math.min(remaining.length, 2 + index * 4), 0, entry));
+  return remaining;
 }
 
 function scheduleEkgRetry(pool: readonly FreeTutorKnowledge[], currentIndex: number, entry: FreeTutorKnowledge) {

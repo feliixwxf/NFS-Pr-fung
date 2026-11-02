@@ -30,6 +30,6 @@ export default function VenenthromboseLesson({ Figure, children }: Props) {
     {section("10", "Mündliche Prüfung", "Entscheidungsübersicht", <><div className="pulmo-path"><span>Verdacht</span><i>→</i><span>cABCDE</span><i>→</i><span>Emboliezeichen?</span><i>→</i><span>Schonender Transport</span><i>→</i><span>Diagnosesicherung</span></div><p>Eine starke Prüfungsantwort verbindet die Virchow-Trias mit dem erhöhten venösen Druck, grenzt die warme geschwollene Extremität vom akuten arteriellen Verschluss ab und erklärt den Embolieweg anatomisch korrekt.</p></>)}
 
     {children}
-    <p className="lesson-source">Hauptgrundlage: bereitgestellte Unterlagen „7. Venenthrombose“. Ergänzende Einordnung dient der rettungsdienstlichen Entscheidungsfindung; Diagnosesicherung und definitive Therapie erfolgen klinisch.</p>
+    <p className="lesson-source">Fachliche Grundlage: rettungsdienstliche Erkennung und Differenzialdiagnostik der Venenthrombose. Diagnosesicherung und definitive Therapie erfolgen klinisch.</p>
   </article>;
 }

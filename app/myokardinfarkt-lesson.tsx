@@ -30,6 +30,6 @@ export default function MyokardinfarktLesson({ Figure, Vfa, children }: Props) {
     {section("10", "Originale Handlungsgrundlage", "Verfahrensanweisungen Thüringen 2026/2027", <><p>Die folgenden Originalseiten verbinden Basisalgorithmus, Nitro sowie ASS und Heparin. Maßgeblich bleiben Indikation, Kontraindikationen, Dosierung und Re-Evaluation der abgebildeten VFA.</p><div className="vfa-stack"><Vfa src="/lessons/acs/vfa-acs-basis-12.png" alt="VFA 12 Basisalgorithmus akutes Koronarsyndrom" caption="VFA 12 · Akutes Koronarsyndrom" wide /><Vfa src="/lessons/acs/vfa-glyceroltrinitrat-13.png" alt="VFA 13 Glyceroltrinitrat" caption="VFA 13 · Glyceroltrinitrat" wide /><Vfa src="/lessons/acs/vfa-ass-heparin-14.png" alt="VFA 14 Acetylsalicylsäure und Heparin" caption="VFA 14 · Acetylsalicylsäure und Heparin" wide /></div></>)}
 
     {children}
-    <p className="lesson-source">Hauptgrundlage: bereitgestellte Unterlagen zum Myokardinfarkt und das hinterlegte Anatomieskript. Medikamentendosierungen, Kontraindikationen und Wiederholungsintervalle richten sich ausschließlich nach den Thüringer Verfahrensanweisungen 2026/2027.</p>
+    <p className="lesson-source">Fachliche Grundlage: kardiologische Anatomie sowie Thüringer Verfahrensanweisungen zum akuten Koronarsyndrom 2026/2027. Dosierungen, Kontraindikationen und Wiederholungsintervalle richten sich nach den aktuellen Originalalgorithmen.</p>
   </article>;
 }

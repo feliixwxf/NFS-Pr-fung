@@ -31,6 +31,9 @@ export const kommunikationFlashcards: CommunicationFlashcard[] = [
   { id: "komm-card-19", area: "Sprachbarriere", question: "Wie sichern Sie eine informierte Kommunikation bei Sprachbarriere?", answer: "Kurze einfache Sätze, Visualisierung und eindeutige Gesten verwenden, möglichst qualifizierte Sprachmittlung hinzuziehen und sensible Inhalte nicht regelhaft durch Kinder übersetzen lassen. Verständnis durch sinngemäße Rückerklärung prüfen; ein Nicken allein reicht nicht." },
   { id: "komm-card-20", area: "Speak-up", question: "Wie wird ein Sicherheitsbedenken trotz Hierarchie wirksam kommuniziert?", answer: "Konkrete Beobachtung benennen, die Sorge und mögliche Patientengefahr deutlich machen und eine klare Handlung fordern. Bei fehlender Reaktion abgestuft beharrlich wiederholen; bei unmittelbarer Gefahr die Handlung stoppen und weitere zuständige Unterstützung einbeziehen." },
   { id: "komm-card-21", area: "Feedback", question: "Wie ist konstruktives Feedback nach einem Einsatz aufgebaut?", answer: "Eine konkrete beobachtbare Situation statt Charakterurteil benennen, Wirkung auf Ablauf oder Sicherheit beschreiben, die Perspektive des Gegenübers erfragen und eine konkrete Vereinbarung für künftiges Verhalten treffen. Gelungenes und Verbesserungsbedarf werden getrennt, zeitnah und respektvoll angesprochen." },
+  { id: "komm-card-22", area: "Eisbergmodell", question: "Welche sichtbaren und unsichtbaren Anteile unterscheidet das Eisbergmodell?", answer: "Sichtbar beziehungsweise unmittelbar wahrnehmbar sind Aussagen und beobachtbares Verhalten. Unsichtbar wirken unter anderem Gefühle, Ängste, Erfahrungen, Werte und innere Konflikte. Das Modell hilft beim offenen Nachfragen, erlaubt aber weder Gedankenlesen noch eine sichere Diagnose verborgener Motive." },
+  { id: "komm-card-23", area: "Sender–Empfänger", question: "An welchen vier Stellen können im Sender–Empfänger-Prozess Störungen entstehen?", answer: "Beim Sender durch unklare oder widersprüchliche Codierung, im Kanal durch Lärm oder technische Hindernisse, beim Empfänger durch Wahrnehmung, Sprache, Schmerz oder Erwartungen und bei der Rückmeldung, wenn Check-back oder Verständnissicherung fehlen." },
+  { id: "komm-card-24", area: "Rogers", question: "Wie lassen sich Empathie, Akzeptanz und Kongruenz mit klaren Grenzen verbinden?", answer: "Empathie versteht die Perspektive, Akzeptanz respektiert die Person und Kongruenz sorgt für ein glaubwürdiges Auftreten. Gefährliches Verhalten muss trotzdem klar benannt und begrenzt werden. Wertschätzung bedeutet nicht, jede Forderung zu erfüllen oder Sicherheitsregeln aufzugeben." },
 ];
 
 export const kommunikationQuestions: CommunicationQuestion[] = [
@@ -342,4 +345,32 @@ export const kommunikationQuestions: CommunicationQuestion[] = [
     { text: "Die zuletzt handelnde Person sofort als Fehlerursache festlegen, um Zeit zu sparen." },
     { text: "Nächste Entscheidung, Zuständigkeit und Zeitpunkt der Reevaluation eindeutig vereinbaren.", correct: true },
   ], source: "Sachliche Teamkommunikation trennt Beobachtung, Datenprüfung und Entscheidung. Sie nutzt Closed Loop und vermeidet voreilige personenbezogene Zuschreibungen.", difficulty: 3, mode: "multiple" },
+  { id: "komm-q-45", prompt: "Welche Abfolge verbindet offene und geschlossene Fragen in einer zeitkritischen Anamnese sinnvoll?", options: [
+    { text: "Zunächst mit einer offenen Frage das Leitsymptom und den Verlauf erfassen.", correct: true },
+    { text: "Danach mit gezielten geschlossenen Fragen Red Flags und entscheidungsrelevante Details prüfen.", correct: true },
+    { text: "Wesentliche Angaben zusammenfassen und vom Patienten bestätigen lassen.", correct: true },
+    { text: "Offene Fragen grundsätzlich vermeiden, weil sie im Rettungsdienst keinen Nutzen haben." },
+    { text: "Geschlossene Fragen ausschließlich zur Beziehungsgestaltung verwenden." },
+  ], source: "Eine belastbare Notfallanamnese beginnt häufig offen, wird gezielt fokussiert und schließt mit Zusammenfassung beziehungsweise Verständnissicherung.", difficulty: 2, mode: "multiple" },
+  { id: "komm-q-46", prompt: "Bei einer lauten Einsatzstelle wird ein Medikamentenauftrag missverstanden. Welche Einordnung nach dem Sender–Empfänger-Modell ist richtig?", options: [
+    { text: "Lärm kann den Übertragungskanal stören.", correct: true },
+    { text: "Eine unvollständige Dosisangabe wäre zusätzlich ein Codierungsproblem des Senders.", correct: true },
+    { text: "Ein Check-back kann das Missverständnis vor der Ausführung sichtbar machen.", correct: true },
+    { text: "Eine fachlich erfahrene empfangende Person macht jede Rückmeldung überflüssig." },
+    { text: "Nach bestätigter Ausführung gehört die Ergebnismeldung zum vollständigen Closed Loop.", correct: true },
+  ], source: "Störungen können bei Sender, Kanal und Empfänger entstehen. Check-back, Bestätigung und Ergebnismeldung sichern den Auftrag als geschlossene Kommunikationsschleife.", difficulty: 3, mode: "multiple" },
+  { id: "komm-q-47", prompt: "Ein aggressiver Patient beschimpft das Team. Welche Reaktionen entsprechen den Grundhaltungen nach Rogers und bleiben sicherheitsorientiert?", options: [
+    { text: "Die mögliche Angst oder Überforderung wahrnehmen, ohne sie ungeprüft als Ursache festzulegen.", correct: true },
+    { text: "Die Person respektieren und zugleich beleidigendes oder gefährliches Verhalten klar begrenzen.", correct: true },
+    { text: "Ehrlich und ruhig erklären, welche Zusammenarbeit für eine sichere Versorgung erforderlich ist.", correct: true },
+    { text: "Akzeptanz bedeutet, jede Handlung des Patienten hinzunehmen." },
+    { text: "Bei konkreter Gefahr Distanz herstellen und Unterstützung anfordern.", correct: true },
+  ], source: "Empathie, Akzeptanz und Kongruenz schließen klare Grenzen und Eigenschutz nicht aus. Respekt gilt der Person, nicht jedem Verhalten.", difficulty: 3, mode: "multiple" },
+  { id: "komm-q-48", prompt: "Welche Aussagen zur Anwendung von Eisbergmodell und Freuds Strukturmodell sind fachlich angemessen?", options: [
+    { text: "Beide Modelle können helfen, Ambivalenz oder verborgene Einflussfaktoren als Hypothese zu bedenken.", correct: true },
+    { text: "Beobachtbares Verhalten sollte beschrieben und durch offene Fragen exploriert werden.", correct: true },
+    { text: "Aus den Modellen lässt sich der tatsächliche innere Zustand eines Patienten sicher diagnostizieren." },
+    { text: "Freuds Es, Ich und Über-Ich sind keine anatomischen Hirnregionen.", correct: true },
+    { text: "Prozentangaben des Eisbergmodells sind keine naturwissenschaftlich feste Messgröße.", correct: true },
+  ], source: "Die Modelle dienen der Reflexion und Hypothesenbildung. Sie ersetzen keine Anamnese, Diagnostik oder rechtliche Beurteilung.", difficulty: 3, mode: "multiple" },
 ];

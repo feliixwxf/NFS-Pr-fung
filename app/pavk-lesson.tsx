@@ -30,6 +30,6 @@ export default function PavkLesson({ Figure, children }: Props) {
     {section("10", "Mündliche Prüfung", "Entscheidungsübersicht", <><div className="pulmo-path"><span>Chronische Belastungsbeschwerden?</span><i>→</i><span>pDMS und Pulse</span><i>→</i><span>Akute 6-P-Zeichen?</span><i>→</i><span>Zeitkritischer Gefäßtransport</span></div><p>Eine starke Prüfungsantwort erklärt zuerst die chronische atherosklerotische Durchblutungsbegrenzung, ordnet Fontaine-Stadien und Läsionshöhe zu und wechselt bei plötzlichem Beginn oder neurologischem Defizit konsequent zur akuten Extremitätenischämie.</p></>)}
 
     {children}
-    <p className="lesson-source">Hauptgrundlage: bereitgestellte Unterlagen „41. pAVK“ und „41. Periphere arterielle Verschlusskrankheit“. Fachlich präzisiert für die rettungsdienstliche Differenzierung von chronischer pAVK und akuter Extremitätenischämie.</p>
+    <p className="lesson-source">Fachliche Grundlage: rettungsdienstliche Differenzierung der chronischen peripheren arteriellen Verschlusskrankheit von der akuten Extremitätenischämie.</p>
   </article>;
 }

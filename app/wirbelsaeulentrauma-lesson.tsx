@@ -62,6 +62,6 @@ export default function WirbelsaeulentraumaLesson({ Figure, Vfa, children }: Pro
       <Figure src="/lessons/wirbelsaeulentrauma/anlage-b2b-esketamin.png" alt="Original Dosierungstabelle Esketamin 0,2 mg pro kg und 5 mg pro ml aus Anlage B2B" caption="Anlage B2B · Esketamin-Dosierung" wide />
     </>)}
     {children}
-    <p className="lesson-source">Grundlage: Print 6.pdf · Analgesie und Dosierungen: Thüringer VFA 2026/2027, 35, 36, 38 und Anlagen B2A/B2B. Fachlicher Abgleich der Rettung und Immobilisation: <a href="https://register.awmf.org/assets/guidelines/187-023l_S3_Polytrauma-Schwerverletzten-Behandlung_2023-06.pdf" target="_blank" rel="noreferrer">S3-Leitlinie Polytrauma / Schwerverletzten-Behandlung</a>.</p>
+    <p className="lesson-source">Fachliche Grundlagen: Thüringer Verfahrensanweisungen 2026/2027 zu Trauma und Analgesie sowie <a href="https://register.awmf.org/assets/guidelines/187-023l_S3_Polytrauma-Schwerverletzten-Behandlung_2023-06.pdf" target="_blank" rel="noreferrer">S3-Leitlinie Polytrauma/Schwerverletzten-Behandlung</a> zu Rettung und Bewegungsrestriktion.</p>
   </article>;
 }

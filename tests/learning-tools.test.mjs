@@ -14,6 +14,14 @@ const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "ut
 const offlineSupport = await readFile(new URL("../app/offline-support.tsx", import.meta.url), "utf8");
 const viewportSupport = await readFile(new URL("../app/device-viewport-support.tsx", import.meta.url), "utf8");
 
+test("oral topic routes keep named and legacy links addressable", () => {
+  assert.match(page, /13:\s*"hypertensiver-notfall"/);
+  assert.match(page, /15:\s*"wirbelsaeulentrauma"/);
+  assert.match(page, /41:\s*"eug"/);
+  assert.match(page, /47:\s*"herzbeuteltamponade"/);
+  assert.match(page, /"thema-14":\s*13/);
+});
+
 test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(page, /Mein Lernplan/);
   assert.match(plan, /dueQuestionIds\(progress\)/);
