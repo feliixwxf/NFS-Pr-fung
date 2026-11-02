@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { freeTutorKnowledge, type FreeTutorKnowledge, type TutorQuestionImage } from "./free-tutor-knowledge";
 import { vfaLibrary, type VfaReference } from "./vfa-library";
 import { saveLocalTutorWeaknesses, syncTutorWeaknesses, updateTutorWeakness } from "./lib/tutorWeaknessProgress";
@@ -14,6 +14,7 @@ type SessionResult = { questionId: string; score: number; topic: string; area: s
 type AdaptiveFollowUp = { entry: FreeTutorKnowledge; prompt: string };
 type EkgLeadHighlight = { tone: "elevation" | "depression" | "reciprocal" | "context"; leads: string; explanation: string };
 type EkgSolution = { image: TutorQuestionImage; label: string; highlights: readonly EkgLeadHighlight[] };
+type ExpandedTutorImage = { src: string; alt: string };
 type TutorTurn = { role: "user" | "assistant"; text: string; kind?: "ekg-question" | "ekg-solution" | "case-question" | "oral-follow-up" | "exam-summary"; result?: TutorResult; vfaImages?: readonly VfaReference[]; questionImage?: TutorQuestionImage; ekgSolution?: EkgSolution };
 type LearningSource = { title: string; material: string; scope: TutorScope; href: string };
 type SpeechRecognitionEventLike = { results: ArrayLike<{ 0: { transcript: string }; isFinal: boolean }> };
@@ -979,6 +980,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
   const [prepRemaining, setPrepRemaining] = useState(20 * 60);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
+  const [expandedImage, setExpandedImage] = useState<ExpandedTutorImage | null>(null);
   const [listening, setListening] = useState(false);
   const [speechSupported] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -997,11 +999,15 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (expandedImage) setExpandedImage(null);
+      else setOpen(false);
+    };
     window.addEventListener("keydown", closeOnEscape);
     window.setTimeout(() => dialogRef.current?.focus(), 0);
     return () => { document.body.style.overflow = previousOverflow; window.removeEventListener("keydown", closeOnEscape); };
-  }, [open]);
+  }, [expandedImage, open]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [turns]);
   useEffect(() => {
@@ -1348,6 +1354,15 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     setError(""); setListening(true); recognition.start();
   };
 
+  const openConversationImage = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>(".ai-tutor-question-image a, .ai-tutor-ekg-solution a");
+    if (!link) return;
+    const image = link.querySelector<HTMLImageElement>("img");
+    if (!image) return;
+    event.preventDefault();
+    setExpandedImage({ src: image.currentSrc || image.src, alt: image.alt });
+  };
+
   return <>
     <div className="ai-tutor-launcher-group">
       <button className="ai-tutor-launcher" type="button" onClick={openTutor} aria-label="Kostenlosen Lernprüfer öffnen"><span>✶</span><b>Lernprüfer</b></button>
@@ -1359,7 +1374,7 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
         <header><div><small>KOSTENLOS · OHNE EXTERNE KI</small><h2>Lernprüfer</h2><p>{source?.title || "Kein Kapitel geöffnet"}</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Lernprüfer schließen">×</button></header>
         <div className="ai-tutor-tabs" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected={mode === "simulation"} className={mode === "simulation" ? "active" : ""} onClick={() => reset("simulation")}>Prüfungssimulation</button><button type="button" role="tab" aria-selected={mode === "exam"} className={mode === "exam" ? "active" : ""} onClick={() => reset("exam")}>Mündliche Prüfung</button><button type="button" role="tab" aria-selected={mode === "image"} className={mode === "image" ? "active" : ""} onClick={() => reset("image")}>EKG-Training</button><button type="button" role="tab" aria-selected={mode === "question"} className={mode === "question" ? "active" : ""} onClick={() => reset("question")}>Lernchat</button></div>
         {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "simulation" ? "20′" : mode === "exam" ? "01" : mode === "image" ? "EKG" : "?"}</span><div><h3>{mode === "simulation" ? "Komplette Prüfung starten" : mode === "exam" ? "Prüfung starten" : mode === "image" ? "EKG-Streifen trainieren" : "Im Lernmaterial suchen"}</h3><p>{mode === "simulation" ? "Du erhältst einen Fall, 20 Minuten Vorbereitungszeit und anschließend sechs bewertete Prüfungsschritte mit gezielten Nachfragen." : mode === "exam" ? "Der Lernprüfer bewertet deine freie Antwort und stellt danach passende Nachfragen zu Begründung, Differenzialdiagnosen, Komplikationen und Reevaluation. Synonyme und übliche Abkürzungen werden berücksichtigt." : mode === "image" ? "In diesem Modus erscheinen ausschließlich EKG-Streifen ohne eingeblendete Lösung. Benenne nur den Rhythmus oder das gefragte Ischämiemuster." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode !== "question" && <>{source.scope === "site" && mode !== "image" && <label className="ai-tutor-focus">Prüfungsthema<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Anaphylaxie oder Krampfanfall" /></label>}<div className="ai-tutor-start-actions"><button type="button" disabled={source.scope === "site" && mode !== "image" && !input.trim()} onClick={startExam}>{mode === "simulation" ? "20-Minuten-Simulation starten →" : mode === "image" ? "Ersten EKG-Streifen öffnen →" : "Erste Prüfungsfrage stellen →"}</button>{mode === "exam" && <button className="secondary" type="button" disabled={!weakEntries.length} onClick={startWeakReview}>Schwächen wiederholen{weakEntries.length ? ` (${weakEntries.length})` : ""}</button>}</div></>}</div></div>}
-        <div className="ai-tutor-conversation" aria-live="polite">
+        <div className="ai-tutor-conversation" aria-live="polite" onClick={openConversationImage}>
           {turns.map((turn, index) => <article className={`${turn.role}${turn.kind ? ` ${turn.kind}` : ""}`} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.ekgSolution && <figure className="ai-tutor-ekg-solution"><a href={turn.ekgSolution.image.src} target="_blank" rel="noreferrer"><img src={turn.ekgSolution.image.src} alt={`Aufgelöster EKG-Befund: ${turn.ekgSolution.label}`} loading="lazy" /></a><figcaption><b>{turn.ekgSolution.label}</b>{turn.ekgSolution.highlights.length > 0 && <div className="ai-tutor-lead-highlights">{turn.ekgSolution.highlights.map((highlight) => <div className={highlight.tone} key={`${highlight.tone}-${highlight.leads}`}><strong>{highlight.leads}</strong><span>{highlight.explanation}</span></div>)}</div>}</figcaption></figure>}{turn.questionImage && <figure className="ai-tutor-question-image"><a href={turn.questionImage.src} target="_blank" rel="noreferrer"><img src={turn.questionImage.src} alt={turn.questionImage.alt} loading="lazy" /></a><figcaption>{turn.questionImage.caption} · zum Vergrößern antippen</figcaption></figure>}{turn.vfaImages && turn.vfaImages.length > 0 && <div className="ai-tutor-vfa-grid">{turn.vfaImages.map((vfa) => <a href={vfa.src} target="_blank" rel="noreferrer" key={vfa.src}><img src={vfa.src} alt={vfa.title} loading="lazy" /><b>{vfa.title}</b><small>Zum Vergrößern öffnen ↗</small></a>)}</div>}{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>{mode === "image" ? "EKG-Befund" : "Kernpunkte"}</small></div>{turn.result.evaluation && <p>{nameVfaReferences(turn.result.evaluation)}</p>}{turn.result.dimensions && <div className="exam-dimension-grid">{turn.result.dimensions.map((dimension) => <div key={dimension.label}><span><b>{dimension.label}</b><strong>{dimension.score}/5</strong></span><i><em style={{ width: `${dimension.score * 20}%` }} /></i><small>{nameVfaReferences(dimension.note)}</small></div>)}</div>}{turn.result.strengths.length > 0 && <section><b>{mode === "image" ? "Befundbewertung" : "Das war enthalten"}</b><ul>{turn.result.strengths.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}{turn.result.partial_points && turn.result.partial_points.length > 0 && <section className="partial"><b>Teilweise erkannt</b><ul>{turn.result.partial_points.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>{mode === "image" ? "Richtige Lösung" : "Das solltest du ergänzen"}</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {nameVfaReferences(turn.result.source_basis)}</small>}{turn.role === "assistant" && turn.result?.source_href && <a className="ai-tutor-source-link" href={turn.result.source_href}>Passendes Lernkapitel öffnen →</a>}</div></article>)}
           <div ref={endRef} />
         </div>
@@ -1369,6 +1384,10 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
         {source && simulationPhase !== "prep" && (mode === "question" || currentEntry && pendingNextEkgIndex === null) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "question" ? "Deine Frage" : mode === "simulation" || mode === "exam" ? "Deine Antwort an den Prüfer" : mode === "image" ? "Dein EKG-Befund" : "Deine freie Antwort"}</label><div className="ai-tutor-input-wrap"><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "question" ? "Stelle eine Wissensfrage zur NotSan-Prüfung …" : mode === "image" ? "Nur den Rhythmus oder das Ischämiemuster benennen …" : "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …"} />{speechSupported && <button className={`ai-tutor-mic ${listening ? "listening" : ""}`} type="button" onClick={toggleSpeech} aria-pressed={listening} aria-label={listening ? "Spracheingabe beenden" : "Antwort einsprechen"}>{listening ? "■ Aufnahme stoppen" : "🎙 Antwort einsprechen"}</button>}</div><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "question" ? "Suchen →" : "Antwort prüfen →"}</button></div></form>}
         {error && <p className="ai-tutor-error" role="alert">{error}</p>}
         <footer><span>{knowledge.length} Lerninhalte · {weakEntries.length} in Wiederholung{sessionScores.length ? ` · Ø ${(sessionScores.reduce((sum, score) => sum + score, 0) / sessionScores.length).toFixed(1)}/5` : ""}</span><button type="button" onClick={() => reset()}>{mode === "question" ? "Chat leeren" : "Training zurücksetzen"}</button></footer>
+        {expandedImage && <div className="ai-tutor-image-lightbox" role="dialog" aria-modal="true" aria-label={`Vollbild: ${expandedImage.alt}`} onClick={() => setExpandedImage(null)}>
+          <button className="ai-tutor-image-close" type="button" onClick={() => setExpandedImage(null)} aria-label="Vergrößerte Abbildung schließen">× Schließen</button>
+          <div className="ai-tutor-image-stage" onClick={(event) => event.stopPropagation()}><img src={expandedImage.src} alt={expandedImage.alt} /></div>
+        </div>}
       </section>
     </div>}
   </>;

@@ -90,6 +90,14 @@ test("AI tutor remains compact and operable on iPad-sized viewports", () => {
   assert.match(styles, /html \{ max-width:100%; overflow-x:hidden/);
 });
 
+test("EKG enlargement stays inside the active tutor session", () => {
+  assert.match(tutor, /openConversationImage/);
+  assert.match(tutor, /event\.preventDefault\(\)/);
+  assert.match(tutor, /setExpandedImage\(\{ src: image\.currentSrc \|\| image\.src, alt: image\.alt \}\)/);
+  assert.match(tutor, /className="ai-tutor-image-lightbox"/);
+  assert.match(styles, /\.ai-tutor-image-lightbox\{position:absolute;inset:0;z-index:20/);
+});
+
 test("barotrauma explains the complete pressure injury mechanism in teachable steps", () => {
   assert.match(barotrauma, /Pathophysiologie: Wie entsteht ein Barotrauma/);
   assert.match(barotrauma, /Beim Abtauchen: Druck von außen/);
