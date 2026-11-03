@@ -98,6 +98,14 @@ test("EKG enlargement stays inside the active tutor session", () => {
   assert.match(styles, /\.ai-tutor-image-lightbox\{position:absolute;inset:0;z-index:20/);
 });
 
+test("EKG trainer does not confuse polymorphic VT with pulseless VT", () => {
+  assert.match(tutor, /label: "Polymorphe ventrikuläre Tachykardie \(Torsade de pointes\)"/);
+  assert.match(tutor, /acceptedTerms: \["polymorphe ventrikuläre Tachykardie", "polymorphe VT"/);
+  assert.match(tutor, /Puls.*nicht aus dem EKG ablesen/);
+  assert.doesNotMatch(tutor, /label: "Polymorphe ventrikuläre Tachykardie \(pVT/);
+  assert.doesNotMatch(tutor, /acceptedTerms: \["pVT", "polymorphe ventrikuläre Tachykardie"/);
+});
+
 test("barotrauma explains the complete pressure injury mechanism in teachable steps", () => {
   assert.match(barotrauma, /Pathophysiologie: Wie entsteht ein Barotrauma/);
   assert.match(barotrauma, /Beim Abtauchen: Druck von außen/);

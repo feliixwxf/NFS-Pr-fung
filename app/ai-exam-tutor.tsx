@@ -337,10 +337,14 @@ const EKG_FINDINGS: Record<string, EkgFindingSpec> = {
     acceptedTerms: ["ventrikuläre Tachykardie", "Kammertachykardie", "VT"],
   },
   "ekg-strip-pvt": {
-    label: "Polymorphe ventrikuläre Tachykardie (pVT erst bei fehlendem Puls)",
-    exact: [/\bpvt\b/, /\bpulslose ventrikulare tachykardie\b/, /\bpulslose kammertachykardie\b/, /\bpolymorphe ventrikulare tachykardie\b/, /\btorsade(?:s)? de pointes\b/, /\bventrikulare tachykardie\b/, /\bkammertachykardie\b/, /\bvt\b/],
-    partial: [/\bbreitkomplextachykardie\b/],
-    acceptedTerms: ["pVT", "polymorphe ventrikuläre Tachykardie", "ventrikuläre Tachykardie", "Kammertachykardie", "Torsade de pointes"],
+    label: "Polymorphe ventrikuläre Tachykardie (Torsade de pointes)",
+    exact: [/\bpolymorphe ventrikulare tachykardie\b/, /\bpolymorphe (?:vt|kammertachykardie)\b/, /\btorsade(?:s)? de pointes\b/],
+    partial: [/\bpvt\b/, /\bpulslose ventrikulare tachykardie\b/, /\bpulslose kammertachykardie\b/, /\bventrikulare tachykardie\b/, /\bkammertachykardie\b/, /\bvt\b/, /\bbreitkomplextachykardie\b/],
+    acceptedTerms: ["polymorphe ventrikuläre Tachykardie", "polymorphe VT", "polymorphe Kammertachykardie", "Torsade de pointes", "Torsades de pointes"],
+    highlights: [
+      { tone: "context", leads: "Morphologie", explanation: "Breite Kammerkomplexe wechseln fortlaufend Form, Achse und Amplitude und scheinen um die Nulllinie zu rotieren." },
+      { tone: "context", leads: "Puls", explanation: "Ob ein Puls vorhanden ist, lässt sich nicht aus dem EKG ablesen und muss klinisch geprüft werden." },
+    ],
   },
   "ekg-strip-vf": {
     label: "Kammerflimmern (VF)",
