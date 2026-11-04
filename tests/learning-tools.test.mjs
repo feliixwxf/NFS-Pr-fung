@@ -107,6 +107,17 @@ test("EKG trainer does not confuse polymorphic VT with pulseless VT", () => {
 });
 
 test("barotrauma explains the complete pressure injury mechanism in teachable steps", () => {
+  assert.match(barotrauma, /Luftgefüllte Räume/);
+  assert.match(barotrauma, /Nasennebenhöhlen/);
+  assert.match(barotrauma, /Äußerer Gehörgang/);
+  assert.match(barotrauma, /Zähne/);
+  assert.match(barotrauma, /Die drei Tauchphasen/);
+  assert.match(barotrauma, /Kompressionsphase/);
+  assert.match(barotrauma, /Isopressionsphase/);
+  assert.match(barotrauma, /Dekompressionsphase/);
+  assert.match(barotrauma, /Dekompressionskrankheit \(DCS\) \+ arterielle Gasembolie \(AGE\) = Dekompressionsunfall \(DCI\)/);
+  assert.match(barotrauma, /Weg A · freie Luft/);
+  assert.match(barotrauma, /Weg B · gelöstes Inertgas/);
   assert.match(barotrauma, /Pathophysiologie: Wie entsteht ein Barotrauma/);
   assert.match(barotrauma, /Beim Abtauchen: Druck von außen/);
   assert.match(barotrauma, /Beim Auftauchen: Luft dehnt sich aus/);
