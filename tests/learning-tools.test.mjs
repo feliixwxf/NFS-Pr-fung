@@ -6,6 +6,7 @@ const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
 const plan = await readFile(new URL("../app/learning-plan.tsx", import.meta.url), "utf8");
 const cases = await readFile(new URL("../app/case-generator.tsx", import.meta.url), "utf8");
 const tutor = await readFile(new URL("../app/ai-exam-tutor.tsx", import.meta.url), "utf8");
+const writtenExam = await readFile(new URL("../app/written-state-exam.tsx", import.meta.url), "utf8");
 const barotrauma = await readFile(new URL("../app/barotrauma-lesson.tsx", import.meta.url), "utf8");
 const knowledge = await readFile(new URL("../app/free-tutor-knowledge.ts", import.meta.url), "utf8");
 const serviceWorker = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
@@ -13,6 +14,9 @@ const styles = await readFile(new URL("../app/globals.css", import.meta.url), "u
 const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
 const offlineSupport = await readFile(new URL("../app/offline-support.tsx", import.meta.url), "utf8");
 const viewportSupport = await readFile(new URL("../app/device-viewport-support.tsx", import.meta.url), "utf8");
+const textHighlighter = await readFile(new URL("../app/text-highlighter.tsx", import.meta.url), "utf8");
+const textHighlightStore = await readFile(new URL("../app/lib/textHighlights.ts", import.meta.url), "utf8");
+const textHighlightMigration = await readFile(new URL("../supabase/migrations/202611060001_text_highlights.sql", import.meta.url), "utf8");
 
 test("oral topic routes keep named and legacy links addressable", () => {
   assert.match(page, /13:\s*"hypertensiver-notfall"/);
@@ -82,6 +86,15 @@ test("case generator and tutor keep follow-ups scoped to the active examination"
   assert.match(cases, /Therapie und Dosierungen werden gegen die hinterlegten VFA-Inhalte geprüft/);
 });
 
+test("global tutor exposes only EKG training and written exams reshuffle every attempt", () => {
+  assert.match(tutor, /useState<TutorMode>\("image"\)/);
+  assert.match(tutor, /className="ai-tutor-tabs single"/);
+  assert.doesNotMatch(tutor, />Lernchat<\/button>/);
+  assert.doesNotMatch(tutor, />Mündliche Prüfung<\/button>/);
+  assert.doesNotMatch(tutor, />Prüfungssimulation<\/button>/);
+  assert.match(writtenExam, /seededShuffle\(questions, `\$\{exam\.id\}-\$\{attempt\}-all-topics`\)/);
+});
+
 test("AI tutor remains compact and operable on iPad-sized viewports", () => {
   assert.match(styles, /grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
   assert.match(styles, /@media\(min-width:701px\) and \(max-width:1100px\)/);
@@ -142,6 +155,19 @@ test("iPad viewport support handles keyboard, split view, touch and standalone m
   assert.match(styles, /@media \(hover:none\) and \(pointer:coarse\)/);
   assert.match(styles, /@media \(display-mode:standalone\)/);
   assert.match(styles, /min-width:701px\) and \(max-width:900px/);
+});
+
+test("personal text highlights persist locally and privately in the learning account", () => {
+  assert.match(page, /<TextHighlighter userId=\{accountUserId\}/);
+  assert.match(textHighlighter, /document\.addEventListener\("selectionchange"/);
+  assert.match(textHighlighter, /CSS.*highlights|css\?\.highlights/si);
+  assert.match(textHighlighter, /Markierung im Lernkonto gespeichert/);
+  assert.match(textHighlighter, /Markierung entfernen/);
+  assert.doesNotMatch(textHighlighter, /text-highlights-open/);
+  assert.match(textHighlightStore, /learning_text_highlights/);
+  assert.match(textHighlightStore, /localStorage\.setItem/);
+  assert.match(textHighlightMigration, /enable row level security/);
+  assert.match(textHighlightMigration, /auth\.uid\(\).*user_id/);
 });
 
 test("topic PDF export waits for images and uses break-safe A4 rules", () => {

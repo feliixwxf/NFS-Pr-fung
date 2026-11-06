@@ -115,7 +115,7 @@ function buildExamQuestions(exam: ExamDefinition, attempt: number) {
     if (!added) break;
     row += 1;
   }
-  return questions;
+  return seededShuffle(questions, `${exam.id}-${attempt}-all-topics`);
 }
 
 function readAttempt(examId: ExamDefinition["id"]): StoredAttempt | null {

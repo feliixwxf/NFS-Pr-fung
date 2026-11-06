@@ -185,6 +185,14 @@ export default function MedicationEffectsLibrary() {
       </div>
       <aside><b>Merksatz</b><p><strong>Chronos = Zeit/Takt</strong> · <strong>Inos = Kraft</strong> · <strong>Dromos = Weg/Leitung</strong>. Ein Medikament kann mehrere dieser Eigenschaften gleichzeitig beeinflussen.</p></aside>
     </section>
+    <section className="cardiac-effect-terms" aria-labelledby="pharmacology-process-title">
+      <header><div><span>Pharmakologische Grundbegriffe</span><h2 id="pharmacology-process-title">Pharmakokinetik · Pharmakodynamik</h2><p>Zwei Blickrichtungen helfen dabei, Wirkungseintritt, Wirkdauer, gewünschte Wirkung und Nebenwirkungen eines Arzneimittels zu verstehen.</p></div><b>Körper und Arzneimittel unterscheiden</b></header>
+      <div className="cardiac-effect-term-grid">
+        <article><span>01 · Weg des Wirkstoffs</span><h3>Pharmakokinetik</h3><b>Was macht der Körper mit dem Arzneimittel?</b><p>Sie beschreibt Freisetzung, Aufnahme, Verteilung, Umwandlung und Ausscheidung eines Wirkstoffs und damit seinen zeitlichen Konzentrationsverlauf im Körper.</p><div><small><strong>L:</strong> Liberation · Freisetzung des Wirkstoffs aus der Arzneiform</small><small><strong>A:</strong> Absorption</small><small><strong>D:</strong> Distribution</small><small><strong>M:</strong> Metabolismus</small><small><strong>E:</strong> Exkretion</small></div><em>Merkschema: <strong>LADME</strong>. Es beeinflusst unter anderem Wirkungseintritt, Wirkdauer und mögliche Anreicherung.</em></article>
+        <article><span>02 · Wirkung am Ziel</span><h3>Pharmakodynamik</h3><b>Was macht das Arzneimittel mit dem Körper?</b><p>Sie beschreibt Wirkmechanismus und Wirkung am Rezeptor, Enzym oder anderen Ziel sowie den Zusammenhang zwischen Dosis beziehungsweise Konzentration und Wirkung.</p><div><small><strong>Erwünscht:</strong> therapeutische Wirkung</small><small><strong>Unerwünscht:</strong> Nebenwirkungen</small></div><em>Beispiel: Adrenalin aktiviert α- und β-Rezeptoren; daraus entstehen seine Organwirkungen.</em></article>
+      </div>
+      <aside><b>Merksatz</b><p><strong>Kinetik = Weg durch den Körper.</strong> <strong>Dynamik = Wirkung am Körper.</strong></p></aside>
+    </section>
     {expanded && <div className="medication-card-modal" role="dialog" aria-modal="true" aria-label={`${expanded.name} Großansicht`}><button type="button" className="medication-card-modal-backdrop" onClick={() => setExpanded(null)} aria-label="Großansicht schließen"/><div className="medication-card-modal-panel"><button type="button" className="medication-card-modal-close" onClick={() => setExpanded(null)} aria-label="Großansicht schließen">×</button><MedicationEffectCard item={expanded} /></div></div>}
   </section>;
 }
