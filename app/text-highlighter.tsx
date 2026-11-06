@@ -293,7 +293,7 @@ export default function TextHighlighter({ userId, contextKey }: { userId: string
   };
 
   return <>
-    <style>{`::highlight(${HIGHLIGHT_NAME}){background:#ffe36d;color:inherit;text-decoration:underline;text-decoration-color:#e3b829;text-decoration-thickness:1px;text-underline-offset:2px}`}</style>
+    <style>{`::highlight(${HIGHLIGHT_NAME}){background:#ffe36d;color:inherit}`}</style>
     {candidate && <button
       className={`text-highlight-action text-highlight-ui${candidate.highlightId ? " remove" : ""}`}
       type="button"
