@@ -45,7 +45,12 @@ export default function KommunikationLesson({ onBack, finale }: { onBack: () => 
             <article><span>Körper</span><h3>Nonverbal</h3><p>Mimik, Gestik, Blick, Haltung, Bewegung und Distanz.</p></article>
             <article><span>Berührung</span><h3>Taktil</h3><p>Körperkontakt mit Anlass, Ankündigung und möglichst Zustimmung.</p></article>
           </div>
-          <aside className="communication-case"><small>Kongruent oder inkongruent?</small><p><b>Kongruent:</b> Wort, Stimme und Körpersprache passen zusammen. <b>Inkongruent:</b> Signale widersprechen sich. Das ist ein Anlass zum Nachfragen, aber kein Beweis für Täuschung.</p></aside>
+          <h3>Kongruente und inkongruente Kommunikation</h3>
+          <div className="communication-study-grid">
+            <CommunicationStudyCard kicker="Stimmig" title="Kongruent"><p>Verbale, paraverbale und nonverbale Signale passen zusammen. Beispiel: Ein Patient sagt ruhig „Es geht mir besser“, wirkt entspannt und atmet gleichmäßig.</p></CommunicationStudyCard>
+            <CommunicationStudyCard kicker="Widersprüchlich" title="Inkongruent"><p>Wortinhalt, Stimme oder Körpersprache widersprechen sich. Beispiel: „Ich habe keine Angst“ bei zitternder Stimme, angespannter Haltung und vermiedenem Blickkontakt.</p></CommunicationStudyCard>
+          </div>
+          <aside className="communication-case"><small>Professionell reagieren</small><p>Inkongruenz ist <b>kein Beweis für eine Lüge</b>. Angst, Schmerz, Scham, Krankheit, kulturelle Unterschiede oder ein Missverständnis können die Ursache sein. Beobachtung wertfrei spiegeln und offen nachfragen: „Sie sagen, es geht Ihnen gut. Gleichzeitig wirken Sie angespannt – was beschäftigt Sie gerade?“</p></aside>
           <h3>Fähigkeiten professioneller Kommunikation</h3><div className="communication-pill-row"><span>Selbstwahrnehmung</span><span>Fremdwahrnehmung</span><span>Selbstreflexion</span><span>Sensibilität</span><span>Empathie</span></div>
         </div>
       </CommunicationSection>

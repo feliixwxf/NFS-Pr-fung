@@ -86,6 +86,9 @@ export const rechtskundeFlashcards: LegalFlashcard[] = [
   { id: "recht-card-72", area: "Haftungsfall", question: "Wie prüfen Sie mehrere Verzögerungen in einer Versorgungskette?", answer: "Einsatzstelle, technische Rettung, präklinische Behandlung, Transport, Übergabe und Klinik getrennt betrachten. Für jeden Abschnitt verantwortliche Person, Pflicht, möglicher Fehler, Verschulden, Schaden und Kausalität einzeln prüfen; eine spätere Pflichtverletzung wird nicht automatisch dem früheren Team zugerechnet." },
   { id: "recht-card-73", area: "Kausalität", question: "Was bedeutet Kausalität im Haftungsfall?", answer: "Der geltend gemachte Schaden muss gerade auf der Pflichtverletzung beruhen. Gefragt wird, wie der Verlauf ohne den Fehler hypothetisch gewesen wäre. Eine bloße zeitliche Reihenfolge oder die Möglichkeit eines Zusammenhangs genügt nicht automatisch." },
   { id: "recht-card-74", area: "Tötung", question: "Welche Ersatzpositionen nennt § 844 BGB bei Tötung?", answer: "Bei nachgewiesener Haftung insbesondere Beerdigungskosten, Ersatz des entzogenen gesetzlichen Unterhalts und eine angemessene Entschädigung für das seelische Leid naher Hinterbliebener. Anspruchsberechtigung und Umfang müssen jeweils gesondert geprüft werden." },
+  { id: "recht-card-75", area: "Arbeitsrecht", question: "Aus welchen Regelungsebenen kann sich ein Arbeitsverhältnis ergeben?", answer: "Insbesondere aus Gesetz und Verfassung, Tarifvertrag, Betriebs- oder Dienstvereinbarung, Arbeitsvertrag und betrieblicher Übung. Eine rangniedrigere Regel kann nach dem Günstigkeitsprinzip gelten, wenn sie für den Arbeitnehmer günstiger ist." },
+  { id: "recht-card-76", area: "Arbeitszeit", question: "Welche Grundregeln gelten für Arbeitszeit, Pausen und Ruhezeit?", answer: "Grundsätzlich acht Stunden werktäglich, ausgleichspflichtig bis zehn Stunden; mindestens 30 Minuten Pause bei mehr als sechs bis neun Stunden und 45 Minuten bei mehr als neun Stunden; grundsätzlich elf Stunden ununterbrochene Ruhezeit. Gesetzlich oder tariflich zulässige Besonderheiten des Schicht- und Bereitschaftsdienstes sind gesondert zu prüfen." },
+  { id: "recht-card-77", area: "Kündigung", question: "Welche vier Punkte sind bei einer arbeitsrechtlichen Kündigung besonders prüfungsrelevant?", answer: "Schriftform; ordentliche Kündigungsfrist oder wichtiger Grund für eine außerordentliche Kündigung; bei anwendbarem Kündigungsschutz personen-, verhaltens- oder betriebsbedingter Grund; grundsätzlich drei Wochen Frist für die Kündigungsschutzklage nach Zugang." },
 ];
 
 const rechtskundeBaseQuestions: LegalQuestion[] = [
@@ -680,6 +683,20 @@ const rechtskundeBaseQuestions: LegalQuestion[] = [
     { text: "Berufsrechtliche Folgen bei Tatsachen, die etwa fehlende Zuverlässigkeit begründen können.", correct: true },
     { text: "Der Entzug der Berufserlaubnis erfolgt bei jedem Behandlungsfehler automatisch." },
   ], source: "Zivil-, Straf-, Arbeits-/Disziplinar- und Berufsrecht verfolgen unterschiedliche Zwecke und Voraussetzungen.", difficulty: 2, mode: "multiple" },
+  { id: "recht-q-88", prompt: "Welche Aussagen zu Arbeitszeit und Urlaub sind nach den gesetzlichen Grundregeln richtig?", options: [
+    { text: "Die werktägliche Arbeitszeit beträgt grundsätzlich höchstens acht Stunden.", correct: true },
+    { text: "Eine Verlängerung auf bis zu zehn Stunden verlangt einen Ausgleich auf durchschnittlich acht Stunden innerhalb des gesetzlichen Ausgleichszeitraums.", correct: true },
+    { text: "Bei mehr als neun Stunden Arbeitszeit sind insgesamt mindestens 45 Minuten Ruhepause erforderlich.", correct: true },
+    { text: "Der gesetzliche Mindesturlaub entspricht bei einer regelmäßigen Fünf-Tage-Woche 20 Arbeitstagen.", correct: true },
+    { text: "Im Rettungsdienst gelten Arbeitszeitgrenzen wegen des Schichtdienstes grundsätzlich nicht." },
+  ], source: "ArbZG und BUrlG gelten auch im Rettungsdienst; zulässige Abweichungen und Ausgleichsregeln müssen eine gesetzliche oder tarifliche Grundlage haben.", difficulty: 2, mode: "multiple" },
+  { id: "recht-q-89", prompt: "Welche Aussagen zur Beendigung eines Arbeitsverhältnisses treffen zu?", options: [
+    { text: "Eine Kündigung per Messenger erfüllt die gesetzliche Schriftform nicht.", correct: true },
+    { text: "Eine außerordentliche Kündigung setzt einen wichtigen Grund voraus.", correct: true },
+    { text: "Bei anwendbarem Kündigungsschutz können personen-, verhaltens- oder betriebsbedingte Gründe eine Kündigung sozial rechtfertigen.", correct: true },
+    { text: "Eine Kündigungsschutzklage ist grundsätzlich innerhalb von drei Wochen nach Zugang der schriftlichen Kündigung zu erheben.", correct: true },
+    { text: "Jede ordentliche Kündigung ist unabhängig von Betriebsgröße und Beschäftigungsdauer automatisch unwirksam." },
+  ], source: "§§ 623 und 626 BGB sowie §§ 1 und 4 KSchG trennen Form, Kündigungsgrund und gerichtliche Frist.", difficulty: 3, mode: "multiple" },
 ];
 
 export const rechtskundeQuestions: LegalQuestion[] = [...rechtskundeBaseQuestions, ...supplementalQuestions.rechtskunde];
