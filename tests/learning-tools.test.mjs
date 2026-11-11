@@ -17,6 +17,8 @@ const viewportSupport = await readFile(new URL("../app/device-viewport-support.t
 const textHighlighter = await readFile(new URL("../app/text-highlighter.tsx", import.meta.url), "utf8");
 const textHighlightStore = await readFile(new URL("../app/lib/textHighlights.ts", import.meta.url), "utf8");
 const textHighlightMigration = await readFile(new URL("../supabase/migrations/202611060001_text_highlights.sql", import.meta.url), "utf8");
+const cloudProgress = await readFile(new URL("../app/lib/cloudProgress.ts", import.meta.url), "utf8");
+const mcSessionMigration = await readFile(new URL("../supabase/migrations/202611110001_learning_mc_sessions.sql", import.meta.url), "utf8");
 
 test("oral topic routes keep named and legacy links addressable", () => {
   assert.match(page, /13:\s*"hypertensiver-notfall"/);
@@ -35,7 +37,28 @@ test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(plan, /localDayKey\(\)/);
   assert.match(plan, /dailyScore\(`\$\{dailySeed\}:\$\{topic\.topic\}`\)/);
   assert.match(plan, /localStorage\.setItem\(storageKey, JSON\.stringify\(settings\)\)/);
-  assert.match(plan, /Der Tagesplan bleibt heute gleich und wechselt morgen/);
+  assert.match(plan, /Der Tagesplan endet um 00:00 Uhr und wird dann automatisch neu aufgebaut/);
+  assert.match(plan, /millisecondsUntilNextLocalDay/);
+  assert.match(plan, /nextDay\.setHours\(24, 0, 0, 50\)/);
+  assert.match(page, /notsan-mc-session-v1/);
+  assert.match(page, /readMultipleChoiceSession/);
+  assert.match(page, /localStorage\.setItem\(sessionStorageKey, JSON\.stringify\(session\)\)/);
+});
+
+test("ongoing multiple-choice rounds sync privately across signed-in devices", () => {
+  assert.match(page, /loadMultipleChoiceSession/);
+  assert.match(page, /saveMultipleChoiceSession/);
+  assert.match(page, /updatedAt/);
+  assert.match(cloudProgress, /from\("learning_mc_sessions"\)/);
+  assert.match(mcSessionMigration, /primary key \(user_id, session_key\)/);
+  assert.match(mcSessionMigration, /auth\.uid\(\).*user_id/);
+});
+
+test("oral lesson chunks prefetch before a chapter is opened", () => {
+  assert.match(page, /oralLessonPrefetchers/);
+  assert.match(page, /onPointerEnter=\{prepare\}/);
+  assert.match(page, /onFocus=\{prepare\}/);
+  assert.match(page, /onTouchStart=\{prepare\}/);
 });
 
 test("case generator and tutor keep follow-ups scoped to the active examination", () => {
@@ -104,10 +127,11 @@ test("AI tutor remains compact and operable on iPad-sized viewports", () => {
 });
 
 test("EKG enlargement stays inside the active tutor session", () => {
-  assert.match(tutor, /openConversationImage/);
-  assert.match(tutor, /event\.preventDefault\(\)/);
-  assert.match(tutor, /setExpandedImage\(\{ src: image\.currentSrc \|\| image\.src, alt: image\.alt \}\)/);
+  assert.match(tutor, /aria-label="EKG-Auflösung vergrößern"/);
+  assert.match(tutor, /aria-label="EKG-Aufgabe vergrößern"/);
+  assert.match(tutor, /setExpandedImage\(\{ src: turn\.questionImage!/);
   assert.match(tutor, /className="ai-tutor-image-lightbox"/);
+  assert.match(tutor, /className="ai-tutor-image-backdrop-close"/);
   assert.match(styles, /\.ai-tutor-image-lightbox\{position:absolute;inset:0;z-index:20/);
 });
 
@@ -117,6 +141,17 @@ test("EKG trainer does not confuse polymorphic VT with pulseless VT", () => {
   assert.match(tutor, /Puls.*nicht aus dem EKG ablesen/);
   assert.doesNotMatch(tutor, /label: "Polymorphe ventrikuläre Tachykardie \(pVT/);
   assert.doesNotMatch(tutor, /acceptedTerms: \["pVT", "polymorphe ventrikuläre Tachykardie"/);
+});
+
+test("EKG trainer includes the three tachycardia examples from the school material", () => {
+  assert.match(knowledge, /ekg-strip-sinustachykardie/);
+  assert.match(knowledge, /sinustachykardie-schulfolie\.jpg/);
+  assert.match(knowledge, /ekg-strip-svt/);
+  assert.match(knowledge, /svt-schmalkomplex-schulfolie\.jpg/);
+  assert.match(knowledge, /monomorphe-vt-schulfolie\.jpg/);
+  assert.match(tutor, /label: "Sinustachykardie"/);
+  assert.match(tutor, /label: "Regelmäßige supraventrikuläre Schmalkomplextachykardie \(SVT\)"/);
+  assert.match(tutor, /label: "Monomorphe ventrikuläre Tachykardie \(VT\)"/);
 });
 
 test("barotrauma explains the complete pressure injury mechanism in teachable steps", () => {

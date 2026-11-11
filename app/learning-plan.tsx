@@ -12,6 +12,8 @@ export type LearningPlanTopic = {
   oralIndex?: number;
 };
 
+export type LearningPlanQuestion = { prompt: string; topicTitle: string };
+
 type PlanSettings = { examDate: string; dailyMinutes: number };
 
 const DEFAULT_SETTINGS: PlanSettings = { examDate: "", dailyMinutes: 30 };
@@ -39,6 +41,18 @@ function localDayKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+function dayKeyFromTimestamp(value?: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : localDayKey(date);
+}
+
+function millisecondsUntilNextLocalDay(now = new Date()) {
+  const nextDay = new Date(now);
+  nextDay.setHours(24, 0, 0, 50);
+  return Math.max(250, nextDay.getTime() - now.getTime());
+}
+
 function dailyScore(value: string) {
   let hash = 2166136261;
   for (const character of value) { hash ^= character.charCodeAt(0); hash = Math.imul(hash, 16777619); }
@@ -52,8 +66,8 @@ export default function LearningPlan({
   userId,
   onTrain,
   onRead,
-  onProgress,
   onDueReview,
+  questionLabels,
   onCases,
 }: {
   progress: QuestionProgress;
@@ -62,21 +76,45 @@ export default function LearningPlan({
   userId: string | null;
   onTrain: (topic: string) => void;
   onRead: (oralIndex: number) => void;
-  onProgress: () => void;
-  onDueReview: () => void;
+  onDueReview: (questionId?: string) => void;
+  questionLabels: Record<string, LearningPlanQuestion>;
   onCases: () => void;
 }) {
   const storageKey = `notsan-learning-plan-v1:${userId || "local"}`;
   const [settings, setSettings] = useState<PlanSettings>(DEFAULT_SETTINGS);
   const [loadedStorageKey, setLoadedStorageKey] = useState("");
+  const [planDay, setPlanDay] = useState(() => localDayKey());
 
   // Der Speicherschlüssel ändert sich beim Wechsel zwischen lokalem Profil und Lernkonto.
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setSettings(readSettings(storageKey)); setLoadedStorageKey(storageKey); }, [storageKey]);
   useEffect(() => { if (loadedStorageKey === storageKey) localStorage.setItem(storageKey, JSON.stringify(settings)); }, [loadedStorageKey, settings, storageKey]);
 
-  const dueIds = useMemo(() => new Set(dueQuestionIds(progress)), [progress]);
-  const planDay = localDayKey();
+  useEffect(() => {
+    let timer = 0;
+    const scheduleNextDay = () => {
+      timer = window.setTimeout(() => {
+        setPlanDay(localDayKey());
+        scheduleNextDay();
+      }, millisecondsUntilNextLocalDay());
+    };
+    scheduleNextDay();
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const dueIds = useMemo(() => new Set(dueQuestionIds(progress)), [planDay, progress]);
+  const duePlanKey = `notsan-learning-plan-due-v1:${userId || "local"}:${planDay}`;
+  const [plannedDueIds, setPlannedDueIds] = useState<string[]>([]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      let stored: string[] = [];
+      try { stored = JSON.parse(localStorage.getItem(duePlanKey) || "[]"); } catch { stored = []; }
+      const next = [...new Set([...stored, ...dueIds])];
+      setPlannedDueIds(next);
+      localStorage.setItem(duePlanKey, JSON.stringify(next));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [duePlanKey, dueIds]);
   const dailySeed = `${planDay}:${settings.examDate || "ohne-pruefungsdatum"}:${userId || "local"}`;
   const ranked = useMemo(() => topics.map((topic) => {
     const records = topic.questionIds.map((id) => progress[id]).filter(Boolean);
@@ -93,7 +131,7 @@ export default function LearningPlan({
   const minutes = settings.dailyMinutes;
   const examDays = daysUntil(settings.examDate);
   const today = [
-    dueIds.size ? { icon: "↺", label: "Wiederholen", title: `${dueIds.size} fällige Frage${dueIds.size === 1 ? "" : "n"}`, text: dueIds.size > 2 ? "Alle heute fälligen Fragen sind bereits gemeinsam ausgewählt. Du kannst die komplette Wiederholungsrunde mit einem Klick öffnen." : `Etwa ${Math.min(15, Math.max(5, Math.round(minutes * .35)))} Minuten für Inhalte, deren Wiederholung heute fällig ist.`, action: dueIds.size > 2 ? `Alle ${dueIds.size} auswählen` : "Wiederholung öffnen", run: dueIds.size > 2 ? onDueReview : onProgress } : null,
+    dueIds.size ? { icon: "↺", label: "Wiederholen", title: `${dueIds.size} fällige Frage${dueIds.size === 1 ? "" : "n"}`, text: dueIds.size > 2 ? "Alle heute fälligen Fragen sind bereits gemeinsam ausgewählt. Du kannst die komplette Wiederholungsrunde mit einem Klick öffnen." : `Etwa ${Math.min(15, Math.max(5, Math.round(minutes * .35)))} Minuten für Inhalte, deren Wiederholung heute fällig ist.`, action: dueIds.size > 2 ? `Alle ${dueIds.size} auswählen` : "Wiederholung öffnen", run: () => onDueReview() } : null,
     weak ? { icon: "◎", label: "Schwerpunkt", title: weak.title, text: weak.answered ? `${weak.wrong} zuletzt falsch · ${weak.due} heute fällig. Trainiere gezielt statt wahllos.` : "Beginne mit einem prüfungsrelevanten Themenblock.", action: "MC-Training starten", run: () => onTrain(weak.topic) } : null,
     fresh ? { icon: "+", label: "Neuer Stoff", title: fresh.title, text: `Plane etwa ${Math.max(10, Math.round(minutes * .4))} Minuten für Lesen, Verstehen und anschließende Selbstkontrolle ein.`, action: "Kapitel lesen", run: () => onRead(fresh.oralIndex!) } : null,
     { icon: "F", label: "Transfer", title: "Ein Fallbeispiel", text: "Wende das Gelernte in einer dynamischen Einsatzlage an und begründe dein Vorgehen.", action: "Fall generieren", run: onCases },
@@ -101,7 +139,8 @@ export default function LearningPlan({
 
   return <section className="page-section learning-plan-page">
     <div className="section-heading"><div><span className="eyebrow">Persönlicher Lernplan</span><h1>Heute gezielt lernen.</h1><p>Der Plan verbindet fällige Wiederholungen, deine bisherigen Fehler und neue Kapitel. Er passt sich nach jeder beantworteten Frage automatisch an.</p></div><div className="source-badge"><b>{minutes}</b><span>Minuten heute</span></div></div>
-    <section className="learning-plan-settings" aria-label="Lernplan einstellen"><label><span>Prüfungsdatum</span><input type="date" value={settings.examDate} min={new Date().toISOString().slice(0, 10)} onChange={(event) => setSettings((current) => ({ ...current, examDate: event.target.value }))} /><small>{settings.examDate ? "✓ Datum dauerhaft auf diesem Gerät gespeichert" : "Datum einmal auswählen – es bleibt gespeichert"}</small></label><label><span>Zeit pro Tag</span><select value={settings.dailyMinutes} onChange={(event) => setSettings((current) => ({ ...current, dailyMinutes: Number(event.target.value) }))}>{[15, 30, 45, 60].map((value) => <option key={value} value={value}>{value} Minuten</option>)}</select><small>Der Tagesplan bleibt heute gleich und wechselt morgen.</small></label><div className="learning-plan-countdown"><small>Bis zur Prüfung</small><b>{examDays === null ? "Datum wählen" : examDays < 0 ? "Termin vorbei" : examDays === 0 ? "Heute" : `${examDays} Tage`}</b></div></section>
+    <section className="learning-plan-settings" aria-label="Lernplan einstellen"><label><span>Prüfungsdatum</span><input type="date" value={settings.examDate} min={new Date().toISOString().slice(0, 10)} onChange={(event) => setSettings((current) => ({ ...current, examDate: event.target.value }))} /><small>{settings.examDate ? "✓ Datum dauerhaft auf diesem Gerät gespeichert" : "Datum einmal auswählen – es bleibt gespeichert"}</small></label><label><span>Zeit pro Tag</span><select value={settings.dailyMinutes} onChange={(event) => setSettings((current) => ({ ...current, dailyMinutes: Number(event.target.value) }))}>{[15, 30, 45, 60].map((value) => <option key={value} value={value}>{value} Minuten</option>)}</select><small>Der Tagesplan endet um 00:00 Uhr und wird dann automatisch neu aufgebaut.</small></label><div className="learning-plan-countdown"><small>Bis zur Prüfung</small><b>{examDays === null ? "Datum wählen" : examDays < 0 ? "Termin vorbei" : examDays === 0 ? "Heute" : `${examDays} Tage`}</b></div></section>
+    {plannedDueIds.length > 0 && <section className="learning-plan-due-overview" aria-label="Fällige Fragen"><header><div><small>Direkte Wiederholung</small><h2>Deine heutigen Fragen</h2></div><b>{plannedDueIds.filter((id) => dayKeyFromTimestamp(progress[id]?.updatedAt) === planDay).length} / {plannedDueIds.length} erledigt</b></header><div>{plannedDueIds.map((id) => { const item = questionLabels[id]; const done = dayKeyFromTimestamp(progress[id]?.updatedAt) === planDay; return <article className={done ? "completed" : ""} key={id}><span aria-hidden="true">{done ? "✓" : "?"}</span><div><small>{item?.topicTitle || "Wiederholungsfrage"}</small><p>{item?.prompt || "Fällige Frage direkt öffnen"}</p></div><button type="button" onClick={() => onDueReview(id)}>{done ? "Noch einmal öffnen" : "Direkt zur Frage"} →</button></article>; })}</div></section>}
     <div className="learning-plan-list">{today.map((task, index) => <article key={`${task.label}-${task.title}`}><span className="learning-plan-step">{String(index + 1).padStart(2, "0")}</span><div className="learning-plan-icon" aria-hidden="true">{task.icon}</div><div><small>{task.label}</small><h2>{task.title}</h2><p>{task.text}</p></div><button type="button" onClick={task.run}>{task.action} <span>→</span></button></article>)}</div>
     {!Object.keys(progress).length && <aside className="learning-plan-note"><b>Der Plan lernt mit dir.</b><p>Zu Beginn erhältst du einen ausgewogenen Einstieg. Sobald du Fragen beantwortet hast, rücken falsche und fällige Inhalte automatisch nach oben.</p></aside>}
     <OfflineStatusCard />

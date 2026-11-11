@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { freeTutorKnowledge, type FreeTutorKnowledge, type TutorQuestionImage } from "./free-tutor-knowledge";
 import { vfaLibrary, type VfaReference } from "./vfa-library";
 import { saveLocalTutorWeaknesses, syncTutorWeaknesses, updateTutorWeakness } from "./lib/tutorWeaknessProgress";
@@ -239,7 +239,7 @@ function isVfaRequest(query: string) {
 
 function isEkgChallengeRequest(query: string) {
   const value = normalize(query);
-  return /\b(ekg|rhythmusstreifen|herzrhythmus|av block|schenkelblock|rechtsschenkelblock|linksschenkelblock|rsb|lsb|rbbb|lbbb|asystolie|pea|pvt|ventrikulare tachykardie|kammerflimmern|stemi|nstemi|vorderwandinfarkt|hinterwandinfarkt|inferiorwandinfarkt|posteriorer infarkt)\b/.test(value)
+  return /\b(ekg|rhythmusstreifen|herzrhythmus|av block|schenkelblock|rechtsschenkelblock|linksschenkelblock|rsb|lsb|rbbb|lbbb|asystolie|pea|pvt|vt|svt|sinustachykardie|supraventrikulare tachykardie|ventrikulare tachykardie|kammerflimmern|stemi|nstemi|vorderwandinfarkt|hinterwandinfarkt|inferiorwandinfarkt|posteriorer infarkt)\b/.test(value)
     && /\b(bild|streifen|interpret|ueb|train|zeig|frage|beispiel)\w*\b/.test(value);
 }
 
@@ -327,14 +327,38 @@ const EKG_FINDINGS: Record<string, EkgFindingSpec> = {
     acceptedTerms: ["Asystolie", "Nulllinie"],
   },
   "ekg-strip-pea": {
-    label: "Organisierte elektrische Aktivität (PEA erst bei fehlendem Puls)",
+    label: "Pulslose elektrische Aktivität (PEA: organisierter Rhythmus ohne tastbaren Puls)",
     exact: [/\bpea\b/, /\bpulslose elektrische aktivitat\b/, /\borganisierte elektrische aktivitat\b/],
     acceptedTerms: ["PEA", "pulslose elektrische Aktivität", "organisierte elektrische Aktivität"],
   },
+  "ekg-strip-sinustachykardie": {
+    label: "Sinustachykardie",
+    exact: [/\bsinustachykardie\b/, /\bsinus tachykardie\b/],
+    partial: [/\btachykardie\b/, /\bsinusrhythmus\b/],
+    acceptedTerms: ["Sinustachykardie", "Sinus Tachykardie", "tachykarder Sinusrhythmus"],
+    highlights: [
+      { tone: "context", leads: "P–QRS", explanation: "Vor jedem QRS steht eine gleichförmige P-Welle mit fester PQ-Zeit." },
+      { tone: "context", leads: "Klinik", explanation: "Die Ursache wie Schmerz, Fieber, Hypoxie oder Hypovolämie wird behandelt." },
+    ],
+  },
+  "ekg-strip-svt": {
+    label: "Regelmäßige supraventrikuläre Schmalkomplextachykardie (SVT)",
+    exact: [/\bsvt\b/, /\bsupraventrikulare tachykardie\b/, /\bschmalkomplextachykardie\b/, /\bsupraventrikulare schmalkomplextachykardie\b/],
+    partial: [/\btachykardie\b/, /\bschmale tachykardie\b/, /\bavnrt\b/],
+    acceptedTerms: ["SVT", "supraventrikuläre Tachykardie", "Schmalkomplextachykardie", "supraventrikuläre Schmalkomplextachykardie"],
+    highlights: [
+      { tone: "context", leads: "Rhythmus", explanation: "Schnell und regelmäßig." },
+      { tone: "context", leads: "QRS", explanation: "Schmale Kammerkomplexe; P-Wellen sind häufig nicht sicher abgrenzbar oder retrograd." },
+    ],
+  },
   "ekg-strip-vt": {
-    label: "Ventrikuläre Tachykardie (VT)",
-    exact: [/\bventrikulare tachykardie\b/, /\bkammertachykardie\b/, /\bvt\b/],
-    acceptedTerms: ["ventrikuläre Tachykardie", "Kammertachykardie", "VT"],
+    label: "Monomorphe ventrikuläre Tachykardie (VT)",
+    exact: [/\bmonomorphe ventrikulare tachykardie\b/, /\bmonomorphe (?:vt|kammertachykardie)\b/, /\bventrikulare tachykardie\b/, /\bkammertachykardie\b/, /\bvt\b/],
+    acceptedTerms: ["monomorphe ventrikuläre Tachykardie", "monomorphe VT", "ventrikuläre Tachykardie", "Kammertachykardie", "VT"],
+    highlights: [
+      { tone: "context", leads: "QRS", explanation: "Breite, gleichförmige Kammerkomplexe bei regelmäßigem Rhythmus." },
+      { tone: "context", leads: "Puls", explanation: "Ob ein Puls vorhanden ist, kann nur klinisch und nicht am EKG entschieden werden." },
+    ],
   },
   "ekg-strip-pvt": {
     label: "Polymorphe ventrikuläre Tachykardie (Torsade de pointes)",
@@ -399,6 +423,7 @@ function ekgFindingSpec(entry: FreeTutorKnowledge) {
 }
 
 function ekgQuestionText(entry: FreeTutorKnowledge) {
+  if (entry.id === "ekg-strip-pea") return "Der Streifen zeigt organisierte elektrische Aktivität. Welcher Reanimationsrhythmus liegt vor, wenn klinisch kein zentraler Puls tastbar ist?";
   return ekgFindingSpec(entry) ? "Welchen EKG-Befund erkennst du?" : entry.question;
 }
 
@@ -415,11 +440,16 @@ function approximatelyMatchesTerm(answer: string, term: string) {
   const answerWords = normalize(answer).split(" ").filter(Boolean);
   const termWords = normalize(term).split(" ").filter(Boolean);
   if (!termWords.length) return false;
-  return termWords.every((expectedWord) => answerWords.some((answerWord) =>
+  const meaningfulWords = termWords.filter((word) => word.length >= 3 || /\d/.test(word) || ["i", "ii", "iii", "av", "vt", "vf", "vhf", "pea", "rsb", "lsb", "rbbb", "lbbb"].includes(word));
+  const matchesWord = (expectedWord: string) => answerWords.some((answerWord) =>
     answerWord === expectedWord
     || expectedWord.length >= 4 && answerWord.length >= 4 && editDistanceAtMostOne(answerWord, expectedWord)
     || expectedWord.length >= 7 && answerWord.length >= 7 && editDistanceAtMostTwo(answerWord, expectedWord)
-  ));
+  );
+  const requiredWords = meaningfulWords.filter((word) => /\d/.test(word) || ["i", "ii", "iii", "rechts", "links", "wenckebach", "mobitz", "polymorphe", "anterior", "inferior", "posterior"].includes(word));
+  if (requiredWords.some((word) => !matchesWord(word))) return false;
+  const matchedWords = meaningfulWords.filter(matchesWord).length;
+  return matchedWords === meaningfulWords.length || meaningfulWords.length >= 3 && matchedWords >= meaningfulWords.length - 1;
 }
 
 function ekgSolutionFor(entry: FreeTutorKnowledge): EkgSolution | undefined {
@@ -465,9 +495,11 @@ function requestedEkgChallenges(query: string, entries: readonly FreeTutorKnowle
     ? ["ekg-strip-av1", "ekg-strip-wenckebach", "ekg-strip-mobitz2", "ekg-strip-av3"]
     : /\basystolie\b/.test(value) ? ["ekg-strip-asystolie"]
     : /\bpea\b/.test(value) ? ["ekg-strip-pea"]
+    : /\b(?:sinustachykardie|sinus tachykardie)\b/.test(value) ? ["ekg-strip-sinustachykardie"]
+    : /\b(?:svt|supraventrikulare tachykardie|schmalkomplextachykardie)\b/.test(value) ? ["ekg-strip-svt"]
     : /\bpvt\b/.test(value) ? ["ekg-strip-pvt"]
     : /\bkammerflimmern\b/.test(value) ? ["ekg-strip-vf"]
-    : /\b(vt|ventrikulare tachykardie)\b/.test(value) ? ["ekg-strip-vt", "ekg-strip-pvt"]
+    : /\b(monomorphe vt|vt|ventrikulare tachykardie)\b/.test(value) ? ["ekg-strip-vt", "ekg-strip-pvt"]
     : /\b(vorderwand|anterior)\w*\b/.test(value) ? ["ekg-strip-anterior-stemi"]
     : /\b(hinterwand|inferior)\w*\b/.test(value) ? ["ekg-strip-inferior-stemi"]
     : /\bposterior\w*\b/.test(value) ? ["ekg-strip-posterior-stemi"]
@@ -1360,15 +1392,6 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
     setError(""); setListening(true); recognition.start();
   };
 
-  const openConversationImage = (event: ReactMouseEvent<HTMLDivElement>) => {
-    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>(".ai-tutor-question-image a, .ai-tutor-ekg-solution a");
-    if (!link) return;
-    const image = link.querySelector<HTMLImageElement>("img");
-    if (!image) return;
-    event.preventDefault();
-    setExpandedImage({ src: image.currentSrc || image.src, alt: image.alt });
-  };
-
   return <>
     <div className="ai-tutor-launcher-group">
       <button className="ai-tutor-launcher" type="button" onClick={openTutor} aria-label="EKG-Trainer öffnen"><span>♥</span><b>EKG-Trainer</b></button>
@@ -1380,8 +1403,8 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
         <header><div><small>KOSTENLOS · OHNE EXTERNE KI</small><h2>{mode === "simulation" ? "Prüfungssimulation" : "EKG-Trainer"}</h2><p>{mode === "simulation" ? "Falltraining aus dem gewählten Themenbereich" : "Herzrhythmen und Ischämiemuster erkennen"}</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Trainer schließen">×</button></header>
         {mode === "image" && <div className="ai-tutor-tabs single" role="tablist" aria-label="Trainingsart"><button type="button" role="tab" aria-selected="true" className="active" onClick={() => reset("image")}>EKG-Training</button></div>}
         {!turns.length && source && <div className="ai-tutor-welcome"><span>{mode === "simulation" ? "20′" : mode === "exam" ? "01" : mode === "image" ? "EKG" : "?"}</span><div><h3>{mode === "simulation" ? "Komplette Prüfung starten" : mode === "exam" ? "Prüfung starten" : mode === "image" ? "EKG-Streifen trainieren" : "Im Lernmaterial suchen"}</h3><p>{mode === "simulation" ? "Du erhältst einen Fall, 20 Minuten Vorbereitungszeit und anschließend sechs bewertete Prüfungsschritte mit gezielten Nachfragen." : mode === "exam" ? "Der Lernprüfer bewertet deine freie Antwort und stellt danach passende Nachfragen zu Begründung, Differenzialdiagnosen, Komplikationen und Reevaluation. Synonyme und übliche Abkürzungen werden berücksichtigt." : mode === "image" ? "In diesem Modus erscheinen ausschließlich EKG-Streifen ohne eingeblendete Lösung. Benenne nur den Rhythmus oder das gefragte Ischämiemuster." : "Frage frei über den Lernstoff, zum Beispiel: „Nenne mir die Cushing-Trias“, „Erkläre Atropin“ oder „Wie wird Morphin aufgezogen?“."}</p>{mode !== "question" && <>{source.scope === "site" && mode !== "image" && <label className="ai-tutor-focus">Prüfungsthema<input maxLength={180} value={input} onChange={(event) => setInput(event.target.value)} placeholder="z. B. ACS, Anaphylaxie oder Krampfanfall" /></label>}<div className="ai-tutor-start-actions"><button type="button" disabled={source.scope === "site" && mode !== "image" && !input.trim()} onClick={startExam}>{mode === "simulation" ? "20-Minuten-Simulation starten →" : mode === "image" ? "Ersten EKG-Streifen öffnen →" : "Erste Prüfungsfrage stellen →"}</button>{mode === "exam" && <button className="secondary" type="button" disabled={!weakEntries.length} onClick={startWeakReview}>Schwächen wiederholen{weakEntries.length ? ` (${weakEntries.length})` : ""}</button>}</div></>}</div></div>}
-        <div className="ai-tutor-conversation" aria-live="polite" onClick={openConversationImage}>
-          {turns.map((turn, index) => <article className={`${turn.role}${turn.kind ? ` ${turn.kind}` : ""}`} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? mode === "image" ? "EKG" : "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.ekgSolution && <figure className="ai-tutor-ekg-solution"><a href={turn.ekgSolution.image.src} target="_blank" rel="noreferrer"><img src={turn.ekgSolution.image.src} alt={`Aufgelöster EKG-Befund: ${turn.ekgSolution.label}`} loading="lazy" /></a><figcaption><b>{turn.ekgSolution.label}</b>{turn.ekgSolution.highlights.length > 0 && <div className="ai-tutor-lead-highlights">{turn.ekgSolution.highlights.map((highlight) => <div className={highlight.tone} key={`${highlight.tone}-${highlight.leads}`}><strong>{highlight.leads}</strong><span>{highlight.explanation}</span></div>)}</div>}</figcaption></figure>}{turn.questionImage && <figure className="ai-tutor-question-image"><a href={turn.questionImage.src} target="_blank" rel="noreferrer"><img src={turn.questionImage.src} alt={turn.questionImage.alt} loading="lazy" /></a><figcaption>{turn.questionImage.caption} · zum Vergrößern antippen</figcaption></figure>}{turn.vfaImages && turn.vfaImages.length > 0 && <div className="ai-tutor-vfa-grid">{turn.vfaImages.map((vfa) => <a href={vfa.src} target="_blank" rel="noreferrer" key={vfa.src}><img src={vfa.src} alt={vfa.title} loading="lazy" /><b>{vfa.title}</b><small>Zum Vergrößern öffnen ↗</small></a>)}</div>}{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>{mode === "image" ? "EKG-Befund" : "Kernpunkte"}</small></div>{turn.result.evaluation && <p>{nameVfaReferences(turn.result.evaluation)}</p>}{turn.result.dimensions && <div className="exam-dimension-grid">{turn.result.dimensions.map((dimension) => <div key={dimension.label}><span><b>{dimension.label}</b><strong>{dimension.score}/5</strong></span><i><em style={{ width: `${dimension.score * 20}%` }} /></i><small>{nameVfaReferences(dimension.note)}</small></div>)}</div>}{turn.result.strengths.length > 0 && <section><b>{mode === "image" ? "Befundbewertung" : "Das war enthalten"}</b><ul>{turn.result.strengths.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}{turn.result.partial_points && turn.result.partial_points.length > 0 && <section className="partial"><b>Teilweise erkannt</b><ul>{turn.result.partial_points.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>{mode === "image" ? "Richtige Lösung" : "Das solltest du ergänzen"}</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {nameVfaReferences(turn.result.source_basis)}</small>}{turn.role === "assistant" && turn.result?.source_href && <a className="ai-tutor-source-link" href={turn.result.source_href}>Passendes Lernkapitel öffnen →</a>}</div></article>)}
+        <div className="ai-tutor-conversation" aria-live="polite">
+          {turns.map((turn, index) => <article className={`${turn.role}${turn.kind ? ` ${turn.kind}` : ""}`} key={`${turn.role}-${index}`}><span>{turn.role === "assistant" ? mode === "image" ? "EKG" : "LP" : "Du"}</span><div><TutorMessageText text={turn.text} emphasize={turn.role === "assistant"} />{turn.ekgSolution && <figure className="ai-tutor-ekg-solution"><button type="button" onClick={() => setExpandedImage({ src: turn.ekgSolution!.image.src, alt: `Aufgelöster EKG-Befund: ${turn.ekgSolution!.label}` })} aria-label="EKG-Auflösung vergrößern"><img src={turn.ekgSolution.image.src} alt={`Aufgelöster EKG-Befund: ${turn.ekgSolution.label}`} loading="lazy" /></button><figcaption><b>{turn.ekgSolution.label}</b>{turn.ekgSolution.highlights.length > 0 && <div className="ai-tutor-lead-highlights">{turn.ekgSolution.highlights.map((highlight) => <div className={highlight.tone} key={`${highlight.tone}-${highlight.leads}`}><strong>{highlight.leads}</strong><span>{highlight.explanation}</span></div>)}</div>}</figcaption></figure>}{turn.questionImage && <figure className="ai-tutor-question-image"><button type="button" onClick={() => setExpandedImage({ src: turn.questionImage!.src, alt: turn.questionImage!.alt })} aria-label="EKG-Aufgabe vergrößern"><img src={turn.questionImage.src} alt={turn.questionImage.alt} loading="lazy" /></button><figcaption>{turn.questionImage.caption} · zum Vergrößern antippen</figcaption></figure>}{turn.vfaImages && turn.vfaImages.length > 0 && <div className="ai-tutor-vfa-grid">{turn.vfaImages.map((vfa) => <a href={vfa.src} target="_blank" rel="noreferrer" key={vfa.src}><img src={vfa.src} alt={vfa.title} loading="lazy" /><b>{vfa.title}</b><small>Zum Vergrößern öffnen ↗</small></a>)}</div>}{turn.role === "assistant" && turn.result && mode !== "question" && index > 0 && <div className="ai-tutor-feedback"><div className="ai-tutor-score"><b>{turn.result.score}/5</b><small>{mode === "image" ? "EKG-Befund" : "Kernpunkte"}</small></div>{turn.result.evaluation && <p>{nameVfaReferences(turn.result.evaluation)}</p>}{turn.result.dimensions && <div className="exam-dimension-grid">{turn.result.dimensions.map((dimension) => <div key={dimension.label}><span><b>{dimension.label}</b><strong>{dimension.score}/5</strong></span><i><em style={{ width: `${dimension.score * 20}%` }} /></i><small>{nameVfaReferences(dimension.note)}</small></div>)}</div>}{turn.result.strengths.length > 0 && <section><b>{mode === "image" ? "Befundbewertung" : "Das war enthalten"}</b><ul>{turn.result.strengths.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}{turn.result.partial_points && turn.result.partial_points.length > 0 && <section className="partial"><b>Teilweise erkannt</b><ul>{turn.result.partial_points.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}{turn.result.missing_points.length > 0 && <section className="missing"><b>{mode === "image" ? "Richtige Lösung" : "Das solltest du ergänzen"}</b><ul>{turn.result.missing_points.map((point) => <li key={point}>{nameVfaReferences(point)}</li>)}</ul></section>}</div>}{turn.role === "assistant" && turn.result?.source_basis && <small>Textgrundlage: {nameVfaReferences(turn.result.source_basis)}</small>}{turn.role === "assistant" && turn.result?.source_href && <a className="ai-tutor-source-link" href={turn.result.source_href}>Passendes Lernkapitel öffnen →</a>}</div></article>)}
           <div ref={endRef} />
         </div>
         {mode === "simulation" && simulationPhase === "prep" && <div className={`exam-preparation-bar ${prepRemaining === 0 ? "elapsed" : ""}`}><div><small>VORBEREITUNGSZEIT</small><b>{String(Math.floor(prepRemaining / 60)).padStart(2, "0")}:{String(prepRemaining % 60).padStart(2, "0")}</b><span>{prepRemaining > 0 ? "Notizen anfertigen und Fallvorstellung strukturieren." : "Die Vorbereitungszeit ist abgelaufen."}</span></div><button type="button" onClick={beginSimulationExam}>{prepRemaining > 0 ? "Prüfung vorzeitig beginnen" : "Mündliche Prüfung beginnen"} →</button></div>}
@@ -1390,9 +1413,10 @@ export default function AiExamTutor({ active, siteOverview, additionalKnowledge 
         {source && simulationPhase !== "prep" && (mode === "question" || currentEntry && pendingNextEkgIndex === null) && <form className="ai-tutor-form" onSubmit={submit}><label htmlFor="ai-tutor-input">{mode === "question" ? "Deine Frage" : mode === "simulation" || mode === "exam" ? "Deine Antwort an den Prüfer" : mode === "image" ? "Dein EKG-Befund" : "Deine freie Antwort"}</label><div className="ai-tutor-input-wrap"><textarea id="ai-tutor-input" maxLength={2500} rows={4} value={input} onChange={(event) => setInput(event.target.value)} placeholder={mode === "question" ? "Stelle eine Wissensfrage zur NotSan-Prüfung …" : mode === "image" ? "Nur den Rhythmus oder das Ischämiemuster benennen …" : "Antworte so, wie du es in der mündlichen Prüfung erklären würdest …"} />{speechSupported && <button className={`ai-tutor-mic ${listening ? "listening" : ""}`} type="button" onClick={toggleSpeech} aria-pressed={listening} aria-label={listening ? "Spracheingabe beenden" : "Antwort einsprechen"}>{listening ? "■ Aufnahme stoppen" : "🎙 Antwort einsprechen"}</button>}</div><div><small>{input.length}/2500 · Keine echten Patientendaten eingeben.</small><button type="submit" disabled={!canSubmit}>{mode === "question" ? "Suchen →" : "Antwort prüfen →"}</button></div></form>}
         {error && <p className="ai-tutor-error" role="alert">{error}</p>}
         <footer><span>{mode === "image" ? `${ekgEntryCount} EKG-Streifen · ${weakEntries.filter(isEkgChallengeEntry).length} in Wiederholung` : `${knowledge.length} Lerninhalte · ${weakEntries.length} in Wiederholung`}{sessionScores.length ? ` · Ø ${(sessionScores.reduce((sum, score) => sum + score, 0) / sessionScores.length).toFixed(1)}/5` : ""}</span><button type="button" onClick={() => reset(mode === "simulation" ? "simulation" : "image")}>Training zurücksetzen</button></footer>
-        {expandedImage && <div className="ai-tutor-image-lightbox" role="dialog" aria-modal="true" aria-label={`Vollbild: ${expandedImage.alt}`} onClick={() => setExpandedImage(null)}>
+        {expandedImage && <div className="ai-tutor-image-lightbox" role="dialog" aria-modal="true" aria-label={`Vollbild: ${expandedImage.alt}`}>
+          <button className="ai-tutor-image-backdrop-close" type="button" onClick={() => setExpandedImage(null)} aria-label="Vergrößerte Abbildung schließen" />
           <button className="ai-tutor-image-close" type="button" onClick={() => setExpandedImage(null)} aria-label="Vergrößerte Abbildung schließen">× Schließen</button>
-          <div className="ai-tutor-image-stage" onClick={(event) => event.stopPropagation()}><img src={expandedImage.src} alt={expandedImage.alt} /></div>
+          <div className="ai-tutor-image-stage"><img src={expandedImage.src} alt={expandedImage.alt} /></div>
         </div>}
       </section>
     </div>}

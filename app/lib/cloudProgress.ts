@@ -5,6 +5,8 @@ import { type MedicationProgress, medicationProgressStorageKey, readMedicationPr
 
 const GUEST_IMPORT_OWNER_KEY = "notsan-guest-import-owner-v1";
 const questionSaveQueues = new Map<string, Promise<void>>();
+const mcSessionSaveQueues = new Map<string, Promise<void>>();
+let activeLocalUserId: string | null = null;
 
 function newer<T extends { updatedAt?: string }>(local: T | undefined, remote: T | undefined): T | undefined {
   if (!local) return remote;
@@ -13,9 +15,46 @@ function newer<T extends { updatedAt?: string }>(local: T | undefined, remote: T
 }
 
 export function activateLocalUser(userId: string | null) {
+  activeLocalUserId = userId;
   setActiveProgressUser(userId);
   setActiveTopicUser(userId);
   setActiveMedicationUser(userId);
+}
+
+export function getActiveLearningUserId() {
+  return activeLocalUserId;
+}
+
+export async function loadMultipleChoiceSession(userId: string, sessionKey: string) {
+  const client = getSupabaseClient();
+  if (!client) return null;
+  const { data, error } = await client.from("learning_mc_sessions").select("payload,updated_at").eq("user_id", userId).eq("session_key", sessionKey).maybeSingle();
+  if (error) throw error;
+  return data ? { payload: data.payload as unknown, updatedAt: data.updated_at as string } : null;
+}
+
+export async function saveMultipleChoiceSession(userId: string, sessionKey: string, payload: unknown, updatedAt: string) {
+  const client = getSupabaseClient();
+  if (!client) return;
+  const queueKey = `${userId}:${sessionKey}`;
+  const previous = mcSessionSaveQueues.get(queueKey) || Promise.resolve();
+  const next = previous.catch(() => undefined).then(async () => {
+    const { error } = await client.from("learning_mc_sessions").upsert({ user_id: userId, session_key: sessionKey, payload, updated_at: updatedAt }, { onConflict: "user_id,session_key" });
+    if (error) throw error;
+  });
+  mcSessionSaveQueues.set(queueKey, next);
+  try {
+    await next;
+  } finally {
+    if (mcSessionSaveQueues.get(queueKey) === next) mcSessionSaveQueues.delete(queueKey);
+  }
+}
+
+export async function deleteMultipleChoiceSession(userId: string, sessionKey: string) {
+  const client = getSupabaseClient();
+  if (!client) return;
+  const { error } = await client.from("learning_mc_sessions").delete().eq("user_id", userId).eq("session_key", sessionKey);
+  if (error) throw error;
 }
 
 export async function syncLearningProgress(userId: string) {

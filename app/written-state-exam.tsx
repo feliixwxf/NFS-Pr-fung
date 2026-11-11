@@ -127,6 +127,12 @@ function readAttempt(examId: ExamDefinition["id"]): StoredAttempt | null {
   }
 }
 
+function examIdFromPath(): ExamDefinition["id"] | null {
+  if (typeof window === "undefined") return null;
+  const id = window.location.pathname.split("/")[3];
+  return EXAMS.some((exam) => exam.id === id) ? id as ExamDefinition["id"] : null;
+}
+
 function formatTime(totalSeconds: number) {
   const seconds = Math.max(0, totalSeconds);
   const hours = Math.floor(seconds / 3600);
@@ -140,41 +146,41 @@ function sameSelection(left: number[] = [], right: number[] = []) {
 }
 
 export default function WrittenStateExam({ onBack }: { onBack: () => void }) {
-  const [selectedId, setSelectedId] = useState<ExamDefinition["id"] | null>(() => {
-    if (typeof window === "undefined") return null;
-    const id = window.location.pathname.split("/")[3];
-    return EXAMS.some((exam) => exam.id === id) ? id as ExamDefinition["id"] : null;
+  const [selectedId, setSelectedId] = useState<ExamDefinition["id"] | null>(examIdFromPath);
+  const [attempt, setAttempt] = useState<StoredAttempt | null>(() => {
+    const initialId = examIdFromPath();
+    return initialId ? readAttempt(initialId) : null;
   });
-  const [attempt, setAttempt] = useState<StoredAttempt | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const selectedExam = EXAMS.find((exam) => exam.id === selectedId) || null;
-  const questions = useMemo(() => selectedExam && attempt ? buildExamQuestions(selectedExam, attempt.attempt) : [], [selectedExam, attempt?.attempt]);
+  const attemptNumber = attempt?.attempt;
+  const questions = useMemo(() => selectedExam && attemptNumber ? buildExamQuestions(selectedExam, attemptNumber) : [], [selectedExam, attemptNumber]);
   const remainingSeconds = attempt ? Math.max(0, EXAM_DURATION_SECONDS - Math.floor((now - attempt.startedAt) / 1000)) : EXAM_DURATION_SECONDS;
   const submitted = Boolean(attempt?.submittedAt);
-
-  useEffect(() => {
-    if (!selectedId) return;
-    setAttempt(readAttempt(selectedId));
-  }, [selectedId]);
 
   useEffect(() => {
     if (!selectedId || !attempt) return;
     localStorage.setItem(`${STORAGE_PREFIX}:${selectedId}`, JSON.stringify(attempt));
   }, [selectedId, attempt]);
 
+  const attemptStartedAt = attempt?.startedAt;
   useEffect(() => {
-    if (!attempt || submitted) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    if (!attemptStartedAt || submitted) return;
+    const tick = () => {
+      const timestamp = Date.now();
+      setNow(timestamp);
+      if (timestamp - attemptStartedAt >= EXAM_DURATION_SECONDS * 1000) {
+        setAttempt((current) => current && !current.submittedAt ? { ...current, submittedAt: timestamp } : current);
+      }
+    };
+    const timer = window.setInterval(tick, 1000);
     return () => window.clearInterval(timer);
-  }, [attempt, submitted]);
-
-  useEffect(() => {
-    if (attempt && !submitted && remainingSeconds === 0) setAttempt((current) => current ? { ...current, submittedAt: Date.now() } : current);
-  }, [attempt, remainingSeconds, submitted]);
+  }, [attemptStartedAt, submitted]);
 
   const openExam = (examId: ExamDefinition["id"]) => {
     setSelectedId(examId);
-    setAttempt(null);
+    setAttempt(readAttempt(examId));
+    setNow(() => Date.now());
     window.history.pushState({}, "", `/schriftlich/probeexamen/${examId}`);
     window.scrollTo({ top: 0, behavior: "auto" });
   };

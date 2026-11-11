@@ -8,13 +8,12 @@ function CommunicationSection({ number, kicker, title, children }: { number: str
 
 function CommunicationStudyCard({ title, kicker, children }: { title: string; kicker?: string; children: ReactNode }) {
   const [flipped, setFlipped] = useState(false);
-  const toggle = () => setFlipped((value) => !value);
-  return <article role="button" tabIndex={0} className={`communication-study-card${flipped ? " is-flipped" : ""}`} onClick={toggle} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle(); } }} aria-pressed={flipped} aria-label={`${title}: ${flipped ? "Lösung anzeigen" : "zum Abfragen umdrehen"}`}>
+  return <button type="button" className={`communication-study-card${flipped ? " is-flipped" : ""}`} onClick={() => setFlipped((value) => !value)} aria-pressed={flipped} aria-label={`${title}: ${flipped ? "Lösung anzeigen" : "zum Abfragen umdrehen"}`}>
     <div className="communication-study-card-inner">
       <div className="communication-study-card-front">{kicker ? <small>{kicker}</small> : null}<b>{title}</b><div>{children}</div><em>Antippen · Begriff abfragen</em></div>
       <div className="communication-study-card-back"><b>{title}</b><small>Erkläre den Begriff zuerst selbst.</small><em>Antippen · Lösung anzeigen</em></div>
     </div>
-  </article>;
+  </button>;
 }
 
 export default function KommunikationLesson({ onBack, finale }: { onBack: () => void; finale: ReactNode }) {

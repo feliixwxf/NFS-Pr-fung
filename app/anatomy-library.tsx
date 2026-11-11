@@ -7,6 +7,92 @@ import { normalizeSearch } from "./lib/contentSearch";
 const pathFor = (slug?: string) => slug ? `/anatomie/${slug}` : "/anatomie";
 const relatedTopics: Record<number,{title:string;slug:string}> = { 1:{title:"Myokardinfarkt",slug:"myokardinfarkt"},2:{title:"Angina pectoris",slug:"angina-pectoris"},3:{title:"Akutes Koronarsyndrom",slug:"acs"},6:{title:"Pneumonie",slug:"pneumonie"},10:{title:"COPD",slug:"bronchoobstruktion"},13:{title:"Asthma",slug:"bronchoobstruktion"},22:{title:"Kardiales Lungenödem",slug:"lungenoedem"},24:{title:"Vorhofflimmern",slug:"vorhofflimmern"},40:{title:"Nierensteinkolik",slug:"nierensteinkolik"} };
 
+function BoneSummary() {
+  return <section className="bone-summary" aria-labelledby="bone-summary-title">
+    <header>
+      <div><span className="eyebrow">Zusammenfassung · Knochen</span><h2 id="bone-summary-title">Das Wichtigste auf einen Blick</h2></div>
+      <p>Das erwachsene Skelett besteht in der Regel aus <strong>206 Knochen</strong>. Die genaue Zählung kann je nach Verwachsungen und Zählweise abweichen.</p>
+    </header>
+
+    <div className="bone-summary-grid four">
+      <article><span className="bone-summary-number">01</span><h3>Stützen &amp; Formen</h3><p>Knochen geben dem Körper Halt, übertragen Kräfte und bilden Ansatzstellen für Muskeln.</p></article>
+      <article><span className="bone-summary-number">02</span><h3>Schützen</h3><p>Schädel, Wirbelsäule, Thorax und Becken schützen empfindliche Organe.</p></article>
+      <article><span className="bone-summary-number">03</span><h3>Blut bilden</h3><p>Im roten Knochenmark entstehen Erythrozyten, Leukozyten und Thrombozyten.</p></article>
+      <article><span className="bone-summary-number">04</span><h3>Mineralien speichern</h3><p>Knochen dienen besonders als Speicher für Calcium und Phosphat.</p></article>
+    </div>
+
+    <div className="bone-summary-split">
+      <article className="bone-summary-panel">
+        <span className="eyebrow">Bewegungsapparat</span><h3>Passiv und aktiv arbeiten zusammen</h3>
+        <dl className="bone-definition-list">
+          <div><dt>Passiver Bewegungsapparat</dt><dd>Knochen, Knorpel, Gelenke und Bänder geben Form, führen Bewegungen und nehmen Kräfte auf.</dd></div>
+          <div><dt>Aktiver Bewegungsapparat</dt><dd>Die quergestreifte Skelettmuskulatur erzeugt über Sehnen die Bewegung.</dd></div>
+        </dl>
+      </article>
+      <article className="bone-summary-panel">
+        <span className="eyebrow">Knochengewebe</span><h3>Geflecht- und Lamellenknochen</h3>
+        <dl className="bone-definition-list">
+          <div><dt>Geflechtknochen</dt><dd>Schnell gebildetes, noch ungeordnetes Knochengewebe – zum Beispiel bei Entwicklung und früher Frakturheilung.</dd></div>
+          <div><dt>Lamellenknochen</dt><dd>Geordnetes, belastbares reifes Knochengewebe; es bildet den Großteil des erwachsenen Skeletts.</dd></div>
+        </dl>
+      </article>
+    </div>
+
+    <article className="bone-summary-panel bone-wide">
+      <span className="eyebrow">Knochenformen</span><h3>Form folgt Funktion</h3>
+      <div className="bone-shape-grid">
+        <div><b>Röhrenknochen</b><span>z. B. Oberarmknochen, Speiche, Elle, Oberschenkelknochen</span></div>
+        <div><b>Kurze Knochen</b><span>z. B. Hand- und Fußwurzelknochen</span></div>
+        <div><b>Platte Knochen</b><span>z. B. Schulterblatt, Brustbein, Schädelknochen</span></div>
+        <div><b>Unregelmäßige Knochen</b><span>z. B. Wirbel</span></div>
+        <div><b>Pneumatisierte Knochen</b><span>Lufthaltige Räume, z. B. Stirnbein, Keilbein und Oberkiefer</span></div>
+      </div>
+    </article>
+
+    <div className="bone-summary-split">
+      <article className="bone-summary-panel">
+        <span className="eyebrow">Röhrenknochen</span><h3>Abschnitte sicher benennen</h3>
+        <ol className="bone-process">
+          <li><b>Epiphyse</b><span>Knochenende; gelenknah, überwiegend Spongiosa</span></li>
+          <li><b>Metaphyse</b><span>Übergang zwischen Epiphyse und Schaft; beim wachsenden Menschen mit Wachstumsfuge</span></li>
+          <li><b>Diaphyse</b><span>Knochenschaft mit kräftiger Kompakta und Markhöhle</span></li>
+          <li><b>Apophyse</b><span>Knochenvorsprung als Ansatzstelle für Sehnen und Bänder</span></li>
+        </ol>
+      </article>
+      <article className="bone-summary-panel">
+        <span className="eyebrow">Aufbau</span><h3>Von außen nach innen</h3>
+        <ol className="bone-process">
+          <li><b>Periost</b><span>Schmerzempfindliche Knochenhaut; Gefäße, Nerven und knochenbildende Zellen</span></li>
+          <li><b>Kompakta / Kortikalis</b><span>Dichte, feste Außenschicht für Stabilität</span></li>
+          <li><b>Spongiosa</b><span>Leichtes Trabekelwerk; entlang der Belastungslinien ausgerichtet</span></li>
+          <li><b>Knochenmark</b><span>Rotes Mark bildet Blutzellen; gelbes Mark speichert vor allem Fett</span></li>
+        </ol>
+      </article>
+    </div>
+
+    <article className="bone-summary-panel bone-wide">
+      <span className="eyebrow">Gelenke</span><h3>Unechte und echte Gelenke unterscheiden</h3>
+      <div className="bone-joint-compare">
+        <div><b>Unechtes Gelenk · Synarthrose</b><p>Kein Gelenkspalt; Knochen sind durch Bindegewebe, Knorpel oder Knochen verbunden. Bewegung ist nicht oder nur gering möglich.</p></div>
+        <div><b>Echtes Gelenk · Diarthrose</b><p>Mit Gelenkspalt, Knorpelflächen, Gelenkkapsel und Gelenkflüssigkeit; je nach Form unterschiedlich beweglich.</p></div>
+        <div><b>Straffes Gelenk · Amphiarthrose</b><p>Ein echtes Gelenk mit sehr geringem Bewegungsausmaß, aber hoher Stabilität.</p></div>
+      </div>
+    </article>
+
+    <article className="bone-summary-panel bone-wide">
+      <span className="eyebrow">Skelett und Wirbelsäule</span><h3>Axial und appendikulär ordnen</h3>
+      <div className="bone-skeleton-overview">
+        <div><b>Axialskelett</b><p>Schädel, Wirbelsäule und Brustkorb bilden die zentrale Körperachse.</p></div>
+        <div><b>Appendikuläres Skelett</b><p>Schulter- und Beckengürtel sowie obere und untere Extremitäten.</p></div>
+      </div>
+      <div className="spine-strip" aria-label="Abschnitte der Wirbelsäule">
+        <span><b>HWS</b><small>7 Wirbel</small></span><span><b>BWS</b><small>12 Wirbel</small></span><span><b>LWS</b><small>5 Wirbel</small></span><span><b>Kreuzbein</b><small>5 verwachsene Wirbel</small></span><span><b>Steißbein</b><small>meist 4 verwachsene Wirbel</small></span>
+      </div>
+      <p className="bone-memory"><strong>Merke:</strong> Atlas (C1) trägt den Schädel, Axis (C2) besitzt den Zahnfortsatz. Bandscheiben aus Faserring und Gallertkern verteilen Druck und ermöglichen Beweglichkeit.</p>
+    </article>
+  </section>;
+}
+
 export default function AnatomyLibrary() {
   const initialSlug = typeof window === "undefined" ? "" : window.location.pathname.split("/")[2] || "";
   const [selectedSlug, setSelectedSlug] = useState(initialSlug);
@@ -72,6 +158,7 @@ export default function AnatomyLibrary() {
         <div><span className="eyebrow light">ANATOMIE · KAPITEL {selected.roman}</span><h1 id="anatomy-title">{selected.title}</h1><p>{selected.summary}</p></div>
       </header>
       <section className="anatomy-chapter-intro"><div><span className="eyebrow">Kapitelüberblick</span><h2>{selected.summary}</h2><p>{pages.length} Lernseiten aus dem bereitgestellten Skript. Tippe eine Seite an, um sie im Vollbild zu lesen.</p></div><ul>{selected.topics.map((topic) => <li key={topic}>{topic}</li>)}</ul></section>
+      {selected.slug === "skelettsystem" ? <BoneSummary /> : null}
       {selected.relatedTopicNumbers?.length ? <aside className="anatomy-related"><b>Passende Krankheitsbilder</b><p>{selected.relatedTopicNumbers.map(number => relatedTopics[number] && <a key={number} href={`/muendlich/${relatedTopics[number].slug}`}>{relatedTopics[number].title}</a>)}</p></aside> : null}
       <div className="anatomy-page-stack">
         {pages.map((pdfPage) => <figure key={pdfPage} className="anatomy-script-page">

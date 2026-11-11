@@ -18,13 +18,12 @@ function OrganisationRoomCard({ title, text }: { title: string; text: string }) 
 
 function OrganisationStudyCard({ title, children }: { title: string; children: ReactNode }) {
   const [flipped, setFlipped] = useState(false);
-  const toggle = () => setFlipped((value) => !value);
-  return <article role="button" tabIndex={0} className={`organisation-room-card organisation-study-card${flipped ? " is-flipped" : ""}`} onClick={toggle} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle(); } }} aria-pressed={flipped} aria-label={`${title}: ${flipped ? "Lösung anzeigen" : "zum Abfragen umdrehen"}`}>
+  return <button type="button" className={`organisation-room-card organisation-study-card${flipped ? " is-flipped" : ""}`} onClick={() => setFlipped((value) => !value)} aria-pressed={flipped} aria-label={`${title}: ${flipped ? "Lösung anzeigen" : "zum Abfragen umdrehen"}`}>
     <div className="organisation-room-card-inner">
       <div className="organisation-room-card-front"><b>{title}</b><div className="organisation-study-card-content">{children}</div><small>Antippen · Begriff abfragen</small></div>
       <div className="organisation-room-card-back"><b>{title}</b><small>Erkläre diesen Bereich zuerst selbst.</small><em>Antippen · Lösung anzeigen</em></div>
     </div>
-  </article>;
+  </button>;
 }
 
 export default function OrganisationLesson({ onBack, finale }: { onBack: () => void; finale: ReactNode }) {

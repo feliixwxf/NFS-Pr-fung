@@ -66,6 +66,8 @@ import { dueQuestionIds } from "./lib/questionProgress";
 import { buildBalancedRound, markTopicOpened, readBookmarks, readTopicActivity, stableQuestionKey, writeBookmarks } from "./lib/learningQol";
 import { oralTopicReferenceLabel } from "./lib/oralTopicReferences";
 import { toggleMultipleChoiceSelection } from "./lib/multipleChoiceSelection";
+import PleuralForces from "./pleural-forces";
+import { deleteMultipleChoiceSession, getActiveLearningUserId, loadMultipleChoiceSession, saveMultipleChoiceSession } from "./lib/cloudProgress";
 
 const AiExamTutor = lazy(() => import("./ai-exam-tutor"));
 const LearningPlan = lazy(() => import("./learning-plan"));
@@ -116,6 +118,29 @@ const SchockLesson = lazy(() => import("./schock-lesson"));
 const MedicationTrainer = lazy(() => import("./medikamentenrechnen/MedicationTrainer"));
 const AnatomyLibrary = lazy(() => import("./anatomy-library"));
 const MedicationEffectsLibrary = lazy(() => import("./medication-effects-library"));
+
+const oralLessonPrefetchers: Partial<Record<number, () => Promise<unknown>>> = {
+  0: () => import("./myokardinfarkt-lesson"), 1: () => import("./angina-pectoris-lesson"), 5: () => import("./pneumonie-lesson"),
+  6: () => import("./venenthrombose-lesson"), 8: () => import("./ulkusblutung-lesson"), 9: () => import("./bronchoobstruktion-lesson"),
+  12: () => import("./bronchoobstruktion-lesson"), 13: () => import("./hypertensiver-notfall-lesson"), 14: () => import("./akutes-abdomen-lesson"),
+  15: () => import("./wirbelsaeulentrauma-lesson"), 16: () => import("./instabile-bradykardie-lesson"), 19: () => import("./amputationsverletzung-lesson"),
+  20: () => import("./beckentrauma-lesson"), 21: () => import("./lungenoedem-lesson"), 22: () => import("./extremitaetentrauma-lesson"),
+  23: () => import("./vorhofflimmern-lesson"), 24: () => import("./krampfanfall-lesson"), 25: () => import("./schussverletzung-lesson"),
+  27: () => import("./elektrounfall-lesson"), 28: () => import("./anaphylaxie-lesson"), 29: () => import("./krampfanfall-kind-lesson"),
+  30: () => import("./polytrauma-lesson"), 31: () => import("./stichverletzung-lesson"), 32: () => import("./schock-lesson"),
+  33: () => import("./rippenfraktur-lesson"), 34: () => import("./barotrauma-lesson"), 35: () => import("./verbrennung-lesson"),
+  36: () => import("./alkoholintoxikation-lesson"), 37: () => import("./opiatintoxikation-lesson"), 40: () => import("./pavk-lesson"),
+  41: () => import("./eug-lesson"), 43: () => import("./explosionsverletzung-lesson"), 44: () => import("./pankreatitis-lesson"),
+  45: () => import("./herzrhythmusstoerungen-lesson"), 46: () => import("./unterkuehlung-lesson"), 47: () => import("./herzbeuteltamponade-lesson"),
+  48: () => import("./pseudokrupp-epiglottitis-lesson"),
+};
+const prefetchedOralLessons = new Set<number>();
+function prefetchOralLesson(topicIndex: number) {
+  const loader = oralLessonPrefetchers[topicIndex];
+  if (!loader || prefetchedOralLessons.has(topicIndex)) return;
+  prefetchedOralLessons.add(topicIndex);
+  void loader().catch(() => prefetchedOralLessons.delete(topicIndex));
+}
 
 type View = "start" | "plan" | "cases" | "oral" | "written" | "quiz" | "progress" | "medication" | "medication-effects" | "anatomy";
 type TrainingTopic = "schock" | "elektrounfall" | "anaphylaxie" | "barotrauma" | "beckentrauma" | "amputationsverletzung" | "instabile-bradykardie" | "herzrhythmusstoerungen" | "herzbeuteltamponade" | "akutes-abdomen" | "akute-pankreatitis" | "ulkusblutung" | "schussverletzung" | "stichverletzung" | "explosionsverletzung" | "alkoholintoxikation" | "opiatintoxikation" | "venenthrombose" | "pavk" | "myokardinfarkt" | "polytrauma" | "bronchoobstruktion" | "pneumonie" | "pseudokrupp-epiglottitis" | "hypertensiver-notfall" | "vorhofflimmern" | "krampfanfall-kind" | "krampfanfall" | "unterkuehlung" | "rippenfraktur" | "verbrennung" | "lungenoedem" | "eug" | "extremitaetentrauma" | "wirbelsaeulentrauma" | "angina-pectoris" | "acs" | "apoplex" | "sht" | "lae" | "hyperventilation" | "geburt" | "thoraxtrauma" | "abdominaltrauma" | "hypoglykaemie" | "gallensteinkolik" | "nierensteinkolik" | "hodentorsion" | "rechtskunde" | "kommunikation" | "organisation" | "qualitaetsmanagement" | "terminologie" | "diagnostik" | "hygiene";
@@ -233,6 +258,7 @@ export default function Home() {
   const [view, setView] = useState<View>("start");
   const [trainingTopic, setTrainingTopic] = useState<TrainingTopic | null>(null);
   const [reviewMode, setReviewMode] = useState<ReviewMode>(null);
+  const [reviewQuestionId, setReviewQuestionId] = useState<string | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<number | null>(null);
   const [questionProgress, setQuestionProgress] = useState<QuestionProgress>({});
   const [completedTopics, setCompletedTopics] = useState<number[]>([]);
@@ -470,8 +496,8 @@ export default function Home() {
   }, [mobileMenuOpen]);
 
   const changeView = (nextView: View) => { scrollToPageTop(); setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); const paths: Record<View, string> = { start: "/", plan: "/lernplan", cases: "/falltraining", oral: "/muendlich", written: "/schriftlich", quiz: "/mc", progress: "/fortschritt", medication: "/medikamentenrechnen", "medication-effects": "/medikamentenwirkung", anatomy: "/anatomie" }; window.history.pushState({}, "", paths[nextView]); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
-  const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { scrollToPageTop(); setTrainingTopic(topic); setReviewMode(mode); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", `/mc/${topic}`); };
-  const openDueReview = () => { scrollToPageTop(); setTrainingTopic(null); setReviewMode("due"); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", "/mc?filter=faellig"); };
+  const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { scrollToPageTop(); setTrainingTopic(topic); setReviewMode(mode); setReviewQuestionId(null); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", `/mc/${topic}`); };
+  const openDueReview = (questionId?: string) => { scrollToPageTop(); setTrainingTopic(null); setReviewMode("due"); setReviewQuestionId(questionId || null); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", questionId ? `/mc?filter=faellig&frage=${encodeURIComponent(questionId)}` : "/mc?filter=faellig"); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
       const completed = !current.includes(topicNumber);
@@ -560,11 +586,11 @@ export default function Home() {
         </header>
         <Suspense fallback={<AppLoadingScreen compact />}>
         {view === "start" && <Dashboard setView={changeView} questionProgress={questionProgress} />}
-        {view === "plan" && <LearningPlan progress={questionProgress} completedTopics={completedTopics} topics={learningPlanTopics} userId={accountUserId} onTrain={(topic) => openTraining(topic as TrainingTopic)} onRead={(topic) => { setView("oral"); setSelectedTopic(topic); window.history.pushState({}, "", `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onProgress={() => changeView("progress")} onDueReview={openDueReview} onCases={() => changeView("cases")} />}
+        {view === "plan" && <LearningPlan progress={questionProgress} completedTopics={completedTopics} topics={learningPlanTopics} questionLabels={learningPlanQuestionLabels} userId={accountUserId} onTrain={(topic) => openTraining(topic as TrainingTopic)} onRead={(topic) => { setView("oral"); setSelectedTopic(topic); window.history.pushState({}, "", `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onDueReview={openDueReview} onCases={() => changeView("cases")} />}
         {view === "cases" && <CaseGenerator topics={caseGeneratorTopics} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={(topic) => { setSelectedTopic(topic); window.history.pushState({}, "", topic === null ? "/muendlich" : `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onOpenTraining={(topic) => openTraining(topic)} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
         {view === "written" && <WrittenLibrary onProgressChange={handleQuestionProgress} />}
-        {view === "quiz" && <QuizTraining onProgressChange={handleQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); window.history.pushState({}, "", topic ? `/mc/${topic}` : "/mc"); }} onReviewBack={() => { setTrainingTopic(null); setReviewMode(null); setView("progress"); window.history.pushState({}, "", "/fortschritt"); }} />}
+        {view === "quiz" && <QuizTraining onProgressChange={handleQuestionProgress} progress={questionProgress} selectedTopic={trainingTopic} reviewMode={reviewMode} reviewQuestionId={reviewQuestionId} setSelectedTopic={(topic) => { setTrainingTopic(topic); setReviewMode(null); setReviewQuestionId(null); window.history.pushState({}, "", topic ? `/mc/${topic}` : "/mc"); }} onReviewBack={() => { const returnToPlan = reviewMode === "due"; setTrainingTopic(null); setReviewMode(null); setReviewQuestionId(null); setView(returnToPlan ? "plan" : "progress"); window.history.pushState({}, "", returnToPlan ? "/lernplan" : "/fortschritt"); }} />}
         {view === "progress" && <ProgressView progress={questionProgress} onTrain={openTraining} onStart={() => changeView("quiz")} />}
         {view === "medication" && <MedicationTrainer key={accountUserId || "guest"} accountUserId={accountUserId} onSyncError={() => setSyncStatus("error")} />}
         {view === "medication-effects" && <MedicationEffectsLibrary />}
@@ -623,7 +649,7 @@ function OralLibrary({ selectedTopic, setSelectedTopic, onOpenTraining, onProgre
   const resetFilters = () => { setSearch(""); setAvailability("all"); setLearning("all"); setGroupFilter("all"); setTopicSort("order"); };
   if (selectedTopic !== null) return <TopicReader topicNumber={selectedTopic} onBack={() => setSelectedTopic(null)} onOpenTraining={onOpenTraining} onProgressChange={onProgressChange} completed={completedTopics.includes(selectedTopic + 1)} onToggleComplete={() => onToggleComplete(selectedTopic + 1)} />;
 
-return <section className="page-section topic-library-page"><div className="section-heading"><div><span className="eyebrow">Mündliche Prüfung</span><h1>Deine Prüfungsthemen</h1><p>Finde Lesekapitel und geplante Inhalte in ihrer fachlichen Reihenfolge.</p></div><div className="source-badge topic-availability-stat" aria-label={`${READY_TOPIC_NUMBERS.size} verfügbar`}><div><b>{READY_TOPIC_NUMBERS.size}</b><span>verfügbar</span></div></div></div><div className="library-tools"><div className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Thema suchen …" aria-label="Prüfungsthemen durchsuchen" /><small>{resultCount} Ergebnisse</small></div><div className="availability-filters" role="group" aria-label="Nach Verfügbarkeit filtern">{([['all','Alle Themen'],['ready','Verfügbar'],['pending','In Vorbereitung']] as const).map(([value,label]) => <button type="button" key={value} className={availability === value ? "active" : ""} aria-pressed={availability === value} onClick={() => setAvailability(value)}>{label}</button>)}</div><div className="oral-advanced-filters"><label>Lernstand<select value={learning} onChange={event => setLearning(event.target.value as typeof learning)}><option value="all">Alle</option><option value="new">Nicht begonnen</option><option value="started">Begonnen</option><option value="completed">Absolviert</option></select></label><label>Fachgruppe<select value={groupFilter} onChange={event => setGroupFilter(event.target.value)}><option value="all">Alle Fachgruppen</option>{topicGroups.map(group => <option key={group.name}>{group.name}</option>)}</select></label><label>Sortierung<select value={topicSort} onChange={event => setTopicSort(event.target.value as typeof topicSort)}><option value="order">Fachliche Reihenfolge</option><option value="alpha">Alphabetisch</option><option value="recent">Zuletzt geöffnet</option></select></label><button type="button" onClick={resetFilters}>Filter zurücksetzen</button></div></div>{resultCount === 0 ? <div className="library-empty" role="status"><span aria-hidden="true">⌕</span><div><h2>Keine Themen gefunden</h2><p>Prüfe den Suchbegriff oder zeige wieder alle Themen an.</p></div><button type="button" onClick={resetFilters}>Filter zurücksetzen</button></div> : <div className="grouped-topics">{filteredGroups.map((group) => <section className="topic-group" key={group.name}><div className="topic-group-heading"><span>{group.icon}</span><div><h2>{group.name}</h2><p>{group.entries.length} {group.entries.length === 1 ? "Thema" : "Themen"}</p></div></div><div className="topic-name-grid">{group.entries.map((topic) => { const completed = completedTopics.includes(topic.number); const ready = READY_TOPIC_NUMBERS.has(topic.number); const readyLabel = oralTopicReferenceLabel(topic.number); const learningStatus = completed ? "Abgeschlossen" : activity[topic.number] ? "Begonnen" : "Nicht begonnen"; return <button className={`${ready ? "topic-ready" : ""} ${completed ? "topic-completed" : ""}`} key={topic.number} onClick={() => setSelectedTopic(topic.number - 1)} disabled={!ready}><span>{completed ? "✓" : String(topic.number).padStart(2, "0")}</span><div><b>{topic.number === 4 ? "Apoplex (Schlaganfall)" : topic.number === 5 ? "Schädel-Hirn-Trauma (SHT)" : topic.number === 11 ? "Hyperventilationssyndrom" : topic.title}</b><small className="availability-status">{ready ? "Verfügbar" : "In Vorbereitung"}</small><small className="learning-status">{ready ? `${learningStatus} · ${readyLabel}` : "Noch kein Lernstand"}</small></div><i>{ready ? "Öffnen →" : "Geplant"}</i></button>; })}</div></section>)}</div>}<p className="orientation-note">Die Themenübersicht dient zur Orientierung und erhebt keinen Anspruch auf Vollständigkeit.</p></section>;
+return <section className="page-section topic-library-page"><div className="section-heading"><div><span className="eyebrow">Mündliche Prüfung</span><h1>Deine Prüfungsthemen</h1><p>Finde Lesekapitel und geplante Inhalte in ihrer fachlichen Reihenfolge.</p></div><div className="source-badge topic-availability-stat" aria-label={`${READY_TOPIC_NUMBERS.size} verfügbar`}><div><b>{READY_TOPIC_NUMBERS.size}</b><span>verfügbar</span></div></div></div><div className="library-tools"><div className="topic-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Thema suchen …" aria-label="Prüfungsthemen durchsuchen" /><small>{resultCount} Ergebnisse</small></div><div className="availability-filters" role="group" aria-label="Nach Verfügbarkeit filtern">{([['all','Alle Themen'],['ready','Verfügbar'],['pending','In Vorbereitung']] as const).map(([value,label]) => <button type="button" key={value} className={availability === value ? "active" : ""} aria-pressed={availability === value} onClick={() => setAvailability(value)}>{label}</button>)}</div><div className="oral-advanced-filters"><label>Lernstand<select value={learning} onChange={event => setLearning(event.target.value as typeof learning)}><option value="all">Alle</option><option value="new">Nicht begonnen</option><option value="started">Begonnen</option><option value="completed">Absolviert</option></select></label><label>Fachgruppe<select value={groupFilter} onChange={event => setGroupFilter(event.target.value)}><option value="all">Alle Fachgruppen</option>{topicGroups.map(group => <option key={group.name}>{group.name}</option>)}</select></label><label>Sortierung<select value={topicSort} onChange={event => setTopicSort(event.target.value as typeof topicSort)}><option value="order">Fachliche Reihenfolge</option><option value="alpha">Alphabetisch</option><option value="recent">Zuletzt geöffnet</option></select></label><button type="button" onClick={resetFilters}>Filter zurücksetzen</button></div></div>{resultCount === 0 ? <div className="library-empty" role="status"><span aria-hidden="true">⌕</span><div><h2>Keine Themen gefunden</h2><p>Prüfe den Suchbegriff oder zeige wieder alle Themen an.</p></div><button type="button" onClick={resetFilters}>Filter zurücksetzen</button></div> : <div className="grouped-topics">{filteredGroups.map((group) => <section className="topic-group" key={group.name}><div className="topic-group-heading"><span>{group.icon}</span><div><h2>{group.name}</h2><p>{group.entries.length} {group.entries.length === 1 ? "Thema" : "Themen"}</p></div></div><div className="topic-name-grid">{group.entries.map((topic) => { const completed = completedTopics.includes(topic.number); const ready = READY_TOPIC_NUMBERS.has(topic.number); const readyLabel = oralTopicReferenceLabel(topic.number); const learningStatus = completed ? "Abgeschlossen" : activity[topic.number] ? "Begonnen" : "Nicht begonnen"; const prepare = () => prefetchOralLesson(topic.number - 1); return <button className={`${ready ? "topic-ready" : ""} ${completed ? "topic-completed" : ""}`} key={topic.number} onPointerEnter={prepare} onFocus={prepare} onTouchStart={prepare} onClick={() => setSelectedTopic(topic.number - 1)} disabled={!ready}><span>{completed ? "✓" : String(topic.number).padStart(2, "0")}</span><div><b>{topic.number === 4 ? "Apoplex (Schlaganfall)" : topic.number === 5 ? "Schädel-Hirn-Trauma (SHT)" : topic.number === 11 ? "Hyperventilationssyndrom" : topic.title}</b><small className="availability-status">{ready ? "Verfügbar" : "In Vorbereitung"}</small><small className="learning-status">{ready ? `${learningStatus} · ${readyLabel}` : "Noch kein Lernstand"}</small></div><i>{ready ? "Öffnen →" : "Geplant"}</i></button>; })}</div></section>)}</div>}<p className="orientation-note">Die Themenübersicht dient zur Orientierung und erhebt keinen Anspruch auf Vollständigkeit.</p></section>;
 }
 
 function WrittenLibrary({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
@@ -1231,6 +1257,7 @@ function LaeLesson({ onProgressChange, completed, onToggleComplete }: { onProgre
 
     <section className="lesson-section"><ChapterHeading number="02" kicker="Anatomie / Physiologie" title="Anatomie und Physiologie" /><div className="lesson-prose script-copy"><h3>Gasaustausch in den Alveolen</h3><p>Der Gasaustausch findet ausschließlich durch Diffusion entlang des Partialdruckgefälles statt.</p><ul className="script-list"><li>Der Sauerstoffpartialdruck ist in den Alveolen höher als im venösen Blut: O₂ diffundiert in das Blut.</li><li>Der Kohlenstoffdioxidpartialdruck ist im venösen Blut höher als in den Alveolen: CO₂ diffundiert aus dem Blut in die Alveolen.</li></ul><SourceFigure src="/lessons/lungenarterienembolie/lunge-alveolen.png" alt="Anatomie der Lunge und vergrößerte Darstellung der Alveolen" caption="Lunge und Alveolen" wide /><SourceFigure src="/lessons/anatomie/anatomie-36.jpg" alt="Beschriftete Herzanatomie aus dem hinterlegten Anatomieskript mit Vorhöfen, Kammern, Klappen und Lungengefäßen" caption="Herzinnenräume und Lungengefäße · hinterlegtes Anatomieskript" wide /></div></section>
 
+    <section className="lesson-section"><ChapterHeading number="02A" kicker="Atemmechanik" title="Kohäsion, Adhäsion und Surfactant" /><div className="lesson-prose script-copy"><PleuralForces /></div></section>
     <section className="lesson-section"><ChapterHeading number="03" kicker="Pathophysiologie" title="Ursachen, Entstehung und Pathophysiologie" /><div className="lesson-prose script-copy"><h3>Mögliche Embolieformen</h3><p>Thromboembolie, Fettembolie, Fruchtwasserembolie, Fremdkörperembolie und Luftembolie.</p><h3>Virchow-Trias</h3><div className="material-chips lae-virchow-triad"><span>Veränderung der Blutströmung</span><span>Veränderung der Gefäßwand</span><span>Veränderung der Bluteigenschaft</span></div><p><b>Vom Thrombus zum Embolus:</b> Stase, Endothelschaden und erhöhte Gerinnungsneigung fördern besonders in tiefen Bein- oder Beckenvenen die Thrombusbildung. Wächst der Thrombus in den Blutstrom hinein oder löst sich ein Anteil ab, wird dieses frei transportierte Material zum <b>Embolus</b>. Es gelangt über Hohlvene, rechten Vorhof und rechten Ventrikel in die Lungenarterien.</p><div className="pathway lae-pathway"><span>Embolusweg</span><b>Tiefe Bein- oder Beckenvenen</b><i>→</i><b>Venensystem</b><i>→</i><b>Rechtes Herz</b><i>→</i><b>Lungenarterien</b></div><h3>Folgen des Gefäßverschlusses</h3><ol className="editorial-list"><li><b>01</b><span>Perfusion des betroffenen Lungenareals bricht ein.</span></li><li><b>02</b><span>Ventilation bleibt zunächst bestehen: Ventilations-Perfusions-Mismatch.</span></li><li><b>03</b><span>Gestörter Gasaustausch führt zur Hypoxämie.</span></li><li><b>04</b><span>Der Widerstand im Lungenkreislauf und der Druck in der A. pulmonalis steigen.</span></li><li><b>05</b><span>Akute Nachlasterhöhung belastet das rechte Herz bis zur akuten Rechtsherzinsuffizienz.</span></li><li><b>06</b><span>Das Herzzeitvolumen sinkt; Hypotonie und Schock können folgen.</span></li></ol><aside className="diagnostic-boundary"><span>!</span><div><b>Prüfungshinweis zur Schockform</b><p>Die schwere LAE verursacht durch die mechanische Behinderung der Lungenstrombahn einen obstruktiven Schock. Das akute Rechtsherzversagen ist der zentrale Mechanismus.</p></div></aside><div className="stability-compare"><article><small>Hämodynamisch stabil</small><b>Kreislauf kompensiert</b><p>Kein Schock und keine persistierende Hypotonie. Die Vorlast ist die Füllung beziehungsweise Wandspannung vor der Kontraktion; sie kann noch ausreichen, obwohl die Nachlast des rechten Ventrikels durch den pulmonalen Gefäßwiderstand bereits erhöht ist.</p></article><article><small>Hämodynamisch instabil</small><b>Akute Lebensgefahr</b><p>Die hohe rechtsventrikuläre Nachlast behindert den Auswurf. Rechtsventrikuläre Dilatation und sinkender linksventrikulärer Zufluss vermindern Vorlast, Schlagvolumen und Blutdruck: obstruktiver Schock, persistierende Hypotonie oder Kreislaufstillstand.</p></article></div></div></section>
 
     <section className="lesson-section red-flag-section"><ChapterHeading number="04" kicker="Welche Symptome stützen Ihre Arbeitsdiagnose?" title="Symptome" /><div className="lesson-prose script-copy"><ul className="symptom-grid"><li>Akute Dyspnoe mit Tachypnoe</li><li>Tachykardie und mögliche Hypotonie</li><li>Synkope</li><li>Zyanose und Hypoxie trotz Sauerstoffgabe</li><li>Atemabhängiger Thoraxschmerz / AP-Beschwerden</li><li>Gestaute Halsvenen als Zeichen der Rechtsherzbelastung</li><li>TVT-Zeichen: einseitige Schwellung, Schmerz oder Rötung</li><li>Im Verlauf Husten mit blutigem Auswurf möglich</li></ul><aside className="red-flags"><span>3T</span><div><small>Red Flag</small><h3>Dyspnoe plus eines der drei T</h3><p>Tachypnoe · Tachykardie · Thoraxschmerz</p><b>Zusammen mit Synkope, Hypotonie oder Zeichen der Rechtsherzbelastung an eine schwere LAE denken.</b></div></aside><h3>Das vollständige S₁Q₃T₃-Muster</h3><p>Korrekt bezeichnet der McGinn-White-Typ eine ausgeprägte S-Zacke in Ableitung I, eine Q-Zacke in Ableitung III und eine negative T-Welle in Ableitung III. Das Muster kann eine akute Rechtsherzbelastung anzeigen, ist aber weder empfindlich noch beweisend für eine LAE. Zusätzlich können Sinustachykardie, ein neu aufgetretener Rechtsschenkelblock und T-Negativierungen in den rechtspräkordialen Ableitungen auftreten.</p><div className="ecg-pattern" role="img" aria-label="Schematische Darstellung des S1Q3T3-Musters"><article><small>Ableitung I</small><b>S₁</b><span>tiefe S-Zacke</span><i>↘</i></article><article><small>Ableitung III</small><b>Q₃</b><span>Q-Zacke</span><i>↓</i></article><article><small>Ableitung III</small><b>T₃</b><span>negative T-Welle</span><i>⌄</i></article></div><aside className="knowledge-note"><b>Prüfungsfalle</b><p>Ein fehlendes S₁Q₃T₃ schließt eine LAE nicht aus. Ein vorhandenes Muster beweist sie nicht; es muss immer im klinischen Gesamtbild bewertet werden.</p></aside></div></section>
@@ -1259,7 +1286,7 @@ function ThoraxtraumaLesson({ onProgressChange, completed, onToggleComplete }: {
 
     <section className="lesson-section"><ChapterHeading number="01" kicker="Grundverständnis" title="Definition oder Erklärung" /><div className="lesson-prose"><p>Ein Thoraxtrauma entsteht durch stumpfe oder penetrierende Gewalteinwirkung auf den Brustkorb und kann Frakturen, Organverletzungen sowie lebensbedrohliche Störungen von Atmung und Kreislauf verursachen.</p><p>Stumpfe Gewalteinwirkung überträgt Kraft durch die Thoraxwand auf Rippen, Lunge, Herz, große Gefäße oder Zwerchfell. Bei penetrierender Gewalt wird die Thoraxwand durchdrungen; intrathorakale Strukturen können direkt verletzt werden.</p><div className="stability-compare"><article><small>Stumpf</small><b>Kraftübertragung ohne offene Verbindung</b><p>Typisch nach Verkehrsunfall, Sturz, Quetschung, Schlag oder Tritt.</p></article><article><small>Penetrierend</small><b>Durchdringende Thoraxverletzung</b><p>Typisch bei Stich-, Schuss- oder Pfählungsverletzung.</p></article></div></div></section>
 
-    <section className="lesson-section"><ChapterHeading number="02" kicker="Anatomie / Physiologie" title="Anatomie und Physiologie" /><div className="lesson-prose script-copy"><h3>Pleura und Pleuraspalt</h3><ul className="script-list"><li><b>Pleura visceralis:</b> liegt der Lunge an.</li><li><b>Pleura parietalis:</b> liegt Rippen und Zwerchfell an und ist schmerzempfindlich.</li><li><b>Pleuraspalt:</b> schmaler Raum mit seröser Flüssigkeit und Unterdruck zwischen beiden Pleurablättern.</li><li>Adhäsions- und Kohäsionskräfte koppeln Lunge und Brustwand; der Flüssigkeitsfilm ermöglicht reibungsarmes Gleiten.</li></ul><SourceFigure src="/lessons/thoraxtrauma/page1-Im2.jpg" alt="Einteilung der Atemwege sowie Aufbau von Lunge, Pleura und Pleuraspalt" caption="Atemwege und Brustfell · Originalabbildung aus Print 5" wide /><div className="reading-columns"><div><h3>Adhäsion</h3><p>Die Lunge haftet funktionell an der Brustwand und folgt ihrer Bewegung.</p></div><div><h3>Kohäsion</h3><p>Der stabile Flüssigkeitsfilm unterstützt den Unterdruck und verhindert den Kollaps.</p></div></div><SourceFigure src="/lessons/thoraxtrauma/page2-Im5.png" alt="Tabelle zu Adhäsion und Kohäsion in der Atemmechanik" caption="Adhäsion und Kohäsion · Originaltabelle aus Print 5" wide /><h3>Brustkorb</h3><p>Der Brustkorb besteht aus zwölf Brustwirbeln, zwölf Rippenpaaren und dem Sternum. Die Rippen besitzen knöcherne und knorpelige Anteile; die 11. und 12. Rippe haben keine Verbindung zum Brustbein. Durch ihren schrägen Verlauf heben sie sich bei der Einatmung an und erweitern den Thorax.</p><div className="figure-grid"><SourceFigure src="/lessons/thoraxtrauma/page1-Im1.jpg" alt="Querschnitt durch Rippen, Brustwirbel und Sternum" caption="Thorax im Querschnitt · Originalabbildung aus Print 5" /><SourceFigure src="/lessons/thoraxtrauma/page1-Im3.jpg" alt="Beschrifteter knöcherner Brustkorb mit Rippen und Sternum" caption="Knöcherner Brustkorb · Originalabbildung aus Print 5" /></div><SourceFigure src="/lessons/thoraxtrauma/page1-Im4.jpg" alt="Schematische Pleuraschichten um die Lunge" caption="Pleurablätter · Originalabbildung aus Print 5" /></div></section>
+    <section className="lesson-section"><ChapterHeading number="02" kicker="Anatomie / Physiologie" title="Anatomie und Physiologie" /><div className="lesson-prose script-copy"><h3>Pleura und Pleuraspalt</h3><ul className="script-list"><li><b>Pleura visceralis:</b> liegt der Lunge an.</li><li><b>Pleura parietalis:</b> liegt Rippen und Zwerchfell an und ist schmerzempfindlich.</li><li><b>Pleuraspalt:</b> schmaler Raum mit seröser Flüssigkeit und Unterdruck zwischen beiden Pleurablättern.</li><li>Adhäsions- und Kohäsionskräfte koppeln Lunge und Brustwand; der Flüssigkeitsfilm ermöglicht reibungsarmes Gleiten.</li></ul><SourceFigure src="/lessons/thoraxtrauma/page1-Im2.jpg" alt="Einteilung der Atemwege sowie Aufbau von Lunge, Pleura und Pleuraspalt" caption="Atemwege und Brustfell · Originalabbildung aus Print 5" wide /><PleuralForces /><h3>Brustkorb</h3><p>Der Brustkorb besteht aus zwölf Brustwirbeln, zwölf Rippenpaaren und dem Sternum. Die Rippen besitzen knöcherne und knorpelige Anteile; die 11. und 12. Rippe haben keine Verbindung zum Brustbein. Durch ihren schrägen Verlauf heben sie sich bei der Einatmung an und erweitern den Thorax.</p><div className="figure-grid"><SourceFigure src="/lessons/thoraxtrauma/page1-Im1.jpg" alt="Querschnitt durch Rippen, Brustwirbel und Sternum" caption="Thorax im Querschnitt · Originalabbildung aus Print 5" /><SourceFigure src="/lessons/thoraxtrauma/page1-Im3.jpg" alt="Beschrifteter knöcherner Brustkorb mit Rippen und Sternum" caption="Knöcherner Brustkorb · Originalabbildung aus Print 5" /></div><SourceFigure src="/lessons/thoraxtrauma/page1-Im4.jpg" alt="Schematische Pleuraschichten um die Lunge" caption="Pleurablätter · Originalabbildung aus Print 5" /></div></section>
 
     <section className="lesson-section"><ChapterHeading number="03" kicker="Pathophysiologie" title="Ursachen, Entstehung und Pathophysiologie" /><div className="lesson-prose script-copy"><div className="reading-columns"><div><h3>Pneumothorax</h3><p>Beim offenen Pneumothorax strömt Luft über eine Thoraxwandverletzung in den Pleuraspalt ein und aus. Beim geschlossenen Pneumothorax gelangt Luft von innen in den Pleuraspalt, ohne Verbindung nach außen.</p></div><div><h3>Spannungspneumothorax</h3><p>Ein Ventilmechanismus verhindert das Entweichen von Luft. Druckaufbau, Lungenkollaps, Mediastinalverlagerung und Kompression großer Gefäße vermindern Ventilation, venösen Rückstrom, Herzzeitvolumen und Blutdruck.</p></div></div><div className="reading-columns"><div><h3>Hämatothorax</h3><p>Blut im Pleuraspalt komprimiert die Lunge und vermindert die Belüftung. Gleichzeitig entsteht ein relevanter Volumenverlust mit Gefahr des hämorrhagischen Schocks.</p></div><div><h3>Lungenkontusion</h3><p>Eine stumpfe Prellung oder Quetschung führt zu Einblutungen und Ödemen im Lungengewebe.</p></div></div><ul className="script-list"><li><b>Rippenserienfraktur:</b> mindestens drei benachbarte Rippen; ein instabiler Thorax mit paradoxer Atmung ist möglich.</li><li><b>Herzbeuteltamponade:</b> Blut im Perikard behindert die Herzfüllung und senkt das Herzzeitvolumen.</li><li><b>Aortenruptur:</b> Ein- oder Abriss, häufig im Bereich des Aortenbogens oder absteigenden Anteils.</li><li><b>Zwerchfellruptur:</b> Bauchorgane können durch den Defekt in den Brustkorb verlagert werden.</li><li><b>Begleitverletzungen:</b> Leber-, Milz- oder Magenverletzung mit möglichem Volumenmangelschock.</li></ul><h3>Ursachen</h3><div className="differential-grid"><span>Verkehrsunfall mit Lenkrad-, Gurt- oder Airbagkontakt</span><span>Sturz oder Quetschtrauma</span><span>Schlag oder Tritt</span><span>Stich-, Schuss- oder Pfählungsverletzung</span><span>Explosion</span><span>Sturz aus Höhe oder Arbeitsunfall</span></div></div></section>
 
@@ -1391,6 +1418,7 @@ function HyperventilationLesson({ onProgressChange, completed, onToggleComplete 
 
     <section className="lesson-section"><ChapterHeading number="02" kicker="Anatomie / Physiologie" title="Anatomie und Physiologie" /><div className="lesson-prose script-copy"><h3>Atemwege und Lunge</h3><p>Die oberen Atemwege umfassen Nase, Nasenhöhle, Nasennebenhöhlen und Rachen. Sie reinigen, erwärmen und befeuchten die Atemluft. Der Kehlkopf (Larynx) verbindet den Rachen mit der Luftröhre (Trachea). Danach folgen Bronchien, Bronchiolen und Lunge. Große Bronchien werden durch Knorpel stabilisiert; Bronchiolen enthalten glatte Muskulatur.</p><aside className="knowledge-note"><b>Luftweg im Überblick</b><p>Nase / Mund → Rachen (Pharynx) → Kehlkopf (Larynx) → Luftröhre (Trachea) → Bronchien → Bronchiolen → Alveolen. Kehldeckel (Epiglottis) und Stimmfalten sind Teile des Kehlkopfs und in der folgenden Abbildung einzeln beschriftet.</p></aside><p>Die Alveolen besitzen sehr dünne Wände und ein dichtes Kapillarnetz. Sauerstoff diffundiert aus den Alveolen in das Blut, Kohlenstoffdioxid aus dem Blut in die Alveolen. O₂ wird überwiegend an Hämoglobin transportiert, CO₂ vor allem als Bikarbonat sowie gelöst oder an Hämoglobin gebunden.</p><SourceFigure src="/lessons/hyperventilation/atemwege-lunge.jpg" alt="Beschriftete Atemwege, Lunge und Alveolen; Kehldeckel und Stimmfalten gehören zum Kehlkopf (Larynx)" caption="Atemwege und Lunge · Kehldeckel und Stimmfalten gehören zum Larynx" wide /><SourceFigure src="/lessons/hyperventilation/alveolen.jpg" alt="Alveolen mit Pneumozyten, Surfactant und Kollapsschutz" caption="Alveolen und Surfactant" wide /><h3>Ventilation</h3><p>Bei der Inspiration kontrahiert das Zwerchfell und senkt sich; die Zwischenrippenmuskulatur hebt den Brustkorb. Das Thoraxvolumen steigt und Luft strömt ein. Die Exspiration erfolgt in Ruhe überwiegend passiv durch Entspannung und elastische Rückstellkräfte.</p><SourceFigure src="/lessons/hyperventilation/perfusion-lunge-original.jpg" alt="Arterielle und venöse Perfusion der Lunge" caption="Perfusion der Lunge" wide /><SourceFigure src="/lessons/hyperventilation/atmungsregulation-original.jpg" alt="Atmungsregulation über Atemzentrum und Chemorezeptoren" caption="Atmungsregulation" wide /></div></section>
 
+    <section className="lesson-section"><ChapterHeading number="02A" kicker="Atemmechanik" title="Kohäsion, Adhäsion und Surfactant" /><div className="lesson-prose script-copy"><PleuralForces /></div></section>
     <section className="lesson-section"><ChapterHeading number="03" kicker="Pathophysiologie" title="Ursachen, Entstehung und Pathophysiologie" /><div className="lesson-prose script-copy"><div className="torsion-cascade"><small>Entstehungskette</small><ol><li><b>1</b><span>Angst, Panik, Stress oder organischer Atemantrieb</span></li><li><b>2</b><span>Atemfrequenz und/oder Atemtiefe steigen</span></li><li><b>3</b><span>Verstärkte CO₂-Abatmung und Hypokapnie</span></li><li><b>4</b><span>Respiratorische Alkalose</span></li><li><b>5</b><span>Zerebrale Vasokonstriktion und Abfall des ionisierten Kalziums</span></li></ol></div><h3>Bikarbonatpuffer</h3><p>CO₂ + H₂O ↔ H₂CO₃ ↔ H⁺ + HCO₃⁻. Wird vermehrt CO₂ abgeatmet, verschiebt sich das Gleichgewicht nach links. Die Konzentration freier Wasserstoffionen sinkt und der pH-Wert steigt.</p><SourceFigure src="/lessons/hyperventilation/bikarbonat-puffer-original.jpg" alt="Reaktionsgleichung des Bikarbonatpuffers" caption="Bikarbonat-Puffersystem" wide /><SourceFigure src="/lessons/hyperventilation/puffereigenschaften-blut-original.jpg" alt="Puffereigenschaften des Bikarbonatsystems im Blut" caption="Puffereigenschaften im Blut" wide /><p>Durch den pH-Anstieg bindet mehr Kalzium an Plasmaproteine. Das biologisch wirksame ionisierte Kalzium fällt vorübergehend ab; die neuromuskuläre Erregbarkeit steigt. Gleichzeitig führt die Hypokapnie zur zerebralen Vasokonstriktion und kann die Hirndurchblutung vermindern.</p><SourceFigure src="/lessons/hyperventilation/respiratorische-alkalose-original.jpg" alt="Entstehung, Folgen und Kompensation der respiratorischen Alkalose" caption="Respiratorische Alkalose" wide />
 <aside className="knowledge-note"><b>Fachliche Einordnung</b><p>Ein niedriger pH beziehungsweise ein hoher CO₂-Wert steigert den Atemantrieb. Ein hoher pH und niedriger CO₂-Wert vermindern ihn. Bei einer metabolischen Azidose ist die vertiefte Atmung dagegen eine sinnvolle respiratorische Kompensation.</p></aside>
 <h3>Säure-Basen-Störungen im Schock unterscheiden</h3><div className="reading-columns"><div><h3>Respiratorische Alkalose</h3><p>Angst, Aufregung, Schmerz oder ein gesteigerter Atemantrieb können auch bei einem Menschen im Schock zu einer übermäßigen CO₂-Abatmung führen. Der CO₂-Partialdruck fällt und der pH-Wert steigt. Diese Störung kann zusätzlich zur eigentlichen Schockpathophysiologie auftreten.</p></div><div><h3>Metabolische Azidose</h3><p>Bei Schock führt Hypoperfusion zu zellulärem Sauerstoffmangel, vermehrter anaerober Glykolyse und Laktatanstieg. Der pH-Wert fällt. Eine vertiefte Atmung kann durch zusätzliche CO₂-Abatmung teilweise kompensieren.</p></div><div><h3>Respiratorische Azidose</h3><p>Bei zusätzlicher Hypoventilation, etwa durch Atemdepression, Erschöpfung oder schwere Ventilationsstörung, bleibt CO₂ zurück. Der CO₂-Partialdruck steigt und der pH-Wert fällt. Nicht der Schock allein, sondern die zusätzliche unzureichende Ventilation verursacht diesen respiratorischen Anteil.</p></div></div><aside className="diagnostic-boundary"><span>!</span><div><b>Mischstörungen sind möglich</b><p>Ein Patient kann gleichzeitig eine schockbedingte metabolische Azidose und eine respiratorische Störung haben. Atemmuster, Kapnografie, Blutgasanalyse, Laktat und klinischer Verlauf müssen deshalb zusammen beurteilt werden.</p></div></aside>
@@ -2289,20 +2317,107 @@ function shuffledQuestions(questionBank: MultipleChoiceQuestion[], previous: Mul
   return next;
 }
 
-function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standalone = false, onTrainingStateChange, initialRoundSize = 10 }: { questionBank: MultipleChoiceQuestion[]; condition: string; onProgressChange: (progress: QuestionProgress) => void; standalone?: boolean; onTrainingStateChange?: (state: { current: number; total: number } | null) => void; initialRoundSize?: 5 | 10 | "all" }) {
-  const [questions, setQuestions] = useState<MultipleChoiceQuestion[]>([]);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [selections, setSelections] = useState<Record<string, number[]>>({});
-  const [answeredKeys, setAnsweredKeys] = useState<string[]>([]);
-  const [correctAnswers, setCorrectAnswers] = useState(0);
+type StoredMultipleChoiceSession = {
+  version: 1;
+  questions: MultipleChoiceQuestion[];
+  questionIndex: number;
+  selections: Record<string, number[]>;
+  answeredKeys: string[];
+  correctAnswers: number;
+  wrongQuestionIds: string[];
+  roundSize: 5 | 10 | "all";
+  skipStreak: number;
+  updatedAt?: string;
+};
+
+function validateMultipleChoiceSession(saved: StoredMultipleChoiceSession | null, questionBank: MultipleChoiceQuestion[]) {
+  if (!saved || saved.version !== 1 || !Array.isArray(saved.questions) || !saved.questions.length) return null;
+  const availableIds = new Set(questionBank.map((question) => question.id));
+  if (saved.questions.some((question) => !availableIds.has(question.id))) return null;
+  return saved;
+}
+
+function readMultipleChoiceSession(storageKey: string, questionBank: MultipleChoiceQuestion[]) {
+  if (!storageKey || typeof window === "undefined") return null;
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || "null") as StoredMultipleChoiceSession | null;
+    return validateMultipleChoiceSession(saved, questionBank);
+  } catch { return null; }
+}
+
+function mcDayKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function MultipleChoiceQuiz({ questionBank, condition, onProgressChange, standalone = false, onTrainingStateChange, initialRoundSize = 10, autoStart = false, persistenceKey = "" }: { questionBank: MultipleChoiceQuestion[]; condition: string; onProgressChange: (progress: QuestionProgress) => void; standalone?: boolean; onTrainingStateChange?: (state: { current: number; total: number } | null) => void; initialRoundSize?: 5 | 10 | "all"; autoStart?: boolean; persistenceKey?: string }) {
+  const resolvedPersistenceKey = persistenceKey || (condition === "Fällige Wiederholung" ? `${condition}:${mcDayKey()}:${autoStart ? questionBank[0]?.id || "einzeln" : "alle"}` : condition);
+  const sessionStorageKey = `notsan-mc-session-v1:${resolvedPersistenceKey}`;
+  const [restoredSession] = useState(() => readMultipleChoiceSession(sessionStorageKey, questionBank));
+  const sessionUserId = getActiveLearningUserId();
+  const [cloudHydratedUserId, setCloudHydratedUserId] = useState<string | null>(() => sessionUserId ? null : "guest");
+  const [questions, setQuestions] = useState<MultipleChoiceQuestion[]>(() => restoredSession?.questions || (autoStart ? questionBank.slice(0, 1) : []));
+  const [questionIndex, setQuestionIndex] = useState(() => restoredSession ? Math.min(restoredSession.questionIndex, restoredSession.questions.length - 1) : 0);
+  const [selections, setSelections] = useState<Record<string, number[]>>(() => restoredSession?.selections || {});
+  const [answeredKeys, setAnsweredKeys] = useState<string[]>(() => restoredSession?.answeredKeys || []);
+  const [correctAnswers, setCorrectAnswers] = useState(() => restoredSession?.correctAnswers || 0);
   const [finished, setFinished] = useState(false);
-  const [roundSize, setRoundSize] = useState<5 | 10 | "all">(initialRoundSize);
-  const [wrongQuestions, setWrongQuestions] = useState<MultipleChoiceQuestion[]>([]);
+  const [roundSize, setRoundSize] = useState<5 | 10 | "all">(() => restoredSession?.roundSize || initialRoundSize);
+  const [wrongQuestions, setWrongQuestions] = useState<MultipleChoiceQuestion[]>(() => restoredSession ? restoredSession.questions.filter((question) => restoredSession.wrongQuestionIds.includes(question.id)) : []);
   const [bookmarks, setBookmarks] = useState<string[]>(() => readBookmarks());
-  const [skipStreak, setSkipStreak] = useState(0);
+  const [skipStreak, setSkipStreak] = useState(() => restoredSession?.skipStreak || 0);
+  const [sessionQuestionBank] = useState(questionBank);
+  const [sessionTrainingStateChange] = useState(() => onTrainingStateChange);
   // Question ids are repository-wide identities. Mixed rounds must not invent a
   // second progress/bookmark identity for the same question.
   const keyOf = (question: MultipleChoiceQuestion) => question.id;
+
+  useEffect(() => {
+    if (!sessionUserId) return;
+    let active = true;
+    void loadMultipleChoiceSession(sessionUserId, resolvedPersistenceKey).then((remote) => {
+      if (!active) return;
+      const remoteSession = validateMultipleChoiceSession(remote?.payload as StoredMultipleChoiceSession | null, sessionQuestionBank);
+      const localTimestamp = restoredSession?.updatedAt || "";
+      const remoteTimestamp = remote?.updatedAt || remoteSession?.updatedAt || "";
+      if (remoteSession && remoteTimestamp > localTimestamp) {
+        setQuestions(remoteSession.questions);
+        setQuestionIndex(Math.min(remoteSession.questionIndex, remoteSession.questions.length - 1));
+        setSelections(remoteSession.selections || {});
+        setAnsweredKeys(remoteSession.answeredKeys || []);
+        setCorrectAnswers(remoteSession.correctAnswers || 0);
+        setWrongQuestions(remoteSession.questions.filter((question) => remoteSession.wrongQuestionIds.includes(question.id)));
+        setRoundSize(remoteSession.roundSize || initialRoundSize);
+        setSkipStreak(remoteSession.skipStreak || 0);
+        setFinished(false);
+        localStorage.setItem(sessionStorageKey, JSON.stringify({ ...remoteSession, updatedAt: remoteTimestamp }));
+        sessionTrainingStateChange?.({ current: Math.min(remoteSession.answeredKeys.length + 1, remoteSession.questions.length), total: remoteSession.questions.length });
+      }
+      setCloudHydratedUserId(sessionUserId);
+    }).catch(() => { if (active) setCloudHydratedUserId(sessionUserId); });
+    return () => { active = false; };
+  }, [initialRoundSize, resolvedPersistenceKey, restoredSession, sessionQuestionBank, sessionStorageKey, sessionTrainingStateChange, sessionUserId]);
+
+  useEffect(() => {
+    if (!sessionStorageKey) return;
+    if (finished) {
+      localStorage.removeItem(sessionStorageKey);
+      if (sessionUserId && cloudHydratedUserId === sessionUserId) void deleteMultipleChoiceSession(sessionUserId, resolvedPersistenceKey).catch(() => undefined);
+      return;
+    }
+    if (!questions.length) return;
+    if (sessionUserId && cloudHydratedUserId !== sessionUserId) return;
+    const updatedAt = new Date().toISOString();
+    const session: StoredMultipleChoiceSession = { version: 1, questions, questionIndex, selections, answeredKeys, correctAnswers, wrongQuestionIds: wrongQuestions.map((question) => question.id), roundSize, skipStreak, updatedAt };
+    localStorage.setItem(sessionStorageKey, JSON.stringify(session));
+    if (!sessionUserId) return;
+    const timer = window.setTimeout(() => { void saveMultipleChoiceSession(sessionUserId, resolvedPersistenceKey, session, updatedAt).catch(() => undefined); }, 500);
+    return () => window.clearTimeout(timer);
+  }, [answeredKeys, cloudHydratedUserId, correctAnswers, finished, questionIndex, questions, resolvedPersistenceKey, roundSize, selections, sessionStorageKey, sessionUserId, skipStreak, wrongQuestions]);
+
+  useEffect(() => {
+    if (!restoredSession?.questions.length) return;
+    onTrainingStateChange?.({ current: Math.min(restoredSession.answeredKeys.length + 1, restoredSession.questions.length), total: restoredSession.questions.length });
+  }, [onTrainingStateChange, restoredSession]);
 
   const start = () => {
     const shuffled = shuffledQuestions(questionBank, questions);
@@ -2449,6 +2564,10 @@ const learningPlanTopics = oralTrainingChapters.map((chapter) => ({
   questionIds: (trainingQuestionBanks[chapter.topic] || []).map((question) => question.id),
   oralIndex: specialOralTopicIndexes[chapter.topic] ?? topicIndexBySlug[chapter.topic],
 }));
+const learningPlanQuestionLabels = Object.fromEntries(Object.entries(trainingQuestionBanks).flatMap(([topic, questions]) => {
+  const topicTitle = oralTrainingChapters.find((chapter) => chapter.topic === topic)?.title || topic;
+  return (questions || []).map((question) => [question.id, { prompt: question.prompt, topicTitle }]);
+}));
 const caseGeneratorTopics = oralTrainingChapters.map((chapter) => {
   const number = Number.parseInt(chapter.number, 10);
   const category = topicGroups.find((group) => (group.topicNumbers as readonly number[]).includes(number))?.name || "Weitere Notfallbilder";
@@ -2524,7 +2643,7 @@ function QuizLanding({ track, setTrack, onSelect, onMixed, progress }: { track: 
   </section>;
 }
 
-function QuizTraining({ onProgressChange, progress, selectedTopic, reviewMode, setSelectedTopic, onReviewBack }: { onProgressChange: (progress: QuestionProgress) => void; progress: QuestionProgress; selectedTopic: TrainingTopic | null; reviewMode: ReviewMode; setSelectedTopic: (topic: TrainingTopic | null) => void; onReviewBack: () => void }) {
+function QuizTraining({ onProgressChange, progress, selectedTopic, reviewMode, reviewQuestionId, setSelectedTopic, onReviewBack }: { onProgressChange: (progress: QuestionProgress) => void; progress: QuestionProgress; selectedTopic: TrainingTopic | null; reviewMode: ReviewMode; reviewQuestionId: string | null; setSelectedTopic: (topic: TrainingTopic | null) => void; onReviewBack: () => void }) {
   const [track, setTrack] = useState<"oral" | "written">("oral");
   const [trainingProgress, setTrainingProgress] = useState<{ current: number; total: number } | null>(null);
   const [mixedQuestions, setMixedQuestions] = useState<MultipleChoiceQuestion[] | null>(null);
@@ -2532,12 +2651,13 @@ function QuizTraining({ onProgressChange, progress, selectedTopic, reviewMode, s
     const dueIds = new Set(dueQuestionIds(progress));
     const seen = new Set<string>();
     const dueQuestions = Object.entries(trainingQuestionBanks).flatMap(([topic, questions]) => questions.flatMap((question) => {
-      if (!dueIds.has(question.id) || seen.has(question.id)) return [];
+      if ((!dueIds.has(question.id) && question.id !== reviewQuestionId) || seen.has(question.id)) return [];
       seen.add(question.id);
       const chapter = oralTrainingChapters.find((item) => item.topic === topic);
       return [{ ...question, sourceTopic: topic as TrainingTopic, sourceTitle: chapter?.title || topic }];
-    }));
-    return <section className={`quiz-page mc-training-page ${trainingProgress ? "is-active" : ""}`}><button className="back-button" onClick={() => { setTrainingProgress(null); onReviewBack(); }}>← Zurück zum Lernstand</button>{trainingProgress ? <div className="active-training-heading"><div><span className="eyebrow">Fällige Wiederholung</span><h1>Alle fälligen Fragen</h1></div><b>Frage {trainingProgress.current} von {trainingProgress.total}</b></div> : <div className="section-heading"><div><span className="eyebrow">Lernplan · Wiederholen</span><h1>Alle fälligen Fragen sind ausgewählt.</h1><p>Die Runde enthält alle heute fälligen Fragen aus deinen begonnenen Themen. Du musst keine Kapitel einzeln auswählen.</p></div><div className="source-badge"><b>{dueQuestions.length}</b><span>fällig</span></div></div>}{dueQuestions.length || trainingProgress ? <MultipleChoiceQuiz standalone initialRoundSize="all" questionBank={dueQuestions} condition="Fällige Wiederholung" onProgressChange={onProgressChange} onTrainingStateChange={setTrainingProgress} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine Fragen mehr fällig</h2><p>Dein Lernplan wird nach der nächsten Fälligkeit automatisch aktualisiert.</p></div></div>}</section>;
+    })).sort((a, b) => Number(b.id === reviewQuestionId) - Number(a.id === reviewQuestionId));
+    const reviewQuestions = reviewQuestionId ? dueQuestions.filter((question) => question.id === reviewQuestionId) : dueQuestions;
+    return <section className={`quiz-page mc-training-page ${trainingProgress ? "is-active" : ""}`}><button className="back-button" onClick={() => { setTrainingProgress(null); onReviewBack(); }}>← Zurück zum Lernplan</button>{trainingProgress ? <div className="active-training-heading"><div><span className="eyebrow">Fällige Wiederholung</span><h1>{reviewQuestionId ? "Gezielte Frage" : "Alle fälligen Fragen"}</h1></div><b>Frage {trainingProgress.current} von {trainingProgress.total}</b></div> : !reviewQuestionId && <div className="section-heading"><div><span className="eyebrow">Lernplan · Wiederholen</span><h1>Alle fälligen Fragen sind ausgewählt.</h1><p>Die Runde enthält alle heute fälligen Fragen aus deinen begonnenen Themen. Du musst keine Kapitel einzeln auswählen.</p></div><div className="source-badge"><b>{reviewQuestions.length}</b><span>fällig</span></div></div>}{reviewQuestions.length || trainingProgress ? <MultipleChoiceQuiz key={reviewQuestionId || "all-due"} standalone autoStart={Boolean(reviewQuestionId)} initialRoundSize="all" questionBank={reviewQuestions} condition="Fällige Wiederholung" onProgressChange={onProgressChange} onTrainingStateChange={setTrainingProgress} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine Fragen mehr fällig</h2><p>Dein Lernplan wird nach der nächsten Fälligkeit automatisch aktualisiert.</p></div></div>}</section>;
   }
   if (selectedTopic === "opiatintoxikation") {
     const filteredBank = reviewMode === "wrong" ? opiatintoxikationQuestions.filter((question) => progress[question.id]?.correctCount === 0) : reviewMode === "once" ? opiatintoxikationQuestions.filter((question) => progress[question.id]?.correctCount === 1) : reviewMode === "twice" ? opiatintoxikationQuestions.filter((question) => progress[question.id]?.correctCount === 2) : opiatintoxikationQuestions;

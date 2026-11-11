@@ -25,6 +25,9 @@ Die ersten zehn Dateien stammen von Wikimedia Commons, wurden von **Rocuronium B
 | `av-block-3-clear.jpg` | [CompleteHeartBlock.jpg](https://commons.wikimedia.org/wiki/File:CompleteHeartBlock.jpg), James Heilman, MD, CC BY-SA 3.0; verkleinerte Originalaufnahme ohne eingeblendete Diagnose |
 | `bundle-branch-a.svg` | Eigene neutrale schematische Lernabbildung eines kompletten Rechtsschenkelblocks anhand etablierter 12-Kanal-Kriterien; fachliche Grundlage: [University of Utah ECG Learning Center](https://ecg.utah.edu/lesson/6) |
 | `bundle-branch-b.svg` | Eigene neutrale schematische Lernabbildung eines kompletten Linksschenkelblocks anhand etablierter 12-Kanal-Kriterien; fachliche Grundlage: [AHA/ACCF/HRS-Empfehlungen zur intraventrikulären Leitungsstörung](https://www.ahajournals.org/doi/pdf/10.1161/circulationaha.108.191095) |
+| `sinustachykardie-schulfolie.jpg` | EKG-Originalabbildung aus der bereitgestellten Schulunterlage `20261001_HRST_Tachykardie_NFS.pdf`, Folie 14 |
+| `svt-schmalkomplex-schulfolie.jpg` | EKG-Originalabbildung aus der bereitgestellten Schulunterlage `20261001_HRST_Tachykardie_NFS.pdf`, Folie 5 |
+| `monomorphe-vt-schulfolie.jpg` | EKG-Originalabbildung aus der bereitgestellten Schulunterlage `20261001_HRST_Tachykardie_NFS.pdf`, Folie 16 |
 
 `interpretation-07.svg` zeigt bewusst nur einen organisierten Sinusrhythmus: Eine pulslose elektrische Aktivität kann nicht aus dem EKG allein diagnostiziert werden, sondern erfordert den klinisch fehlenden Puls.
 
