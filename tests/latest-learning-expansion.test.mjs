@@ -9,6 +9,8 @@ const highlighter = readFileSync(new URL("../app/text-highlighter.tsx", import.m
 const highlightStore = readFileSync(new URL("../app/lib/textHighlights.ts", import.meta.url), "utf8");
 const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 const writtenSearch = readFileSync(new URL("../app/written-term-search.tsx", import.meta.url), "utf8");
+const communicationLesson = readFileSync(new URL("../app/kommunikation-lesson.tsx", import.meta.url), "utf8");
+const communicationData = readFileSync(new URL("../app/kommunikation-data.ts", import.meta.url), "utf8");
 
 test("polytrauma distinguishes immediate and delayed splenic rupture", () => {
   assert.match(polytrauma, /Einzeitige Milzruptur/);
@@ -67,4 +69,14 @@ test("every written learning area exposes searchable jump results", () => {
   assert.match(writtenSearch, /Schriftlichen Lernbereich durchsuchen/);
   assert.match(writtenSearch, /:scope > details/);
   assert.match(writtenSearch, /scrollIntoView\(\{ behavior: "smooth", block: "center" \}\)/);
+});
+
+test("communication covers the complete school learning-goal expansion", () => {
+  assert.match(communicationLesson, /<div><b>17<\/b><span>Lernfelder/);
+  assert.match(communicationLesson, /Kinder, ältere und nichtsprechende Patienten/);
+  assert.match(communicationLesson, /Angehörige, Trauer, Sucht und psychische Erkrankung/);
+  assert.match(communicationLesson, /Konflikte erkennen, klären und Feedback geben/);
+  assert.match(communicationLesson, /Deeskalation, Stress und direktive Kommunikation/);
+  assert.match(communicationData, /komm-card-38/);
+  assert.match(communicationData, /komm-q-60/);
 });

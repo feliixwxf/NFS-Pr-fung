@@ -27,7 +27,7 @@ export default function KommunikationLesson({ onBack, finale }: { onBack: () => 
     <button className="back-button" onClick={onBack}>← Schriftliche Fachbereiche</button>
     <header className="communication-hero">
       <div><span className="eyebrow light">Schriftliche Prüfung · Kommunikation &amp; Interaktion</span><h1>Verstehen.<br />Verbinden. Sicher handeln.</h1><p>Kommunikationsmodelle nicht nur nennen, sondern auf Patientengespräch, Teamarbeit und Übergabe anwenden.</p></div>
-      <div><b>13</b><span>Lernfelder</span><small>NotSan-Prüfung 2027</small></div>
+      <div><b>17</b><span>Lernfelder</span><small>NotSan-Prüfung 2027</small></div>
     </header>
 
     <aside className="communication-focus"><span>↔</span><div><b>Prüfungsfokus Thüringen</b><p>Modelle erklären, eine Einsatzsituation analysieren und daraus eine konkrete professionelle Formulierung oder Handlung ableiten.</p></div></aside>
@@ -127,7 +127,7 @@ export default function KommunikationLesson({ onBack, finale }: { onBack: () => 
         </div>
       </CommunicationSection>
 
-      <CommunicationSection number="10" kicker="Konflikt und Deeskalation" title="Rollen, Ich-Botschaften und gewaltfreie Kommunikation">
+      <CommunicationSection number="10" kicker="Rollen und Gesprächsführung" title="Rollen, Ich-Botschaften und gewaltfreie Kommunikation">
         <div className="communication-copy"><div className="communication-study-grid"><CommunicationStudyCard kicker="Zwischen eigenen Rollen" title="Interrollenkonflikt"><p>Beispiel: Teamleitung und private Freundschaft erzeugen gegensätzliche Erwartungen.</p></CommunicationStudyCard><CommunicationStudyCard kicker="Innerhalb derselben Rolle" title="Intrarollenkonflikt"><p>Beispiel: Angehörige und Notarzt erwarten Unterschiedliches von derselben NotSan-Rolle.</p></CommunicationStudyCard></div>
           <h3>Vier Schritte nach Marshall B. Rosenberg</h3><div className="giraffe-steps"><span><b>1</b>Beobachtung ohne Bewertung</span><span><b>2</b>Gefühl benennen</span><span><b>3</b>Bedürfnis ausdrücken</span><span><b>4</b>Konkrete Bitte formulieren</span></div>
           <aside className="communication-case"><small>Ich-Botschaft</small><p>„Wenn mehrere Personen gleichzeitig sprechen, verliere ich wichtige Angaben. Ich brauche kurz Ruhe. Bitte spricht jetzt nur eine Person.“</p></aside>
@@ -158,9 +158,77 @@ export default function KommunikationLesson({ onBack, finale }: { onBack: () => 
           <aside className="communication-case"><small>Kurzes Einsatzbeispiel</small><p>„Guten Tag, mein Name ist Max Mustermann, ich bin Notfallsanitäter. Ich sehe, dass Sie Angst haben. Ich erkläre Ihnen jeden Schritt. Erzählen Sie mir zuerst, was passiert ist.“</p></aside>
         </div>
       </CommunicationSection>
+
+      <CommunicationSection number="14" kicker="Lebensalter und Barrieren" title="Kinder, ältere und nichtsprechende Patienten">
+        <div className="communication-copy">
+          <h3>Kindgerecht nach Entwicklungsstand kommunizieren</h3>
+          <div className="communication-grid">
+            <article><b>Säugling und Kleinkind</b><p>Bezugsperson einbeziehen, Reize reduzieren, langsam annähern, einfache konkrete Wörter nutzen und Untersuchungsschritte spielerisch ankündigen.</p></article>
+            <article><b>Vorschulkind</b><p>Kurze ehrliche Erklärungen, keine falschen Versprechen, kleine echte Wahlmöglichkeiten und Lob für konkrete Mitarbeit.</p></article>
+            <article><b>Schulkind</b><p>Direkt ansprechen, Abläufe und Körpervorgänge verständlich erklären, Fragen zulassen und Schamgrenzen beachten.</p></article>
+            <article><b>Jugendliche</b><p>Autonomie und Privatsphäre respektieren, Gespräch auf Augenhöhe führen und bei sensiblen Themen einen vertraulichen Gesprächsanteil ermöglichen.</p></article>
+          </div>
+          <div className="communication-compare">
+            <article><small>Ältere Menschen</small><h3>Zeit geben, nicht bevormunden</h3><p>Langsam und deutlich sprechen, jeweils eine Information vermitteln, Hör- und Sehhilfen berücksichtigen und die Person selbst ansprechen. Alter allein bedeutet weder fehlendes Verständnis noch fehlende Einwilligungsfähigkeit.</p></article>
+            <article><small>Kann hören, aber nicht sprechen</small><h3>Ja-Nein-System vereinbaren</h3><p>Verständnis und verlässliches Antwortsignal prüfen, geschlossene Fragen einzeln stellen und Kommunikationshilfen nutzen: Schreiben, Buchstaben- oder Bildtafel, Gesten oder unterstützte Zeigeantwort. Genügend Zeit lassen und Ergebnisse rückbestätigen.</p></article>
+          </div>
+          <aside className="communication-exam-tip"><b>Sprachbarriere</b><p>Kurze Sätze und Visualisierung helfen, ersetzen bei wichtigen Entscheidungen aber nicht automatisch eine qualifizierte Sprachmittlung. Ein zustimmendes Nicken beweist keine informierte Einwilligung.</p></aside>
+        </div>
+      </CommunicationSection>
+
+      <CommunicationSection number="15" kicker="Psychische Ausnahmesituation" title="Angehörige, Trauer, Sucht und psychische Erkrankung">
+        <div className="communication-copy">
+          <p>Angehörige können gleichzeitig Informationsquelle, Ressource und selbst akut belastete Betroffene sein. Kontrollverlust, Angst, Schuldgefühle und fehlende Orientierung können Informationsaufnahme und Verhalten erheblich verändern.</p>
+          <div className="communication-study-grid">
+            <CommunicationStudyCard kicker="Angehörige" title="Orientierung geben"><p>Zuständigkeit erklären, einen festen Ansprechpartner benennen, den nächsten Schritt ankündigen und kurze gesicherte Informationen geben. Keine Prognosen versprechen, die nicht belastbar sind.</p></CommunicationStudyCard>
+            <CommunicationStudyCard kicker="Akute Trauer" title="Präsenz statt Floskeln"><p>Stille zulassen, einfache ehrliche Sätze nutzen, Gefühle nicht bewerten und konkrete Hilfe anbieten. Aussagen wie „Sie müssen stark sein“ oder „Das wird schon“ vermeiden.</p></CommunicationStudyCard>
+            <CommunicationStudyCard kicker="Sucht" title="Wertfrei und symptomorientiert"><p>Person nicht auf die Abhängigkeit reduzieren, Konsum und Entzug sachlich erfragen, Stigmatisierung vermeiden und dennoch klare Sicherheitsgrenzen setzen.</p></CommunicationStudyCard>
+            <CommunicationStudyCard kicker="Psychische Erkrankung" title="Ruhig und konkret"><p>Wahrnehmung nicht lächerlich machen, Gefühle anerkennen, ohne Wahninhalte zu bestätigen; Suizidalität und Gefährdung direkt und klar erfragen.</p></CommunicationStudyCard>
+          </div>
+          <h3>Trauerreaktionen fachlich einordnen</h3>
+          <p>Modelle beschreiben mögliche Reaktionen wie Nicht-wahrhaben-Wollen, starke Gefühle, Suchen oder Verhandeln, depressive Reaktion und Akzeptanz. Diese Reaktionen verlaufen <b>nicht zwingend linear</b>, können wechseln, parallel auftreten oder ausbleiben. Im Einsatz zählt die individuelle Reaktion, nicht das Einordnen in eine starre Phase.</p>
+        </div>
+      </CommunicationSection>
+
+      <CommunicationSection number="16" kicker="Konfliktkompetenz" title="Konflikte erkennen, klären und Feedback geben">
+        <div className="communication-copy">
+          <p>Ein Konflikt entsteht, wenn Beteiligte Ziele, Bedürfnisse, Werte, Rollen oder Ressourcen als unvereinbar erleben. Missverständnis, Bewertung und Gegenreaktion können sich gegenseitig verstärken.</p>
+          <div className="communication-channel-grid">
+            <article><span>Sache</span><h3>Sachkonflikt</h3><p>Unterschiedliche Einschätzung von Fakten oder Vorgehen.</p></article>
+            <article><span>Ziel</span><h3>Zielkonflikt</h3><p>Uneinigkeit über das gewünschte Ergebnis.</p></article>
+            <article><span>Rolle</span><h3>Rollenkonflikt</h3><p>Unklare oder widersprüchliche Erwartungen an Zuständigkeiten.</p></article>
+            <article><span>Wert</span><h3>Wertekonflikt</h3><p>Unterschiedliche Normen, Überzeugungen oder Prioritäten.</p></article>
+            <article><span>Ressource</span><h3>Verteilungskonflikt</h3><p>Streit um Zeit, Personal, Material oder Aufmerksamkeit.</p></article>
+          </div>
+          <h3>Konfliktspirale unterbrechen</h3>
+          <div className="closed-loop-model"><span><b>1</b>Wahrnehmen</span><i>→</i><span><b>2</b>Beruhigen</span><i>→</i><span><b>3</b>Sichtweisen klären</span><i>→</i><span><b>4</b>Gemeinsames Ziel</span><i>→</i><span><b>5</b>Vereinbarung</span></div>
+          <div className="communication-compare">
+            <article><small>Feedback geben</small><h3>Konkret und verhaltensbezogen</h3><p>Passenden Zeitpunkt wählen, beobachtbare Situation benennen, Wirkung beschreiben, eigene Perspektive als solche kenntlich machen und eine konkrete zukünftige Vereinbarung treffen.</p></article>
+            <article><small>Feedback annehmen</small><h3>Zuhören und prüfen</h3><p>Ausreden lassen, Verständnisfragen stellen, Gehörtes zusammenfassen und entscheiden, was übernommen wird. Rechtfertigung oder Gegenangriff nicht reflexhaft voranstellen.</p></article>
+          </div>
+          <aside className="communication-case"><small>Feedbackburger · Lernmodell</small><p>Positive Beobachtung → konkreter Verbesserungsbedarf → ermutigender Ausblick. Wichtig: Kritische Information darf nicht zwischen allgemeinem Lob versteckt werden; sie muss klar, respektvoll und handlungsorientiert bleiben.</p></aside>
+        </div>
+      </CommunicationSection>
+
+      <CommunicationSection number="17" kicker="Einsatzdynamik" title="Deeskalation, Stress und direktive Kommunikation">
+        <div className="communication-copy">
+          <div className="communication-compare">
+            <article><small>Aggressionsmindernd</small><h3>Ruhe und Sicherheit herstellen</h3><p>Abstand und Fluchtweg sichern, Reize und Zuschauer reduzieren, nur eine Person sprechen lassen, ruhige Stimme und kurze Sätze nutzen, Gefühle spiegeln, echte Wahlmöglichkeiten anbieten und klare Grenzen setzen.</p></article>
+            <article><small>Direktiv kommunizieren</small><h3>Wenn unmittelbare Gefahr besteht</h3><p>Bei Reanimation, drohender Atemwegsverlegung, Gewalt oder anderer Zeitkritik sind knappe eindeutige Aufträge erforderlich: Person adressieren, Handlung und Ziel nennen, Check-back verlangen und Durchführung rückmelden lassen.</p></article>
+          </div>
+          <h3>Schmerz, Kultur und Gruppendynamik mitdenken</h3>
+          <div className="communication-grid">
+            <article><b>Schmerz</b><p>Verengt Aufmerksamkeit und Gedächtnis. Erstversorgung, kurze Informationen, Pausen und Wiederholung verbessern die Aufnahmefähigkeit.</p></article>
+            <article><b>Kultureller Kontext</b><p>Unterschiede bei Blickkontakt, Nähe, Scham oder Familienrollen als Möglichkeit beachten, aber nicht stereotyp unterstellen. Individuell nachfragen.</p></article>
+            <article><b>Gruppe am Einsatzort</b><p>Aufgaben verteilen, Ansprechpartner bestimmen, widersprüchliche Ansagen vermeiden und Umstehende mit konkreten sicheren Tätigkeiten einbinden.</p></article>
+            <article><b>Eigener Stress</b><p>Kurz stoppen, ausatmen, Lage und Priorität benennen, nächsten Schritt festlegen und im Team rückbestätigen. Struktur schützt vor hektischer, widersprüchlicher Kommunikation.</p></article>
+          </div>
+          <aside className="communication-exam-tip"><b>Prüfungsformel</b><p><b>So kooperativ wie möglich, so direktiv wie nötig.</b> Wertschätzung bleibt bestehen; die Kommunikationsform richtet sich nach Zeitkritik, Gefährdung und Aufnahmefähigkeit.</p></aside>
+        </div>
+      </CommunicationSection>
     </div>
 
     {finale}
-    <section className="legal-sources communication-sources"><span className="eyebrow">Fachliche Grundlage</span><h2>Geprüfte Lerninhalte</h2><p>Die Kommunikationsmodelle und Einsatzbeispiele wurden anhand der NotSan-APrV, des Schulz-von-Thun-Instituts sowie patientensicherer Kommunikationsprinzipien wie Check-back und Teach-back geprüft und präzisiert.</p></section>
+    <section className="legal-sources communication-sources"><span className="eyebrow">Fachliche Grundlage</span><h2>Geprüfte Lerninhalte</h2><p>Die Kommunikationsmodelle und Einsatzbeispiele wurden anhand der NotSan-APrV, der schulischen Lernziele für Themenbereich 3 des DRK-Bildungswerks Thüringen sowie patientensicherer Kommunikationsprinzipien wie Check-back und Teach-back geprüft und präzisiert.</p></section>
   </section>;
 }
