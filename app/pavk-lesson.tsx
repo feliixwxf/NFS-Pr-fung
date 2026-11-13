@@ -4,7 +4,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; children: ReactNode };
 
 export default function PavkLesson({ Figure, children }: Props) {
-  const section = (number: string, kicker: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, kicker: string, title: string, body: ReactNode) => <details open={number === "01"} className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article angina-pectoris-lesson venenthrombose-lesson pavk-lesson">
     <div className="lesson-intro"><p className="lead">Belastungsabhängiger Muskelschmerz ist das klassische Warnsignal der chronischen pAVK. Plötzlicher Schmerz, Kälte, Pulslosigkeit oder ein neurologisches Defizit bedeuten dagegen: akute Extremitätenischämie – Zeit ist Gewebe.</p></div>

@@ -15,6 +15,7 @@ import { myokardinfarktQuestions } from "./myokardinfarkt-data";
 import { herzrhythmusstoerungenQuestions } from "./herzrhythmusstoerungen-data";
 import { bronchoQuestions } from "./bronchoobstruktion-data";
 import { krampfanfallQuestions } from "./krampfanfall-data";
+import { pharmakologieQuestions } from "./pharmakologie-data";
 
 type ExamOption = { text: string; correct?: boolean };
 type ExamQuestion = {
@@ -61,8 +62,8 @@ const EXAMS: ExamDefinition[] = [
     day: "Prüfungstag 2",
     title: "Diagnostik und Therapie",
     subtitle: "Befunde einordnen, bei Therapie mitwirken und lebensrettende Maßnahmen sicher priorisieren.",
-    topics: ["Diagnostik", "Reanimation", "EKG", "Atmung", "Neurologie"],
-    banks: [diagnostikQuestions, myokardinfarktQuestions, herzrhythmusstoerungenQuestions, bronchoQuestions, krampfanfallQuestions, anaphylaxieQuestions],
+    topics: ["Diagnostik", "Pharmakologie", "Reanimation", "EKG", "Atmung", "Neurologie"],
+    banks: [diagnostikQuestions, pharmakologieQuestions, myokardinfarktQuestions, herzrhythmusstoerungenQuestions, bronchoQuestions, krampfanfallQuestions, anaphylaxieQuestions],
   },
   {
     id: "tag-3",

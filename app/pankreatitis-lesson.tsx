@@ -5,7 +5,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function PankreatitisLesson({ Figure, Vfa, children }: Props) {
-  const section = (number: string, kicker: string, title: string, body: ReactNode) => <details open className="lesson-section rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, kicker: string, title: string, body: ReactNode) => <details open={number === "01"} className="lesson-section rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article angina-pectoris-lesson reference-reading-lesson akutes-abdomen-lesson pankreatitis-lesson">
     <div className="lesson-intro"><p className="lead">Starker gürtelförmiger Oberbauchschmerz, Erbrechen und ein zunehmend kranker Patient können auf eine akute Pankreatitis hinweisen. Präklinisch zählen Gefährdung, Differenzialdiagnosen, überwachte Analgesie und eine geeignete Zielklinik – nicht die endgültige Labor- oder Bilddiagnose.</p></div>

@@ -5,7 +5,7 @@ type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProp
 
 export default function HerzrhythmusstoerungenLesson({ Figure, Vfa, children }: Props) {
   const section = (number: string, title: string, kicker: string, body: ReactNode) => (
-    <details open className="rib-section" key={number}>
+    <details open={number === "01"} className={`rib-section hrst-section hrst-section-${number}`} key={number}>
       <summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary>
       <div className="lesson-prose script-copy">{body}</div>
     </details>
@@ -14,11 +14,25 @@ export default function HerzrhythmusstoerungenLesson({ Figure, Vfa, children }: 
   return <article className="lesson-article rippenfraktur-lesson herzrhythmusstoerungen-lesson">
     <div className="lesson-intro"><p className="lead">Zuerst Puls und Stabilität, danach das EKG: So führt die Rhythmusanalyse sicher zum passenden Behandlungsweg.</p></div>
 
+    <nav className="hrst-learning-path" aria-label="Lernweg Herzrhythmusstörungen">
+      <div><span>1</span><small>Grundlage</small><b>Erregung verstehen</b><p>Reizleitung, EKG-Zacken und Normwerte.</p></div>
+      <div><span>2</span><small>Rhythmus</small><b>Streifen beschreiben</b><p>Frequenz, Regelmäßigkeit, P, PQ und QRS.</p></div>
+      <div><span>3</span><small>Klinik</small><b>Stabilität prüfen</b><p>Puls, Schock, Synkope, Ischämie und Herzinsuffizienz.</p></div>
+      <div><span>4</span><small>Handeln</small><b>Passenden Pfad wählen</b><p>Ursache behandeln, Bradykardie, Tachykardie oder Reanimation.</p></div>
+    </nav>
+
     {section("01", "Definition und Einteilung", "Was ist gestört?", <>
       <p>Eine <b>Herzrhythmusstörung</b> ist eine Abweichung der normalen Erregungsbildung oder Erregungsleitung. Dadurch verändern sich Frequenz, Regelmäßigkeit, Ursprungsort oder zeitliche Abfolge der Herzaktionen. Nicht jedes abweichende EKG ist vital bedrohlich; entscheidend ist, ob der Rhythmus eine ausreichende Organperfusion ermöglicht.</p>
       <div className="pulmo-anatomy-grid"><div><small>Frequenz</small><b>Bradykard oder tachykard</b><p>Zu langsam oder zu schnell im Verhältnis zur klinischen Situation.</p></div><div><small>Ursprung</small><b>Supraventrikulär oder ventrikulär</b><p>Oberhalb oder innerhalb des ventrikulären Leitungssystems und Myokards entstanden.</p></div><div><small>Mechanismus</small><b>Bildung oder Leitung</b><p>Der Impuls entsteht falsch, zu häufig, zu selten oder wird verzögert beziehungsweise blockiert.</p></div></div>
       <div className="pulmo-compare"><div><small>Rhythmisch</small><h3>Regelmäßige Abstände</h3><p>Beispielsweise Sinusbradykardie, regelmäßige SVT oder monomorphe VT.</p></div><div><small>Arrhythmisch</small><h3>Unregelmäßige Abstände</h3><p>Beispielsweise Vorhofflimmern, wechselnde Extrasystolen oder polymorphe VT.</p></div></div>
       <aside className="diagnostic-boundary"><span>1→6</span><div><b>Zuerst Klinik, danach EKG-Systematik</b><p><b>Klinik:</b> Puls vorhanden? Stabil oder instabil? <b>EKG:</b> Frequenz → Regelmäßigkeit → P-Welle → PQ-Zeit → QRS-Breite und -Form → ST-Strecke, T-Welle und QT-Zeit.</p></div></aside>
+      <h3>Der schnelle Rhythmus-Kompass</h3>
+      <div className="hrst-rhythm-matrix">
+        <div><small>Schmal · regelmäßig</small><b>Oft supraventrikulär</b><p>Sinustachykardie, AV-Knoten-Reentry-Tachykardie oder Vorhofflattern mit fester Überleitung.</p></div>
+        <div><small>Schmal · unregelmäßig</small><b>Vorhofrhythmus prüfen</b><p>Vorhofflimmern, Vorhofflattern mit wechselnder Überleitung oder multifokale atriale Tachykardie.</p></div>
+        <div><small>Breit · regelmäßig</small><b>VT bis zur Klärung</b><p>Ventrikuläre Tachykardie; differenzialdiagnostisch supraventrikuläre Tachykardie mit Schenkelblock.</p></div>
+        <div><small>Breit · unregelmäßig</small><b>Besonders gefährlich</b><p>Polymorphe VT oder Vorhofflimmern mit aberranter Leitung beziehungsweise Präexzitation.</p></div>
+      </div>
     </>)}
 
     {section("02", "Anatomie, Reizleitung und EKG", "Anatomie und Physiologie", <>
@@ -41,7 +55,9 @@ export default function HerzrhythmusstoerungenLesson({ Figure, Vfa, children }: 
       <aside className="knowledge-note"><b>Technik vor Diagnose</b><p>Elektrodenvertauschung, Muskelzittern, schlechter Hautkontakt, wandernde Grundlinie, Wechselstromstörung oder falsche Kalibrierung können Rhythmus, Lagetyp und ST-Strecke verfälschen. Auffällige Befunde deshalb mit Patient, Puls, mehreren Ableitungen und korrekter Elektrodenlage abgleichen.</p></aside>
     </>)}
 
-    {section("03", "Pathophysiologie bradykarder Rhythmusstörungen", "Zu langsam", <>
+    <div className="hrst-module-divider"><span>Modul 2</span><div><b>Rhythmen unterscheiden</b><small>Bradykardie, AV-Block, Tachykardie und QRS-Morphologie</small></div></div>
+
+    {section("03A", "Bradykardie und AV-Blöcke", "Zu langsam · Pathophysiologie und EKG", <>
       <h3>Vier Wege zur Bradykardie</h3>
       <div className="pulmo-care-grid"><div><span>01</span><b>Impuls entsteht zu langsam</b><small>Sinusbradykardie, Sick-Sinus-Syndrom oder ausgeprägter Vaguseinfluss vermindern die Frequenz des primären Schrittmachers.</small></div><div><span>02</span><b>Impuls verlässt den Sinusknoten nicht</b><small>Beim sinuatrialen Block erreicht ein erzeugter Impuls das Vorhofmyokard verzögert oder gar nicht.</small></div><div><span>03</span><b>AV-Überleitung ist gestört</b><small>Beim AV-Block wird die Erregung vom Vorhof zur Kammer verzögert, teilweise oder vollständig unterbrochen.</small></div><div><span>04</span><b>Ersatzrhythmus ist zu langsam</b><small>Ein junktionales oder ventrikuläres Zentrum übernimmt. Distale Zentren erzeugen häufig langsamere und breitere QRS-Komplexe.</small></div></div>
       <div className="pulmo-path"><span>Frequenz ↓</span><i>→</i><span>HZV = HF × SV ↓</span><i>→</i><span>Organperfusion ↓</span><i>→</i><span>Synkope / Schock</span></div>
@@ -67,7 +83,7 @@ export default function HerzrhythmusstoerungenLesson({ Figure, Vfa, children }: 
       <p>Ischämie, besonders inferiorer Myokardinfarkt, Hypoxie, Hypothermie, Hyperkaliämie, Azidose, Hypothyreose, Hirndruck und starker Vagusreiz. Außerdem Intoxikationen, beispielsweise mit Betablockern, Calciumantagonisten, Digitalis, Clonidin, Opioiden oder Organophosphaten; auch eine schwere GHB-/GBL-Intoxikation („K.-o.-Tropfen“) kann Bradykardie, Bewusstseinsstörung und Atemdepression verursachen.</p>
     </>)}
 
-    {section("04", "Pathophysiologie tachykarder Rhythmusstörungen", "Zu schnell", <>
+    {section("03B", "Tachykardien systematisch einordnen", "Zu schnell · Pathophysiologie und EKG", <>
       <p>Eine <b>Tachykardie</b> liegt beim Erwachsenen ab einer Herzfrequenz über 100/min vor. Die Zahl allein entscheidet aber weder über die Ursache noch über die Gefährlichkeit: Maßgeblich sind <b>Puls, hämodynamische Stabilität, QRS-Breite, Regelmäßigkeit und klinischer Zusammenhang</b>.</p>
       <h3>Wie eine Tachykardie entsteht</h3>
       <div className="pulmo-care-grid"><div><span>01</span><b>Gesteigerte Automatizität</b><small>Schrittmacher- oder Myokardzellen depolarisieren schneller, etwa bei Sympathikusaktivierung, Fieber, Hypovolämie oder Ischämie.</small></div><div><span>02</span><b>Getriggerte Aktivität</b><small>Nachdepolarisationen während oder nach der Repolarisation können zusätzliche Impulse auslösen, beispielsweise bei QT-Verlängerung oder Digitaliswirkung.</small></div><div><span>03</span><b>Reentry</b><small>Unterschiedliche Leitung und Refraktärzeit ermöglichen eine kreisende Erregung, die sich selbst unterhält.</small></div><div><span>04</span><b>Vorhof- oder Kammerchaos</b><small>Viele ungeordnete Wellen führen zu Flimmern; bei Kammerflimmern fehlt eine wirksame Pumpfunktion.</small></div></div>
@@ -86,8 +102,6 @@ export default function HerzrhythmusstoerungenLesson({ Figure, Vfa, children }: 
       </div>
       <aside className="diagnostic-boundary"><span>AVNRT</span><div><b>Typischer Reentry im oder nahe dem AV-Knoten</b><p>Bei der typischen Form läuft die Erregung antegrad über eine langsam leitende und retrograd über eine schnell leitende Bahn. Vorhof und Kammer werden nahezu gleichzeitig aktiviert; deshalb ist die retrograde P-Welle häufig im QRS verborgen. Nicht jede SVT ist jedoch eine AVNRT.</p></div></aside>
       <aside className="red-flags"><span>VT</span><div><small>Prüfungsfalle</small><h3>Unklare regelmäßige Breitkomplextachykardie</h3><p>Bis zur sicheren Klärung als ventrikuläre Tachykardie betrachten, besonders bei struktureller Herzerkrankung oder früherem Infarkt.</p><b>Ein vorhandener Puls schließt eine VT nicht aus.</b></div></aside>
-      <h3>Vier-Felder-Einordnung einer Tachykardie</h3>
-      <div className="pulmo-risk-grid"><div><b>Schmal + regelmäßig</b><p>Sinustachykardie, AVNRT oder Vorhofflattern mit fester Überleitung.</p></div><div><b>Schmal + unregelmäßig</b><p>Vorhofflimmern, Vorhofflattern mit wechselnder Überleitung oder multifokale atriale Tachykardie.</p></div><div><b>Breit + regelmäßig</b><p>VT bis zum Beweis des Gegenteils; möglich sind auch SVT mit Schenkelblock oder Präexzitation.</p></div><div><b>Breit + unregelmäßig</b><p>Polymorphe VT oder Vorhofflimmern mit Schenkelblock beziehungsweise Präexzitation; besonders gefährliche Konstellation.</p></div></div>
       <div className="pulmo-risk-grid"><div><b>Monomorphe VT</b><p>QRS-Form bleibt weitgehend gleich; oft stabiler Reentry-Kreis bei Infarktnarbe oder struktureller Herzerkrankung.</p></div><div><b>Polymorphe VT</b><p>QRS-Form und Achse wechseln. Torsade de pointes ist eine Sonderform im Zusammenhang mit verlängerter QT-Zeit.</p></div><div><b>Kammerflattern</b><p>Sehr schnelle, breitkomplexe und kaum abgrenzbare Kammeraktivität; kann in Kammerflimmern übergehen.</p></div><div><b>Kammerflimmern</b><p>Ungeordnete elektrische Aktivität ohne wirksamen Auswurf: defibrillierbarer Kreislaufstillstand.</p></div></div>
       <h3>Extrasystolen richtig benennen</h3>
       <div className="pulmo-anatomy-grid"><div><small>Bigeminus</small><b>Jeder zweite Schlag</b><p>Regelmäßiger Wechsel aus Normalschlag und Extrasystole.</p></div><div><small>Trigeminus</small><b>Jeder dritte Schlag</b><p>Auf zwei Normalschläge folgt regelmäßig eine Extrasystole.</p></div><div><small>Couplet / Triplet</small><b>Zwei / drei Extrasystolen</b><p>Direkt aufeinanderfolgende Extrasystolen; Kontext, Ursprung und Klinik entscheiden über die Bedeutung.</p></div></div>
@@ -99,7 +113,9 @@ export default function HerzrhythmusstoerungenLesson({ Figure, Vfa, children }: 
       <aside className="red-flags"><span>neu?</span><div><small>Präklinische Bedeutung</small><h3>Kein Schenkelblock aus einem Merkmal</h3><p>Ein breiter QRS oder eine einzelne Ableitung reicht nicht zur sicheren Diagnose. Vor-EKG, vollständige Morphologie, Beschwerden und Ischämiezeichen einbeziehen; ein neuer breiter QRS bei akuten Beschwerden benötigt dringliche ärztliche Abklärung.</p></div></aside>
     </>)}
 
-    {section("05", "Symptome und EKG-Entscheidung", "Was stützt die Arbeitsdiagnose?", <>
+    <div className="hrst-module-divider"><span>Modul 3</span><div><b>Den Patienten beurteilen</b><small>Stabilität, Gefahren, Material, cABCDE und Differenzialdiagnosen</small></div></div>
+
+    {section("04", "Symptome und klinische Entscheidung", "Was stützt die Arbeitsdiagnose?", <>
       <div className="pulmo-symptoms">{["Palpitationen oder Herzstolpern", "Thoraxdruck oder Myokardischämie", "Dyspnoe oder Lungenödem", "Schwindel, Präsynkope oder Synkope", "Schwäche, Unruhe oder Verwirrtheit", "Hypotonie oder Schock", "Unregelmäßiger oder sehr langsamer Puls", "Herz-Kreislauf-Stillstand"].map(x => <span key={x}>{x}</span>)}</div>
       <p>Rhythmusstörungen können auch asymptomatisch sein. Die Arbeitsdiagnose entsteht aus <b>klinischer Wirkung, Pulsbefund, Monitoring und 12-Kanal-EKG</b>. Ein Monitorstreifen allein reicht nicht.</p>
       <div className="pulmo-care-grid"><div><span>1</span><b>Puls?</b><small>Kein sicherer Kreislauf: Reanimationsalgorithmus.</small></div><div><span>2</span><b>Stabil?</b><small>Schock, Synkope, Ischämie oder akute Herzinsuffizienz?</small></div><div><span>3</span><b>Regelmäßig?</b><small>R-R-Abstände und P-Wellen systematisch prüfen.</small></div><div><span>4</span><b>QRS breit?</b><small>Über oder unter 120 ms und Vor-EKG vergleichen.</small></div></div>
@@ -108,23 +124,31 @@ export default function HerzrhythmusstoerungenLesson({ Figure, Vfa, children }: 
       <aside className="diagnostic-boundary"><span>!</span><div><b>Artefakt ausschließen</b><p>Patient ansehen, Puls tasten, Elektroden prüfen, mehrere Ableitungen und die SpO₂-Pulswelle vergleichen. Eine scheinbare VT bei ruhigem Patienten mit regelmäßigem 78er-Puls ist bis zur Klärung ein technisches Problem.</p></div></aside>
     </>)}
 
-    {section("06", "Komplikationen und Gefahren", "Warum ist das zeitkritisch?", <>
+    {section("05", "Komplikationen und Gefahren", "Warum ist das zeitkritisch?", <>
       <div className="pulmo-risk-grid"><div><b>Zerebrale Minderperfusion</b><p>Schwindel, Synkope, Krampfanfallähnliche Bewegungen und sekundäres Trauma.</p></div><div><b>Myokardischämie</b><p>Ungünstiges Verhältnis aus Koronarangebot und Sauerstoffbedarf; mögliche Infarktauslösung oder -verschlechterung.</p></div><div><b>Akute Herzinsuffizienz</b><p>Reduziertes Schlagvolumen und Füllungsdruckanstieg können ein Lungenödem auslösen.</p></div><div><b>Schock</b><p>Unzureichendes Herzzeitvolumen verursacht kalte Haut, Vigilanzabfall, Hypotonie und Organversagen.</p></div><div><b>Thromboembolie</b><p>Besonders bei Vorhofflimmern können Vorhofthromben entstehen und systemisch embolisieren.</p></div><div><b>Kreislaufstillstand</b><p>VT kann pulslos werden; Kammerflimmern und Asystolie benötigen sofortige Reanimation.</p></div></div>
     </>)}
 
-    {section("07", "Einsatzmaterialien", "Was nehmen Sie mit?", <div className="material-chips">{["Notfallrucksack", "Monitoring und 12-Kanal-EKG", "Defibrillator mit Sync- und Pacing-Funktion", "Klebeelektroden", "Sauerstoff und Beatmungsgerät", "Absaugung", "i.v./i.o.-Material", "Atropin, Epinephrin, Amiodaron nach VFA", "Trage oder Tragestuhl", "Reanimationsmaterial"].map(x => <span key={x}>{x}</span>)}</div>)}
+    {section("06", "Einsatzmaterialien", "Was nehmen Sie mit?", <div className="material-chips">{["Notfallrucksack", "Monitoring und 12-Kanal-EKG", "Defibrillator mit Sync- und Pacing-Funktion", "Klebeelektroden", "Sauerstoff und Beatmungsgerät", "Absaugung", "i.v./i.o.-Material", "Atropin, Epinephrin, Amiodaron nach VFA", "Trage oder Tragestuhl", "Reanimationsmaterial"].map(x => <span key={x}>{x}</span>)}</div>)}
 
-    {section("08", "Erstmaßnahmen und Anamnese", "cABCDE und SAMPLERS", <>
+    {section("07", "Erstmaßnahmen und Anamnese", "cABCDE und SAMPLERS", <>
       <div className="pulmo-care-grid"><div><span>01</span><b>cABCDE</b><small>Bewusstsein, Atmung, Haut, Pulse und Perfusion beurteilen; Kreislaufstillstand sofort erkennen.</small></div><div><span>02</span><b>Monitoring</b><small>SpO₂, Blutdruck, EKG und 12-Kanal-EKG; Verlauf statt Einzelwert.</small></div><div><span>03</span><b>Vorbereiten</b><small>Defibrillationselektroden, i.v.-Zugang, Reanimationsbereitschaft und bei Instabilität früh Notarzt.</small></div><div><span>04</span><b>Ursache behandeln</b><small>Hypoxie, Hypovolämie, Temperatur, Glukose, Ischämie, Elektrolyte und Intoxikation mitdenken.</small></div><div><span>05</span><b>Verlauf sichern</b><small>12-Kanal-EKG möglichst vor und nach einer Rhythmusänderung schreiben, ohne eine dringliche Therapie zu verzögern.</small></div><div><span>06</span><b>Übergabe</b><small>Beginn, Rhythmus, Instabilitätszeichen, Maßnahmen, Energien, Medikamente und Reaktion strukturiert übergeben.</small></div></div>
       <h3>SAMPLERS gezielt</h3>
       <div className="samplers-grid">{[["S · Symptome", "Beginn, Palpitation, Synkope, Dyspnoe, Thoraxschmerz"],["A · Allergien", "Medikamentenunverträglichkeiten"],["M · Medikamente", "Betablocker, Calciumantagonisten, Digitalis, Antiarrhythmika, Antikoagulation"],["P · Vorgeschichte", "KHK, Infarkt, Herzinsuffizienz, bekannte Rhythmusstörung, Schrittmacher"],["L · Letzte Aufnahme", "Flüssigkeit, Alkohol, Stimulanzien"],["E · Ereignis", "Plötzlicher Beginn, Belastung, Infekt, Schmerz, Intoxikation"],["R · Risiken", "Elektrolytverlust, Endokrinologie, Drogen, familiärer Herztod"],["S · Sonstiges", "Vor-EKG, letzte normale Frequenz, Verlauf" ]].map(([a,b]) => <p key={a}><b>{a}</b>{b}</p>)}</div>
       <p>Sauerstoff wird nach Oxygenierung und gültiger Vorgabe eingesetzt. Eine kardiale Oberkörperhochlagerung passt bei Dyspnoe und ausreichendem Blutdruck; bei Schockzeichen wird die Lagerung an Kreislauf und Atmung angepasst.</p>
     </>)}
 
-    {section("09", "Differenzialdiagnosen und Entscheidung", "Präklinische Einordnung", <>
+    {section("08", "Differenzialdiagnosen und Entscheidung", "Präklinische Einordnung", <>
       <div className="differential-grid">{["ACS oder Myokardinfarkt", "Lungenarterienembolie", "Hypoxie oder respiratorische Ursache", "Hypovolämie, Fieber oder Schmerz", "Kalium-/Magnesiumstörung", "Hypo- oder Hyperthyreose", "Medikamenten- oder Drogenwirkung", "Hypothermie", "Schrittmacherfehlfunktion", "Bewegungs- oder Elektrodenartefakt"].map(x => <span key={x}>{x}</span>)}</div>
       <div className="pulmo-compare"><div><small>Stabil</small><h3>Rhythmus sichern und Ursache suchen</h3><p>12-Kanal-EKG, Verlaufskontrolle, fokussierte Anamnese und zielgerichteter Transport. Stabil bedeutet nicht harmlos.</p></div><div><small>Instabil</small><h3>Rhythmus verursacht Minderperfusion</h3><p>Schock, Synkope, Ischämie oder akute Herzinsuffizienz: passenden VFA-Pfad unverzüglich vorbereiten und Reanimationsbereitschaft herstellen.</p></div></div>
       <aside className="diagnostic-boundary"><span>0?</span><div><b>Pulslose VT ist kein Kardioversionsfall</b><p>Fehlt der Kreislauf, gelten Reanimation und unsynchronisierte Defibrillation. Der Algorithmus für instabile Tachykardie setzt einen vorhandenen Puls voraus.</p></div></aside>
+    </>)}
+
+    <div className="hrst-module-divider"><span>Modul 4</span><div><b>Therapiepfade sicher anwenden</b><small>Instabile Bradykardie und instabile Tachykardie mit Puls</small></div></div>
+
+    {section("09", "Weitere Maßnahmen und Medikamente", "Stabilität vor Detaildiagnose", <>
+      <div className="pulmo-care-grid"><div><span>1</span><b>Bradykardie</b><small>Bei Instabilität Atropin, Epinephrin und transthorakales Pacing nach VFA vorbereiten.</small></div><div><span>2</span><b>Tachykardie mit Puls</b><small>Bei Instabilität synchronisierte Kardioversion vorbereiten und die Synchronisationsmarker vor jedem Schock prüfen.</small></div><div><span>3</span><b>Ohne Puls</b><small>Reanimationsalgorithmus anwenden. Eine pulslose ventrikuläre Tachykardie wird nicht synchronisiert kardiovertiert.</small></div><div><span>4</span><b>Ursache</b><small>Hypoxie, Ischämie, Elektrolytstörung, Hypothermie, Hypovolämie sowie Medikamenten- oder Drogenwirkung gezielt behandeln.</small></div></div>
+      <div className="pulmo-compare"><div><small>Bradykardie</small><h3>Atropin und Epinephrin</h3><p>Atropin steigert über eine muskarinische Rezeptorblockade Sinusknotenfrequenz und AV-Überleitung. Epinephrin unterstützt über β₁ Frequenz und Kontraktilität sowie über α₁ den Gefäßtonus.</p></div><div><small>Tachykardie</small><h3>Amiodaron</h3><p>Amiodaron verlängert vor allem Repolarisation und Refraktärzeit. Im dargestellten VFA-Pfad folgt es erst bei erfolgloser synchronisierter Kardioversion.</p></div></div>
+      <p><b>Prüfungsreihenfolge:</b> Kreislauf und Stabilität beurteilen, Rhythmus einordnen, reversible Ursache suchen und anschließend den passenden Medikamenten- oder Elektrotherapiepfad anwenden.</p>
     </>)}
 
     {section("10", "VFA Bradykardie und Tachykardie", "Thüringen 2026/2027", <>

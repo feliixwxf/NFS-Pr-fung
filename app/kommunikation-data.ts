@@ -35,6 +35,8 @@ export const kommunikationFlashcards: CommunicationFlashcard[] = [
   { id: "komm-card-23", area: "Sender–Empfänger", question: "An welchen vier Stellen können im Sender–Empfänger-Prozess Störungen entstehen?", answer: "Beim Sender durch unklare oder widersprüchliche Codierung, im Kanal durch Lärm oder technische Hindernisse, beim Empfänger durch Wahrnehmung, Sprache, Schmerz oder Erwartungen und bei der Rückmeldung, wenn Check-back oder Verständnissicherung fehlen." },
   { id: "komm-card-24", area: "Rogers", question: "Wie lassen sich Empathie, Akzeptanz und Kongruenz mit klaren Grenzen verbinden?", answer: "Empathie versteht die Perspektive, Akzeptanz respektiert die Person und Kongruenz sorgt für ein glaubwürdiges Auftreten. Gefährliches Verhalten muss trotzdem klar benannt und begrenzt werden. Wertschätzung bedeutet nicht, jede Forderung zu erfüllen oder Sicherheitsregeln aufzugeben." },
   { id: "komm-card-25", area: "Grundlagen", question: "Unterscheiden Sie kongruente und inkongruente Kommunikation.", answer: "Kongruent bedeutet: Wortinhalt, Stimme und Körpersprache stimmen überein. Inkongruent bedeutet: Die verbalen, paraverbalen oder nonverbalen Signale widersprechen sich. Inkongruenz ist kein Beweis für Täuschung; sie wird wertfrei gespiegelt und durch eine offene Frage geklärt." },
+  { id: "komm-card-26", area: "Wahrnehmung", question: "Beschreiben Sie den Wahrnehmungsprozess in fünf Schritten.", answer: "Reiz aufnehmen, relevante Reize auswählen, mit Erfahrungen und Erwartungen ordnen, Bedeutung interpretieren und darauf reagieren. Wahrnehmung ist selektiv: Aufmerksamkeit, Gefühle und Vorwissen beeinflussen, was bemerkt und wie es gedeutet wird." },
+  { id: "komm-card-27", area: "Wahrnehmung", question: "Nennen Sie hemmende und fördernde Aspekte der Wahrnehmung im Rettungsdienst.", answer: "Hemmend wirken unter anderem Stress, Zeitdruck, Müdigkeit, Schmerz, Angst, Vorurteile, Erwartungen, Reizüberflutung, Sprach- und Sinnesbarrieren. Fördernd wirken die Trennung von Beobachtung und Deutung, offene Fragen, aktives Zuhören, standardisierte Schemata, Teamabgleich, mehrere Informationsquellen, Ruhe und Selbstreflexion." },
 ];
 
 export const kommunikationQuestions: CommunicationQuestion[] = [
@@ -374,4 +376,18 @@ export const kommunikationQuestions: CommunicationQuestion[] = [
     { text: "Freuds Es, Ich und Über-Ich sind keine anatomischen Hirnregionen.", correct: true },
     { text: "Prozentangaben des Eisbergmodells sind keine naturwissenschaftlich feste Messgröße.", correct: true },
   ], source: "Die Modelle dienen der Reflexion und Hypothesenbildung. Sie ersetzen keine Anamnese, Diagnostik oder rechtliche Beurteilung.", difficulty: 3, mode: "multiple" },
+  { id: "komm-q-49", prompt: "Das Team hält einen schwankenden Patienten zunächst für alkoholisiert. Welche Schritte vermindern wahrnehmungsbedingte Fehleinschätzungen?", options: [
+    { text: "Beobachtbare Zeichen beschreiben, ohne die Ursache bereits als gesichert darzustellen.", correct: true },
+    { text: "Hypoglykämie, neurologische Ursache, Trauma und andere Intoxikationen gezielt mitprüfen.", correct: true },
+    { text: "Nur noch Befunde erheben, die zur ersten Annahme einer Alkoholintoxikation passen." },
+    { text: "Arbeitsdiagnose und abweichende Befunde im Team laut abgleichen.", correct: true },
+    { text: "Neue Informationen nutzen, um die erste Hypothese gegebenenfalls zu verwerfen.", correct: true },
+  ], source: "Professionelle Wahrnehmung trennt Beobachtung und Deutung, hält Differenzialdiagnosen offen und korrigiert die Arbeitsdiagnose anhand neuer Befunde.", difficulty: 3, mode: "multiple" },
+  { id: "komm-q-50", prompt: "Welche Faktoren hemmen oder fördern den Wahrnehmungsprozess in einer unübersichtlichen Einsatzlage korrekt?", options: [
+    { text: "Zeitdruck, Müdigkeit und Reizüberflutung können Aufmerksamkeit verengen.", correct: true },
+    { text: "Vorwissen verbessert jede Einschätzung automatisch und kann keinen Bestätigungsfehler verursachen." },
+    { text: "Ein strukturiertes Untersuchungsschema kann übersehene Befunde wahrscheinlicher sichtbar machen.", correct: true },
+    { text: "Offene Rückfragen und Teamabgleich helfen, vorschnelle Deutungen zu prüfen.", correct: true },
+    { text: "Selbstreflexion unterstützt die Trennung von Beobachtung und persönlicher Bewertung.", correct: true },
+  ], source: "Wahrnehmung ist selektiv und kontextabhängig. Struktur, Rückfragen, mehrere Perspektiven und Reflexion wirken typischen Verzerrungen entgegen.", difficulty: 2, mode: "multiple" },
 ];

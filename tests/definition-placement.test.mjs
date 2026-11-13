@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+const coreLessons = readFileSync(new URL("../app/core-oral-lessons.tsx", import.meta.url), "utf8");
 
 test("every oral reading chapter puts its definition in section 01", () => {
   const definitions = [
@@ -21,10 +21,10 @@ test("every oral reading chapter puts its definition in section 01", () => {
   ];
 
   for (const [name, phrase] of definitions) {
-    const start = page.indexOf(`function ${name}Lesson(`);
+    const start = coreLessons.indexOf(`function ${name}Lesson(`);
     assert.ok(start >= 0, name);
-    const next = page.indexOf("\nfunction ", start + 1);
-    const chapter = page.slice(start, next < 0 ? undefined : next);
+    const next = coreLessons.indexOf("\nexport function ", start + 1);
+    const chapter = coreLessons.slice(start, next < 0 ? undefined : next);
     const first = chapter.indexOf('ChapterHeading number="01"');
     const second = chapter.indexOf('ChapterHeading number="02"');
     assert.ok(first >= 0 && second > first, name);

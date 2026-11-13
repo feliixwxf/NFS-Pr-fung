@@ -1,4 +1,6 @@
 "use client";
+/* PDF page previews use dynamic local URLs and natural dimensions. */
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useRef, useState } from "react";
 import { anatomyChapters } from "./anatomy-data";
@@ -112,6 +114,7 @@ export default function AnatomyLibrary() {
 
   useEffect(() => {
     if (selectedPage === null) return;
+    const pageTrigger = pageButtonRefs.current[selectedPage];
     const previousOverflow = document.body.style.overflow;
     const close = () => setSelectedPage(null);
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -125,7 +128,7 @@ export default function AnatomyLibrary() {
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", closeOnEscape);
-      pageButtonRefs.current[selectedPage]?.focus({ preventScroll: true });
+      pageTrigger?.focus({ preventScroll: true });
     };
   }, [selectedPage, selected, zoom]);
 

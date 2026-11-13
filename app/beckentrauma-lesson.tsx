@@ -4,7 +4,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function BeckentraumaLesson({ Figure, Vfa, children }: Props) {
-  const section = (number: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Beckentrauma</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, title: string, body: ReactNode) => <details open={number === "01"} className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Beckentrauma</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article rippenfraktur-lesson polytrauma-lesson beckentrauma-lesson">
     <div className="lesson-intro"><p className="lead">Beim Beckentrauma kann äußerlich wenig zu sehen sein, während im Becken und Retroperitoneum eine lebensbedrohliche Blutung fortschreitet. Entscheidend sind Kreislauftrend, schonende Untersuchung, korrekte Schlingenindikation und ein schneller Transport zur definitiven Blutungskontrolle.</p></div>

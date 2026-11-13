@@ -4,7 +4,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function PolytraumaLesson({ Vfa, children }: Props) {
-  const section = (number: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Polytrauma</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, title: string, body: ReactNode) => <details open={number === "01"} className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Polytrauma</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article rippenfraktur-lesson polytrauma-lesson">
     <div className="lesson-intro"><p className="lead">Beim Polytrauma entscheidet nicht die Anzahl sichtbarer Verletzungen, sondern die lebensbedrohliche Gesamtwirkung. Behandle zuerst, was zuerst tötet – und verliere dabei Transportzeit, Wärmeerhalt und wiederholte Beurteilung nicht aus dem Blick.</p></div>

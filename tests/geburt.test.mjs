@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
 test("Geburtskapitel zeigt Anatomie, Trimester und vollständige Geburtsmechanik", () => {
-  const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+  const page = readFileSync(new URL("../app/core-oral-lessons.tsx", import.meta.url), "utf8");
   for (const text of ["Innere Geschlechtsorgane", "Äußere Geschlechtsorgane", "1. Trimester", "2. Trimester", "3. Trimester", "geburtsmechanik-zentriert.png"]) {
     assert.ok(page.includes(text), text);
   }

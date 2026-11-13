@@ -4,7 +4,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function VorhofflimmernLesson({ Figure, Vfa, children }: Props) {
-  const section = (number: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Vorhofflimmern · Herz &amp; Kreislauf</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, title: string, body: ReactNode) => <details open={number === "01"} className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Vorhofflimmern · Herz &amp; Kreislauf</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article rippenfraktur-lesson vorhofflimmern-lesson">
     <div className="lesson-intro"><p className="lead">Nicht die unregelmäßige Frequenz allein entscheidet über die Dringlichkeit. Im Einsatz zählen 12-Kanal-EKG, Kreislauf, Beschwerden und die Frage, ob die Tachykardie eine hämodynamische Instabilität verursacht.</p></div>

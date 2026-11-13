@@ -4,7 +4,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function AmputationsverletzungLesson({ Figure, Vfa, children }: Props) {
-  const section = (number: string, kicker: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, kicker: string, title: string, body: ReactNode) => <details open={number === "01"} className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article angina-pectoris-lesson reference-reading-lesson polytrauma-lesson amputationsverletzung-lesson">
     <div className="lesson-intro"><p className="lead">Bei einer Amputationsverletzung gilt: <b>erst das Leben, dann die Extremität</b>. Kritische Blutung, Schock, Wärmeerhalt und schneller Transport haben Vorrang. Gleichzeitig entscheiden schonende Stumpfversorgung, korrektes Verpacken des Amputats und die frühe Wahl einer replantationsfähigen Zielklinik über die Chance auf Funktionserhalt.</p></div>

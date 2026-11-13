@@ -1,4 +1,6 @@
 "use client";
+/* Study images require their natural dimensions and interactive zoom behavior. */
+/* eslint-disable @next/next/no-img-element */
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { freeTutorKnowledge, type FreeTutorKnowledge, type TutorQuestionImage } from "./free-tutor-knowledge";

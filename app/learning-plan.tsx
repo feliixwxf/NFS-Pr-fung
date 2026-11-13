@@ -102,7 +102,10 @@ export default function LearningPlan({
     return () => window.clearTimeout(timer);
   }, []);
 
-  const dueIds = useMemo(() => new Set(dueQuestionIds(progress)), [planDay, progress]);
+  const dueIds = useMemo(() => {
+    void planDay; // Recalculate when the local calendar day changes at midnight.
+    return new Set(dueQuestionIds(progress));
+  }, [planDay, progress]);
   const duePlanKey = `notsan-learning-plan-due-v1:${userId || "local"}:${planDay}`;
   const [plannedDueIds, setPlannedDueIds] = useState<string[]>([]);
   useEffect(() => {

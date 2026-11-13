@@ -6,7 +6,7 @@ const appDirectory = new URL("../app/", import.meta.url);
 const appFiles = await readdir(appDirectory);
 const oralLessonFiles = appFiles.filter((name) => name.endsWith("-lesson.tsx"));
 const oralSources = await Promise.all(
-  ["page.tsx", ...oralLessonFiles].map(async (name) => ({
+  ["page.tsx", "core-oral-lessons.tsx", ...oralLessonFiles].map(async (name) => ({
     name,
     source: await readFile(new URL(name, appDirectory), "utf8"),
   })),
@@ -19,7 +19,7 @@ test("oral lessons do not expose drafting-source labels", () => {
 });
 
 test("the Prehn sign is described without reversing its traditional meaning", () => {
-  const page = oralSources.find(({ name }) => name === "page.tsx")?.source ?? "";
+  const page = oralSources.find(({ name }) => name === "core-oral-lessons.tsx")?.source ?? "";
   assert.match(page, /Schmerzabnahme beim Anheben wird traditionell als „positiv“ bezeichnet/);
   assert.doesNotMatch(page, /Schmerzverstärkung beim vorsichtigen Anheben kann als positives Prehn-Zeichen/);
   assert.match(page, /nicht zuverlässig genug, um eine Hodentorsion auszuschließen/);

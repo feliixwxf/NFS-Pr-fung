@@ -58,3 +58,17 @@ test("chapter action bar wraps secondary controls and becomes a two-column mobil
   assert.match(css, /\.chapter-primary-actions button[^}]*white-space:nowrap/);
   assert.match(css, /\.chapter-qol button:focus-visible \{ outline:3px solid #c95738/);
 });
+
+test("oral chapters start compact and track progress per section", () => {
+  assert.match(page, /const shouldOpen = id in saved \? saved\[id\] : index === 0/);
+  assert.match(page, /notsan-chapter-progress-v1/);
+  assert.match(page, /section-progress-count/);
+  assert.match(page, /\? "✓ Gelernt" : "○ Offen"/);
+  assert.match(css, /\.section-progress-row \.section-learned\.is-learned/);
+  assert.match(css, /@media \(max-width: 600px\)[\s\S]*?\.section-progress-menu \{ position:fixed;/);
+});
+
+test("oral prose keeps a readable line length without a shortened reading mode", () => {
+  assert.match(css, /\.lesson-article \.lesson-prose>:is\(p,ul,ol,blockquote\)\{max-width:76ch\}/);
+  assert.doesNotMatch(css, /myokardinfarkt-reading-mode|myokardinfarkt-short-answer/);
+});

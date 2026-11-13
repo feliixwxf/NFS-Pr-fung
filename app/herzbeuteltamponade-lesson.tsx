@@ -4,7 +4,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function HerzbeuteltamponadeLesson({ Figure, Vfa, children }: Props) {
-  const section = (number: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Herzbeuteltamponade</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, title: string, body: ReactNode) => <details open={number === "01"} className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Herzbeuteltamponade</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article rippenfraktur-lesson schock-lesson herzbeuteltamponade-lesson">
     <div className="lesson-intro"><p className="lead">Füllungsbehinderung erkennen, obstruktiven Schock verstehen und die definitive Versorgung beschleunigen.</p></div>

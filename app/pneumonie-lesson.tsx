@@ -6,7 +6,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function PneumonieLesson({ Figure, Vfa, children }: Props) {
-  const section = (number: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Pneumonie · mündliche Prüfung</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, title: string, body: ReactNode) => <details open={number === "01"} className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Pneumonie · mündliche Prüfung</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
   return <article className="lesson-article rippenfraktur-lesson broncho-lesson pneumonia-lesson">
     <div className="lesson-intro"><p className="lead">Pneumonie ist mehr als „Fieber und Husten“: Entscheidend sind gestörter Gasaustausch, respiratorische Erschöpfung, Sepsiszeichen und gefährliche Differenzialdiagnosen. Präklinisch wird das Muster erkannt und die Vitalbedrohung behandelt – nicht der Erreger bewiesen.</p></div>
 
@@ -32,6 +32,6 @@ export default function PneumonieLesson({ Figure, Vfa, children }: Props) {
     {section("10", "VFA Thüringen 2026/2027 und Medikamentenvorbereitung", <><p>Die Originalseiten werden zur Prüfung der Indikation eingeblendet. VFA 21 gilt nur bei vorhandener Bronchoobstruktion; VFA 06 regelt die nicht invasive Atemunterstützung. Konzentration, Arzneimittel und aktuelle Original-VFA sind vor jeder Anwendung zu kontrollieren.</p><div className="vfa-stack"><Vfa src="/lessons/bronchoobstruktion/vfa-4.png" alt="Thüringer VFA 21 Bronchoobstruktion Erwachsene" caption="VFA 21 · Bronchoobstruktion Erwachsene · nur bei passendem obstruktivem Befund" /><Vfa src="/lessons/bronchoobstruktion/vfa-5.png" alt="Thüringer VFA 06 nicht invasive CPAP-ASB-Therapie und Kapnometrie" caption="VFA 06 · CPAP/ASB und Kapnometrie · Indikation und Kontraindikationen prüfen" /></div><BronchoPreparation /></>)}
 
     {children}
-    <p className="lesson-source">Fachliche Grundlagen: pulmonale Anatomie, Thüringer Verfahrensanweisungen 2026/2027 und <a href="https://www.rescuelearn.de/wissen/aspirationspneumonie/" target="_blank" rel="noreferrer">RescueLearn · Aspirationspneumonie</a>. Medikamente und Mengen richten sich nach den aktuellen Originalalgorithmen.</p>
+    <p className="lesson-source">Fachliche Grundlagen: pulmonale Anatomie, Thüringer Verfahrensanweisungen 2026/2027 und <a href="https://www.rescuelearn.de/wissen/aspirationspneumonie/" target="_blank" rel="noreferrer">RescueLearn · Aspirationspneumonie</a>. Medikamente und Mengen richten sich nach den aktuellen Verfahrensanweisungen.</p>
   </article>;
 }

@@ -4,7 +4,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function ElektrounfallLesson({ Figure, Vfa, children }: Props) {
-  const section = (number: string, kicker: string, title: string, body: ReactNode) => <details open className="lesson-section rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, kicker: string, title: string, body: ReactNode) => <details open={number === "01"} className="lesson-section rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article angina-pectoris-lesson reference-reading-lesson elektrounfall-lesson">
     <div className="lesson-intro"><p className="lead">Beim Elektrounfall entscheidet zuerst die sichere Einsatzstelle. Erst nach bestätigter Spannungsfreiheit folgen cABCDE, Rhythmusdiagnostik, Ganzkörperinspektion und die Suche nach tiefen Gewebe- sowie Begleitverletzungen.</p></div>
@@ -30,6 +30,6 @@ export default function ElektrounfallLesson({ Figure, Vfa, children }: Props) {
     {section("10", "Thüringen 2026/2027", "Verfahrensanweisungen", <><p>Die Auswahl richtet sich nach dem klinischen Problem: Verbrennung, instabile Brady- oder Tachykardie und starke Schmerzen werden mit der jeweils gültigen Original-VFA behandelt. Dosierungen werden nicht aus Fremdquellen ergänzt.</p><div className="vfa-stack"><Vfa src="/lessons/verbrennung/vfa-34-print14.png" alt="Thüringer VFA 34 zu Verbrennungen und Verbrühungen" caption="VFA 34 · Verbrennung / Verbrühung" /><Vfa src="/lessons/instabile-bradykardie/vfa-19-bradykardie.png" alt="Thüringer VFA 19 zur instabilen Bradykardie" caption="VFA 19 · Instabile Bradykardie und transthorakales Pacing" /><Vfa src="/lessons/vorhofflimmern/vfa-20.png" alt="Thüringer VFA 20 zur instabilen Tachykardie und Notfallkardioversion" caption="VFA 20 · Instabile Tachykardie / Notfallkardioversion" /><Vfa src="/lessons/sht/vfa-schmerz-basis-35.png" alt="Thüringer VFA 35 zu starken Schmerzzuständen" caption="VFA 35 · Starke Schmerzzustände" /><Vfa src="/lessons/sht/vfa-esketamin-36.png" alt="Thüringer VFA 36 zu Esketamin" caption="VFA 36 · Esketamin" /><Vfa src="/lessons/sht/vfa-morphin-38.png" alt="Thüringer VFA 38 zu Morphin" caption="VFA 38 · Morphin" /></div></>)}
 
     {children}
-    <p className="lesson-source">Fachliche Grundlagen: Thüringer Verfahrensanweisungen 2026/27, DGUV und S2k-Leitlinie zur Behandlung thermischer Verletzungen. Dosierungsangaben richten sich nach den aktuellen Originalalgorithmen.</p>
+    <p className="lesson-source">Fachliche Grundlagen: Thüringer Verfahrensanweisungen 2026/27, DGUV und S2k-Leitlinie zur Behandlung thermischer Verletzungen. Dosierungsangaben richten sich nach den aktuellen Verfahrensanweisungen.</p>
   </article>;
 }

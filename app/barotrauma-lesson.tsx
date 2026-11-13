@@ -5,7 +5,7 @@ type FigureProps = { src: string; alt: string; caption: string; wide?: boolean }
 type Props = { Figure: ComponentType<FigureProps>; Vfa: ComponentType<FigureProps>; children: ReactNode };
 
 export default function BarotraumaLesson({ Figure, Vfa, children }: Props) {
-  const section = (number: string, title: string, body: ReactNode) => <details open className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Barotrauma</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
+  const section = (number: string, title: string, body: ReactNode) => <details open={number === "01"} className="rib-section" key={number}><summary><header className="chapter-heading"><span>{number}</span><div><small>Barotrauma</small><h2>{title}</h2></div></header><i aria-hidden="true">⌄</i></summary><div className="lesson-prose script-copy">{body}</div></details>;
 
   return <article className="lesson-article rippenfraktur-lesson thoraxtrauma-lesson barotrauma-lesson">
     <div className="lesson-intro"><p className="lead">Ein Barotrauma entsteht, wenn sich der Druck in einem gasgefüllten Körperraum nicht schnell genug an den Umgebungsdruck anpasst. In der Prüfung müssen vor allem Ohrbarotrauma, pulmonales Barotrauma, arterielle Gasembolie und Dekompressionskrankheit sicher unterschieden werden.</p></div>
