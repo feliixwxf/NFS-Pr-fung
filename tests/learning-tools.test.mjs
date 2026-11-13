@@ -43,6 +43,11 @@ test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(page, /notsan-mc-session-v1/);
   assert.match(page, /readMultipleChoiceSession/);
   assert.match(page, /localStorage\.setItem\(sessionStorageKey, JSON\.stringify\(session\)\)/);
+  for (const writtenPath of ["rechtskunde", "organisation", "kommunikation", "qualitaetsmanagement", "terminologie", "diagnostik", "hygiene", "pharmakologie"]) {
+    assert.match(page, new RegExp(`/schriftlich/${writtenPath}`));
+  }
+  assert.match(plan, /writtenPath/);
+  assert.match(plan, /onRead\(fresh\)/);
 });
 
 test("ongoing multiple-choice rounds sync privately across signed-in devices", () => {

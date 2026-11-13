@@ -6,6 +6,7 @@ export type TextHighlight = {
   quote: string;
   prefix: string;
   suffix: string;
+  color?: "yellow" | "red";
   createdAt: string;
   updatedAt: string;
 };
@@ -58,7 +59,7 @@ export async function syncTextHighlights(userId: string) {
   if (!supabase) return local;
   const { data, error } = await supabase
     .from("learning_text_highlights")
-    .select("highlight_id,page_path,quote,prefix,suffix,created_at,updated_at")
+    .select("highlight_id,page_path,quote,prefix,suffix,color,created_at,updated_at")
     .eq("user_id", userId);
   if (error) throw error;
   const remote: TextHighlight[] = (data || []).map((row) => ({
@@ -67,6 +68,7 @@ export async function syncTextHighlights(userId: string) {
     quote: String(row.quote),
     prefix: String(row.prefix || ""),
     suffix: String(row.suffix || ""),
+    color: row.color === "red" ? "red" : "yellow",
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   }));
@@ -80,6 +82,7 @@ export async function syncTextHighlights(userId: string) {
         quote: highlight.quote,
         prefix: highlight.prefix,
         suffix: highlight.suffix,
+        color: highlight.color || "yellow",
         created_at: highlight.createdAt,
         updated_at: highlight.updatedAt,
       })),
@@ -104,6 +107,7 @@ export async function saveTextHighlight(userId: string | null, highlight: TextHi
     quote: highlight.quote,
     prefix: highlight.prefix,
     suffix: highlight.suffix,
+    color: highlight.color || "yellow",
     created_at: highlight.createdAt,
     updated_at: highlight.updatedAt,
   }, { onConflict: "user_id,highlight_id" });

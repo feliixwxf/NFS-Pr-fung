@@ -30,6 +30,8 @@ export default function AnaphylaxieLesson({ Figure, Vfa, children }: Props) {
 
     {section("10", "Thüringer VFA 2026/2027 und Dosierungsansichten", <><div className="vfa-stack"><Vfa src="/lessons/anaphylaxie/vfa-25-erwachsene.png" alt="Thüringer VFA 25 Anaphylaxie Erwachsene" caption="VFA 25 · Anaphylaxie Erwachsene"/><Vfa src="/lessons/anaphylaxie/vfa-26-kind.png" alt="Thüringer VFA 26 Anaphylaxie Kind" caption="VFA 26 · Anaphylaxie Kind"/></div><AnaphylaxiePreparation/></>)}
 
+    {section("11", "Pädiatrische Medikamentensicherheit", <><p>Gewicht messen, erfragen oder mit einer validen pädiatrischen Hilfe schätzen. Kinder-VFA, Konzentration, Applikationsweg und bereits verabreichte Notfallmedikation im Vier-Augen-Prinzip abgleichen; Spritzen unmittelbar vor Gebrauch vorbereiten und beschriften.</p><aside className="communication-exam-tip"><b>Priorität</b><p>Die Sicherheitskontrolle verhindert Dosierungsfehler, darf die zeitkritische i.m.-Adrenalingabe bei schwerer Anaphylaxie aber nicht verzögern.</p></aside></>)}
+
     {children}
     <p className="lesson-source">Fachliche Grundlagen: <a href="https://www.aelrd-thueringen.de/verfahrensanweisungen-fuer-den-thueringer-rettungsdienst-algorithmen/" target="_blank" rel="noreferrer">Thüringer Verfahrensanweisungen zur Anaphylaxie und Anlage B2A, 2026/27</a> sowie <a href="https://register.awmf.org/de/leitlinien/detail/061-025" target="_blank" rel="noreferrer">AWMF-Leitlinie Anaphylaxie</a>.</p>
   </article>;

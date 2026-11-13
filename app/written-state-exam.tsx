@@ -46,7 +46,7 @@ type StoredAttempt = {
 
 const EXAM_DURATION_SECONDS = 120 * 60;
 const EXAM_QUESTION_COUNT = 30;
-const STORAGE_PREFIX = "notsan-written-exam-v1";
+const STORAGE_PREFIX = "notsan-written-exam-v2";
 
 const EXAMS: ExamDefinition[] = [
   {
@@ -140,6 +140,11 @@ function formatTime(totalSeconds: number) {
   const minutes = Math.floor((seconds % 3600) / 60);
   const rest = seconds % 60;
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
+}
+
+function catalogLabel(attempt: number) {
+  const letter = String.fromCharCode(65 + ((Math.max(1, attempt) - 1) % 26));
+  return `Katalog ${letter}`;
 }
 
 function sameSelection(left: number[] = [], right: number[] = []) {
@@ -236,7 +241,7 @@ export default function WrittenStateExam({ onBack }: { onBack: () => void }) {
   if (!attempt) {
     return <section className="page-section written-exam-page">
       <button className="back-button" type="button" onClick={closeExam}>← Alle Prüfungstage</button>
-      <div className="written-exam-start"><span>{selectedExam.day}</span><h1>{selectedExam.title}</h1><p>{selectedExam.subtitle}</p><dl><div><dt>Zeit</dt><dd>120 Minuten</dd></div><div><dt>Umfang</dt><dd>{EXAM_QUESTION_COUNT} Aufgaben</dd></div><div><dt>Lösungen</dt><dd>erst nach Abgabe</dd></div></dl><ul><li>Mehrere Antworten können richtig sein.</li><li>Dein Stand bleibt auf diesem Gerät gespeichert.</li><li>Die Uhr läuft auch weiter, wenn du die Seite schließt.</li></ul><button className="primary-button" type="button" onClick={startExam}>Probeexamen verbindlich starten</button></div>
+      <div className="written-exam-start"><span>{selectedExam.day}</span><h1>{selectedExam.title}</h1><p>{selectedExam.subtitle}</p><dl><div><dt>Zeit</dt><dd>120 Minuten</dd></div><div><dt>Umfang</dt><dd>{EXAM_QUESTION_COUNT} Aufgaben</dd></div><div><dt>Katalog</dt><dd>bei jedem Neustart neu gemischt</dd></div><div><dt>Lösungen</dt><dd>erst nach Abgabe</dd></div></dl><ul><li>Alle aktuellen schriftlichen Fragenpools fließen themengerecht in die drei Prüfungstage ein.</li><li>Mehrere Antworten können richtig sein.</li><li>Dein Stand bleibt auf diesem Gerät gespeichert.</li><li>Die Uhr läuft auch weiter, wenn du die Seite schließt.</li></ul><button className="primary-button" type="button" onClick={startExam}>Neuen Fragenkatalog starten</button></div>
     </section>;
   }
 
@@ -246,7 +251,7 @@ export default function WrittenStateExam({ onBack }: { onBack: () => void }) {
   if (submitted) {
     return <section className="page-section written-exam-page">
       <button className="back-button" type="button" onClick={closeExam}>← Alle Prüfungstage</button>
-      <header className="written-exam-result"><div><span className="eyebrow">Auswertung · {selectedExam.day}</span><h1>{selectedExam.title}</h1><p>Die Auswertung zählt eine Aufgabe nur dann als richtig, wenn alle richtigen und keine falschen Optionen markiert wurden.</p></div><strong><b>{correctCount}</b><span>von {questions.length}</span><small>{Math.round((correctCount / Math.max(1, questions.length)) * 100)} %</small></strong></header>
+      <header className="written-exam-result"><div><span className="eyebrow">Auswertung · {selectedExam.day} · {catalogLabel(attempt.attempt)}</span><h1>{selectedExam.title}</h1><p>Die Auswertung zählt eine Aufgabe nur dann als richtig, wenn alle richtigen und keine falschen Optionen markiert wurden.</p></div><strong><b>{correctCount}</b><span>von {questions.length}</span><small>{Math.round((correctCount / Math.max(1, questions.length)) * 100)} %</small></strong></header>
       <div className="written-exam-result-list">{questions.map((question, questionIndex) => {
         const selected = attempt.answers[question.id] || [];
         const correct = question.options.map((option, index) => option.correct ? index : -1).filter((index) => index >= 0);
@@ -262,7 +267,7 @@ export default function WrittenStateExam({ onBack }: { onBack: () => void }) {
   const selection = attempt.answers[question.id] || [];
 
   return <section className="page-section written-exam-page written-exam-running">
-    <header className="written-exam-bar"><button type="button" onClick={closeExam}>← Unterbrechen</button><div><small>{selectedExam.day}</small><b>{selectedExam.title}</b></div><time className={remainingSeconds < 600 ? "urgent" : ""}>{formatTime(remainingSeconds)}</time></header>
+    <header className="written-exam-bar"><button type="button" onClick={closeExam}>← Unterbrechen</button><div><small>{selectedExam.day} · {catalogLabel(attempt.attempt)}</small><b>{selectedExam.title}</b></div><time className={remainingSeconds < 600 ? "urgent" : ""}>{formatTime(remainingSeconds)}</time></header>
     <div className="written-exam-progress"><span style={{ width: `${((attempt.current + 1) / questions.length) * 100}%` }} /><small>Aufgabe {attempt.current + 1} von {questions.length} · {answeredCount} beantwortet</small></div>
     <article className="written-exam-question"><small>Schwierigkeit {question.difficulty} · {question.mode === "single" ? "Eine Antwort" : "Eine oder mehrere Antworten"}</small><h1>{question.prompt}</h1><div>{question.options.map((option, optionIndex) => <label key={optionIndex} className={selection.includes(optionIndex) ? "selected" : ""}><input type={question.mode === "single" ? "radio" : "checkbox"} name={question.id} checked={selection.includes(optionIndex)} onChange={() => toggleAnswer(question, optionIndex)} /><span>{String.fromCharCode(65 + optionIndex)}</span><b>{option.text}</b></label>)}</div></article>
     <nav className="written-exam-nav"><button type="button" disabled={attempt.current === 0} onClick={() => setAttempt((current) => current ? { ...current, current: current.current - 1 } : current)}>← Zurück</button><div>{questions.map((entry, index) => <button type="button" key={entry.id} aria-label={`Aufgabe ${index + 1}`} className={`${index === attempt.current ? "active" : ""} ${(attempt.answers[entry.id] || []).length ? "answered" : ""}`} onClick={() => setAttempt((current) => current ? { ...current, current: index } : current)}>{index + 1}</button>)}</div>{attempt.current < questions.length - 1 ? <button type="button" onClick={() => setAttempt((current) => current ? { ...current, current: current.current + 1 } : current)}>Weiter →</button> : <button type="button" className="submit" onClick={() => { if (window.confirm(`Klausur jetzt abgeben? ${questions.length - answeredCount} Aufgaben sind noch unbeantwortet.`)) setAttempt((current) => current ? { ...current, submittedAt: Date.now() } : current); }}>Abgeben</button>}</nav>

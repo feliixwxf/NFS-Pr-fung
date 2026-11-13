@@ -20,12 +20,19 @@ test("Pharmakologie covers kinetics, dynamics, coagulation and neuromuscular blo
   for (const term of ["LADME", "Therapeutische Breite", "Primäre Hämostase", "Sekundäre Hämostase", "Nichtdepolarisierend", "Depolarisierend"]) {
     assert.match(lesson, new RegExp(term, "i"));
   }
-  assert.equal((data.match(/id: "pharm-card-/g) || []).length, 22);
-  assert.equal((data.match(/id: "pharm-q-/g) || []).length, 24);
+  assert.equal((data.match(/id: "pharm-card-/g) || []).length, 23);
+  assert.equal((data.match(/id: "pharm-q-/g) || []).length, 25);
 });
 
 test("Muscle relaxant safety explicitly separates paralysis from anaesthesia", () => {
   assert.match(lesson, /Bewegungslos bedeutet nicht bewusstlos/);
   assert.match(lesson, /weder Bewusstlosigkeit noch Amnesie oder Analgesie/);
   assert.match(lesson, /kontrollierter Beatmung/);
+});
+
+test("Tranexamic acid and thrombolysis are available as flippable learning cards", () => {
+  assert.match(lesson, /function PharmaFlipCard/);
+  assert.match(lesson, /PharmaFlipCard kicker="Gerinnsel erhalten" title="Tranexamsäure"/);
+  assert.match(lesson, /PharmaFlipCard kicker="Gerinnsel auflösen" title="Medikamentöse Lyse"/);
+  assert.match(readFileSync(new URL("../app/globals.css", import.meta.url), "utf8"), /pharma-flip-answer p\{[^}]*color:#f2f8f8/);
 });

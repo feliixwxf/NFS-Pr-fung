@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { deleteTextHighlight, readLocalTextHighlights, saveTextHighlight, syncTextHighlights, type TextHighlight } from "./lib/textHighlights";
 
-const HIGHLIGHT_NAME = "notsan-personal-highlights";
+const HIGHLIGHT_NAMES = {
+  yellow: "notsan-personal-highlights-yellow",
+  red: "notsan-personal-highlights-red",
+} as const;
 const CONTEXT_LENGTH = 90;
 const MAX_QUOTE_LENGTH = 1200;
 
@@ -218,12 +221,14 @@ export default function TextHighlighter({ userId, contextKey }: { userId: string
       window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(() => {
         const path = window.location.pathname;
-        const ranges = highlights
-          .filter((highlight) => highlight.pagePath === path)
-          .map((highlight) => rangeForHighlight(root, highlight))
-          .filter((range): range is Range => Boolean(range));
-        api.registry.delete(HIGHLIGHT_NAME);
-        if (ranges.length) api.registry.set(HIGHLIGHT_NAME, new api.HighlightClass(...ranges));
+        for (const color of ["yellow", "red"] as const) {
+          const ranges = highlights
+            .filter((highlight) => highlight.pagePath === path && (highlight.color || "yellow") === color)
+            .map((highlight) => rangeForHighlight(root, highlight))
+            .filter((range): range is Range => Boolean(range));
+          api.registry.delete(HIGHLIGHT_NAMES[color]);
+          if (ranges.length) api.registry.set(HIGHLIGHT_NAMES[color], new api.HighlightClass(...ranges));
+        }
       });
     };
     paint();
@@ -232,11 +237,12 @@ export default function TextHighlighter({ userId, contextKey }: { userId: string
     return () => {
       window.cancelAnimationFrame(frame);
       observer.disconnect();
-      api.registry.delete(HIGHLIGHT_NAME);
+      api.registry.delete(HIGHLIGHT_NAMES.yellow);
+      api.registry.delete(HIGHLIGHT_NAMES.red);
     };
   }, [contextKey, highlights]);
 
-  const addHighlight = async () => {
+  const addHighlight = async (color: "yellow" | "red") => {
     if (!candidate) return;
     if (candidate.quote.length > MAX_QUOTE_LENGTH) {
       setMessage("Bitte markiere höchstens einen kurzen Absatz.");
@@ -259,6 +265,7 @@ export default function TextHighlighter({ userId, contextKey }: { userId: string
       quote: candidate.quote,
       prefix: candidate.prefix,
       suffix: candidate.suffix,
+      color,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
@@ -293,14 +300,8 @@ export default function TextHighlighter({ userId, contextKey }: { userId: string
   };
 
   return <>
-    <style>{`::highlight(${HIGHLIGHT_NAME}){background:#ffe36d;color:inherit}`}</style>
-    {candidate && <button
-      className={`text-highlight-action text-highlight-ui${candidate.highlightId ? " remove" : ""}`}
-      type="button"
-      style={{ left: candidate.left, top: candidate.top }}
-      onPointerDown={(event) => event.preventDefault()}
-      onClick={() => void (candidate.highlightId ? removeHighlight(candidate.highlightId) : addHighlight())}
-    ><span aria-hidden="true" /> {candidate.highlightId ? "Markierung entfernen" : "Markieren"}</button>}
+    <style>{`::highlight(${HIGHLIGHT_NAMES.yellow}){background:#ffe36d;color:inherit}::highlight(${HIGHLIGHT_NAMES.red}){background:#ff9f9f;color:inherit}`}</style>
+    {candidate && <div className="text-highlight-actions text-highlight-ui" style={{ left: candidate.left, top: candidate.top }} onPointerDown={(event) => event.preventDefault()}>{candidate.highlightId ? <button className="text-highlight-action remove" type="button" onClick={() => void removeHighlight(candidate.highlightId!)}><span aria-hidden="true" /> Markierung entfernen</button> : <><button className="text-highlight-action yellow" type="button" onClick={() => void addHighlight("yellow")}><span aria-hidden="true" /> Gelb</button><button className="text-highlight-action red" type="button" onClick={() => void addHighlight("red")}><span aria-hidden="true" /> Rot</button></>}</div>}
     {message && <div className="text-highlight-message text-highlight-ui" role="status"><span>{message}</span><button type="button" onClick={() => setMessage("")} aria-label="Hinweis schließen">×</button></div>}
   </>;
 }
