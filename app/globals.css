@@ -92,8 +92,8 @@
 
 :root { --navy:#0b2634; --navy-2:#12394a; --ink:#13232c; --muted:#6e7d84; --orange:#f26a3d; --orange-light:#fff0e9; --cream:#f5f3ed; --line:#e5e8e7; --green:#2d9b73; --white:#fff; --app-height:100dvh; --visual-offset-top:0px; --keyboard-inset:0px; }
 * { box-sizing:border-box; }
-html { max-width:100%; overflow-x:hidden; scroll-behavior:smooth; }
-body { max-width:100%; min-height:var(--app-height,100dvh); margin:0; overflow-x:hidden; background:#f8f8f6; color:var(--ink); font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+html { width:100%; max-width:100%; overflow-x:hidden; scroll-behavior:smooth; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body { width:100%; max-width:100%; min-height:var(--app-height,100dvh); margin:0; overflow-x:hidden; background:#f8f8f6; color:var(--ink); font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 button,input { font:inherit; }
 button { cursor:pointer; }
 .loading-screen,.content-loading-screen { display:grid; place-content:center; justify-items:center; gap:18px; min-height:100vh; min-height:100dvh; padding:28px; background:var(--navy); color:#fff; text-align:center; }

@@ -128,7 +128,7 @@ test("AI tutor remains compact and operable on iPad-sized viewports", () => {
   assert.match(styles, /@media\(min-width:701px\) and \(max-width:1100px\)/);
   assert.match(styles, /max-height:calc\(100dvh - 24px\)/);
   assert.match(styles, /\.ai-tutor-form textarea\{min-height:82px;max-height:18dvh;font-size:16px\}/);
-  assert.match(styles, /html \{ max-width:100%; overflow-x:hidden/);
+  assert.match(styles, /html \{ width:100%; max-width:100%; overflow-x:hidden/);
 });
 
 test("EKG enlargement stays inside the active tutor session", () => {
@@ -190,8 +190,12 @@ test("offline worker caches the app shell and visited same-origin assets", () =>
 
 test("iPad viewport support handles keyboard, split view, touch and standalone mode", () => {
   assert.match(layout, /DeviceViewportSupport/);
+  assert.match(layout, /width:\s*["']device-width["']/);
+  assert.match(layout, /initialScale:\s*1/);
+  assert.match(layout, /viewportFit:\s*["']cover["']/);
   assert.match(viewportSupport, /window\.visualViewport/);
   assert.match(viewportSupport, /keyboard-open/);
+  assert.match(styles, /-webkit-text-size-adjust:100%/);
   assert.match(styles, /@media \(hover:none\) and \(pointer:coarse\)/);
   assert.match(styles, /@media \(display-mode:standalone\)/);
   assert.match(styles, /min-width:701px\) and \(max-width:900px/);

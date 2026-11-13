@@ -5,6 +5,8 @@ import { OfflineBootstrap } from "./offline-support";
 import "./globals.css";
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#0b2634",
   viewportFit: "cover",
 };
