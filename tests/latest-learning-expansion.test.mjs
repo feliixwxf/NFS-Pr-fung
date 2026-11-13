@@ -39,3 +39,12 @@ test("legal categories themselves follow a systematic learning order", () => {
   assert.match(page, /"05": \{ order: 7, displayNumber: "07" \}/);
   assert.match(page, /"04": \{ order: 13, displayNumber: "13" \}/);
 });
+
+test("legal reader supports global folding and searchable jump results", () => {
+  assert.match(page, /function LegalReaderTools/);
+  assert.match(page, /Alles ausklappen/);
+  assert.match(page, /Alles einklappen/);
+  assert.match(page, /Begriff suchen, z\. B\. Deliktsfähigkeit/);
+  assert.match(page, /querySelectorAll<HTMLDetailsElement>\("\.legal-section"\)/);
+  assert.match(page, /scrollIntoView\(\{ behavior: "smooth", block: "center" \}\)/);
+});

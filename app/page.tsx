@@ -786,10 +786,117 @@ function TrainingContractFlipCards() {
   </div>;
 }
 
+type LegalSearchResult = {
+  id: string;
+  sectionNumber: string;
+  sectionTitle: string;
+  label: string;
+  excerpt: string;
+};
+
+function normalizeLegalSearch(value: string) {
+  return value
+    .toLocaleLowerCase("de-DE")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ß/g, "ss")
+    .replace(/ae/g, "a")
+    .replace(/oe/g, "o")
+    .replace(/ue/g, "u")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function LegalReaderTools({ rootRef }: { rootRef: { current: HTMLElement | null } }) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<LegalSearchResult[]>([]);
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setAllSections = (open: boolean) => {
+    rootRef.current?.querySelectorAll<HTMLDetailsElement>(".legal-section").forEach((section) => { section.open = open; });
+  };
+
+  const search = (value: string) => {
+    setQuery(value);
+    const needle = normalizeLegalSearch(value);
+    if (needle.length < 2 || !rootRef.current) {
+      setResults([]);
+      return;
+    }
+
+    const matches: LegalSearchResult[] = [];
+    const seen = new Set<HTMLElement>();
+    rootRef.current.querySelectorAll<HTMLDetailsElement>(".legal-section").forEach((section, sectionIndex) => {
+      const sectionNumber = section.dataset.legalCategory || String(sectionIndex + 1).padStart(2, "0");
+      const sectionTitle = section.querySelector("summary h2")?.textContent?.trim() || "Rechtskunde";
+      const candidates = section.querySelectorAll<HTMLElement>(".legal-section-content h3, .legal-section-content h4, .legal-section-content p, .legal-section-content li, .legal-section-content article > b, .legal-section-content aside > b");
+
+      candidates.forEach((candidate, candidateIndex) => {
+        if (!normalizeLegalSearch(candidate.textContent || "").includes(needle)) return;
+        const context = candidate.closest<HTMLElement>("article, aside") || candidate;
+        if (seen.has(context)) return;
+        seen.add(context);
+        const text = (context.textContent || "").replace(/\s+/g, " ").trim();
+        const label = context.querySelector("h3, h4, b")?.textContent?.trim() || candidate.textContent?.trim() || sectionTitle;
+        const id = context.id || `legal-search-${sectionIndex}-${candidateIndex}`;
+        context.id = id;
+        matches.push({
+          id,
+          sectionNumber,
+          sectionTitle,
+          label,
+          excerpt: text.length > 210 ? `${text.slice(0, 207)}…` : text,
+        });
+      });
+    });
+    setResults(matches);
+  };
+
+  const jumpToResult = (id: string) => {
+    const target = rootRef.current?.querySelector<HTMLElement>(`#${id}`);
+    if (!target) return;
+    const section = target.closest<HTMLDetailsElement>(".legal-section");
+    if (section) section.open = true;
+    if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    rootRef.current?.querySelectorAll(".legal-search-hit").forEach((element) => element.classList.remove("legal-search-hit"));
+    window.requestAnimationFrame(() => {
+      target.classList.add("legal-search-hit");
+      target.setAttribute("tabindex", "-1");
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.focus({ preventScroll: true });
+      highlightTimer.current = setTimeout(() => {
+        target.classList.remove("legal-search-hit");
+        target.removeAttribute("tabindex");
+      }, 2600);
+    });
+  };
+
+  return <section className="legal-reader-tools" aria-label="Rechtskunde durchsuchen und Kapitel steuern">
+    <div className="legal-reader-tool-row">
+      <label className="legal-search-box">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.2 4.2"/></svg>
+        <span className="sr-only">Begriff in Rechtskunde suchen</span>
+        <input type="search" value={query} onChange={(event) => search(event.target.value)} placeholder="Begriff suchen, z. B. Deliktsfähigkeit" autoComplete="off" />
+        {query && <button type="button" aria-label="Suche leeren" onClick={() => search("")}>×</button>}
+      </label>
+      <div className="legal-expand-actions">
+        <button type="button" onClick={() => setAllSections(true)}>Alles ausklappen</button>
+        <button type="button" onClick={() => setAllSections(false)}>Alles einklappen</button>
+      </div>
+    </div>
+    {query.trim().length >= 2 && <div className="legal-search-results" aria-live="polite">
+      <header><b>{results.length} {results.length === 1 ? "Fundstelle" : "Fundstellen"}</b><span>Antippen, um direkt zur Stelle zu springen</span></header>
+      {results.length ? <div>{results.map((result) => <button type="button" key={result.id} onClick={() => jumpToResult(result.id)}><span>{result.sectionNumber}</span><div><small>{result.sectionTitle}</small><b>{result.label}</b><p>{result.excerpt}</p></div><i>→</i></button>)}</div> : <p className="legal-search-empty">Kein Treffer. Prüfe die Schreibweise oder suche nach einem kürzeren Wortstamm.</p>}
+    </div>}
+  </section>;
+}
+
 function RechtskundeLesson({ onBack, onProgressChange }: { onBack: () => void; onProgressChange: (progress: QuestionProgress) => void }) {
-  return <section className="page-section legal-reader"><button className="back-button" onClick={onBack}>← Schriftliche Fachbereiche</button>
+  const legalRootRef = useRef<HTMLElement>(null);
+  return <section className="page-section legal-reader" ref={legalRootRef}><button className="back-button" onClick={onBack}>← Schriftliche Fachbereiche</button>
     <header className="legal-hero"><div><span className="eyebrow light">Schriftliche Prüfung · Rechtskunde</span><h1>Rechtssicher entscheiden.<br />Prüfungssicher begründen.</h1><p>Nach deiner Unterlage strukturiert und für Thüringen mit den geltenden Rechtsgrundlagen abgeglichen.</p></div><div><b>19</b><span>Lernfelder</span><small>Rechtsstand 11/2026</small></div></header>
     <aside className="legal-disclaimer"><span>§</span><div><b>Lernunterlage – keine Rechtsberatung</b><p>Für den Einsatz gelten immer die aktuelle Rechtslage, Thüringer VFA/SOP, örtliche Dienstanweisungen und die konkrete Situation. Die rechtliche Bewertung bleibt eine Einzelfallentscheidung.</p></div></aside>
+    <LegalReaderTools rootRef={legalRootRef} />
     <div className="legal-reading-flow">
       <LegalSection number="01" kicker="Grundlagen" title="Rechtsnormen, Rangordnung und Rechtssubjekte"><div className="legal-copy"><p><b>Rechtsnormen</b> sind <mark>verbindliche Regeln des Rechts</mark>, die <mark>menschliches Verhalten ordnen</mark> und bei Verstößen <mark>staatlich durchgesetzt</mark> werden können. Für Prüfungsfälle ist zuerst zu klären, <b>welche Norm gilt, wer handelt und welche Rechtsfolge</b> sich daraus ergibt.</p><div className="legal-compare"><article><span>Merkmal 1</span><b>Allgemein und verbindlich</b><p>Die Regel richtet sich an einen abstrakt bestimmten Personenkreis und beansprucht rechtliche Verbindlichkeit.</p></article><article><span>Merkmal 2</span><b>Staatlich durchsetzbar</b><p>Die Rechtsordnung verbindet Verstöße mit Rechtsfolgen, die erforderlichenfalls durch staatliche Organe durchgesetzt werden.</p></article></div><h3>Formen von Rechtsnormen</h3><div className="legal-grid"><article><b>Gesetz</b><p>Vom zuständigen Parlament im Gesetzgebungsverfahren beschlossen, etwa NotSanG oder ThürRettG.</p></article><article><b>Rechtsverordnung</b><p>Wird durch die Exekutive aufgrund einer gesetzlichen Ermächtigung erlassen, etwa die NotSan-APrV.</p></article><article><b>Satzung</b><p>Autonome Regelung einer juristischen Person des öffentlichen Rechts innerhalb ihrer Zuständigkeit.</p></article><article><b>Gewohnheitsrecht</b><p>Entsteht durch langdauernde gleichmäßige Übung und die Überzeugung, dass diese rechtlich geboten ist.</p></article></div><h3>Vereinfachte Rangordnung</h3><div className="legal-levels"><span><b>1</b>Grundgesetz / Verfassung</span><span><b>2</b>Formelles Gesetz</span><span><b>3</b>Rechtsverordnung</span><span><b>4</b>Satzung</span></div><p>Niederrangiges Recht darf höherrangigem Recht nicht widersprechen. Bundes- und Landesrecht sind zusätzlich nach Gesetzgebungskompetenz zu unterscheiden; innerhalb seiner Geltung gilt: <b>Bundesrecht bricht Landesrecht</b> (Art. 31 GG). Das NotSanG ist Bundesrecht für das Berufsrecht, das ThürRettG Landesrecht für Organisation und Aufgaben des Thüringer Rettungsdienstes.</p><h3>Wichtige Rechtsgrundlagen im Rettungsdienst</h3><div className="legal-compare"><article><span>Bundesrecht</span><b>NotSanG und SGB V</b><p>Das NotSanG regelt Berufsbezeichnung, Ausbildung und heilkundliche Befugnisse. Das SGB V enthält sozialrechtliche Regeln zu Krankenbeförderung, Rettungsdienstleistungen und Finanzierung.</p></article><article><span>Landesrecht Thüringen</span><b>ThürRettG und ThürBKG</b><p>Das ThürRettG regelt Organisation, Aufgaben und Träger des Rettungsdienstes. Das ThürBKG betrifft Brandschutz, allgemeine Hilfe und Katastrophenschutz.</p></article></div><aside className="legal-key"><small>Art. 79 Abs. 3 GG</small><h3>Ewigkeitsgarantie</h3><p>Unzulässig sind Grundgesetzänderungen, welche die Gliederung des Bundes in Länder, die grundsätzliche Mitwirkung der Länder bei der Gesetzgebung oder die in Art. 1 und Art. 20 GG niedergelegten Grundsätze berühren.</p></aside><div className="legal-callout"><b>Prüfungsfrage mit Lösung</b><p><strong>Frage:</strong> Welche Aspekte des Grundgesetzes schützt die Ewigkeitsgarantie?</p><p><strong>Lösung:</strong> Geschützt sind die Gliederung des Bundes in Länder, die grundsätzliche Mitwirkung der Länder an der Gesetzgebung sowie die Grundsätze aus <strong>Art. 1 GG</strong> – insbesondere Menschenwürde und Bindung der Staatsgewalt an die Grundrechte – und aus <strong>Art. 20 GG</strong> – Republik, Demokratie, Sozialstaat, Bundesstaat und Rechtsstaat mit Gewaltenteilung und Bindung an Recht und Gesetz. Nicht jeder einzelne Grundrechtsartikel ist dadurch unveränderlich.</p></div><h3>Natürliche und juristische Personen</h3><p>Menschen sind natürliche Personen. Juristische Personen sind rechtlich verselbstständigte Organisationen, etwa eingetragene Vereine oder Kapitalgesellschaften. Ihre Rechtsfähigkeit entsteht nach den Regeln der jeweiligen Rechtsform – <b>nicht durch eine feste Zahl von 21 Mitgliedern</b>.</p><div className="legal-grid"><article><b>Rechtsfähigkeit</b><p>Fähigkeit, Träger von Rechten und Pflichten zu sein.</p></article><article><b>Geschäftsfähigkeit</b><p>Unter 7 geschäftsunfähig; 7 bis 17 beschränkt geschäftsfähig; ab 18 grundsätzlich voll geschäftsfähig.</p></article><article><b>Deliktsfähigkeit</b><p>Haftung nach §§ 827, 828 BGB hängt unter anderem von Alter, Zustand und Einsichtsfähigkeit ab.</p></article><article><b>Straffähigkeit</b><p>Unter 14 schuldunfähig; bei Jugendlichen Reifeprüfung, bei Heranwachsenden kann Jugendstrafrecht gelten.</p></article></div></div></LegalSection>
 
