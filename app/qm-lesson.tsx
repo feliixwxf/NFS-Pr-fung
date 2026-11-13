@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useRef } from "react";
+import WrittenTermSearch from "./written-term-search";
 
 function QmSection({ number, kicker, title, children }: { number: string; kicker: string; title: string; children: ReactNode }) {
   return <details className="communication-section qm-section"><summary><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div><i>⌄</i></summary><div className="communication-section-content">{children}</div></details>;
@@ -14,6 +15,7 @@ export default function QmLesson({ onBack, finale }: { onBack: () => void; final
     <header className="communication-hero qm-hero"><div><span className="eyebrow light">Schriftliche Prüfung · Qualitätsmanagement</span><h1>Qualität messen.<br />Risiken erkennen. Sicher verbessern.</h1><p>Qualitätsmanagement im Rettungsdienst verstehen, auf Fälle anwenden und Verbesserungen nachvollziehbar prüfen.</p></div><div><b>14</b><span>Lernfelder</span><small>NotSan-Prüfung 2027</small></div></header>
     <aside className="communication-focus qm-focus"><span>◎</span><div><b>Prüfungsfokus</b><p>Nicht nur Begriffe nennen: Qualitätsproblem einordnen, SMART-Ziele formulieren, PDCA anwenden und Wirksamkeit mit passenden Kennzahlen beurteilen.</p></div></aside>
     <div className="communication-toolbar" role="group" aria-label="Leseabschnitte steuern"><button type="button" onClick={() => toggleAll(true)}>Alles ausklappen</button><button type="button" onClick={() => toggleAll(false)}>Alles einklappen</button><small>Beim Öffnen sind alle Lernfelder zur Übersicht eingeklappt.</small></div>
+    <WrittenTermSearch rootRef={flowRef} />
     <div className="communication-reading-flow" ref={flowRef}>
       <QmSection number="01" kicker="Grundlagen" title="Qualität braucht definierte Anforderungen"><div className="communication-copy"><p><b>Qualität</b> beschreibt den Grad, in dem Merkmale festgelegte oder vorausgesetzte Anforderungen erfüllen. <b>Qualitätsmanagement</b> plant, steuert, sichert und verbessert Strukturen, Prozesse und Ergebnisse systematisch.</p><div className="communication-compare"><article><small>Mess- und beobachtbar</small><h3>Objektive Kriterien</h3><p>Zeiten, Vollständigkeit, Funktionsstatus, Quoten oder messbare Abweichungen.</p></article><article><small>Erleben und Bewertung</small><h3>Subjektive Kriterien</h3><p>Zufriedenheit, Vertrauen, empfundene Wertschätzung oder Komfort – standardisiert über geeignete Skalen und Befragungen.</p></article></div><aside className="communication-exam-tip"><b>Fachlich korrigiert</b><p>„Subjektiv“ bedeutet nicht unmessbar oder beliebig. Messverfahren, Zielgruppe, Skala und Auswertung müssen definiert sein.</p></aside></div></QmSection>
 

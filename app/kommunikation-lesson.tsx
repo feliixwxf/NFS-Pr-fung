@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { ReactNode, useRef, useState } from "react";
+import WrittenTermSearch from "./written-term-search";
 
 function CommunicationSection({ number, kicker, title, children }: { number: string; kicker: string; title: string; children: ReactNode }) {
   return <details className="communication-section"><summary><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div><i>⌄</i></summary><div className="communication-section-content">{children}</div></details>;
@@ -36,6 +37,7 @@ export default function KommunikationLesson({ onBack, finale }: { onBack: () => 
       <button type="button" onClick={() => toggleAll(false)}>Alles einklappen</button>
       <small>Beim Öffnen sind alle Lernfelder bewusst eingeklappt.</small>
     </div>
+    <WrittenTermSearch rootRef={flowRef} />
 
     <div className="communication-reading-flow" ref={flowRef}>
       <CommunicationSection number="01" kicker="Grundlagen" title="Kommunikation und Interaktion">

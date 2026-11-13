@@ -8,6 +8,7 @@ const exam = readFileSync(new URL("../app/written-state-exam.tsx", import.meta.u
 const highlighter = readFileSync(new URL("../app/text-highlighter.tsx", import.meta.url), "utf8");
 const highlightStore = readFileSync(new URL("../app/lib/textHighlights.ts", import.meta.url), "utf8");
 const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+const writtenSearch = readFileSync(new URL("../app/written-term-search.tsx", import.meta.url), "utf8");
 
 test("polytrauma distinguishes immediate and delayed splenic rupture", () => {
   assert.match(polytrauma, /Einzeitige Milzruptur/);
@@ -47,4 +48,23 @@ test("legal reader supports global folding and searchable jump results", () => {
   assert.match(page, /Begriff suchen, z\. B\. Deliktsfähigkeit/);
   assert.match(page, /querySelectorAll<HTMLDetailsElement>\("\.legal-section"\)/);
   assert.match(page, /scrollIntoView\(\{ behavior: "smooth", block: "center" \}\)/);
+});
+
+test("every written learning area exposes searchable jump results", () => {
+  const lessonFiles = [
+    "kommunikation-lesson.tsx",
+    "organisation-lesson.tsx",
+    "qm-lesson.tsx",
+    "terminologie-lesson.tsx",
+    "diagnostik-lesson.tsx",
+    "hygiene-lesson.tsx",
+    "pharmakologie-lesson.tsx",
+  ];
+  for (const file of lessonFiles) {
+    const source = readFileSync(new URL(`../app/${file}`, import.meta.url), "utf8");
+    assert.match(source, /<WrittenTermSearch rootRef=\{flowRef\} \/>/, file);
+  }
+  assert.match(writtenSearch, /Schriftlichen Lernbereich durchsuchen/);
+  assert.match(writtenSearch, /:scope > details/);
+  assert.match(writtenSearch, /scrollIntoView\(\{ behavior: "smooth", block: "center" \}\)/);
 });

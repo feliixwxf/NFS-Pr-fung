@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useRef, useState } from "react";
+import WrittenTermSearch from "./written-term-search";
 
 function PharmaSection({ number, kicker, title, children }: { number: string; kicker: string; title: string; children: ReactNode }) {
   return <details className="communication-section pharma-section"><summary><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div><i>⌄</i></summary><div className="communication-section-content">{children}</div></details>;
@@ -24,6 +25,7 @@ export default function PharmakologieLesson({ onBack, finale }: { onBack: () => 
     <header className="communication-hero qm-hero"><div><span className="eyebrow light">Schriftliche Prüfung · Pharmakologie</span><h1>Wirkstoff verstehen.<br />Wirkung sicher einordnen.</h1><p>Pharmakokinetik, Pharmakodynamik, Hämostase und Muskelrelaxanzien für die NotSan-Prüfung verknüpfen.</p></div><div><b>12</b><span>Lernfelder</span><small>Rettungsdienstlicher Fokus</small></div></header>
     <aside className="communication-focus"><span>Rx</span><div><b>Prüfungsfokus</b><p>Erkläre nicht nur, <em>was</em> ein Medikament macht, sondern auch <em>wo</em> es wirkt, wie der Körper es verarbeitet und welche unmittelbare Sicherheitsfolge daraus entsteht.</p></div></aside>
     <div className="communication-toolbar" role="group" aria-label="Leseabschnitte steuern"><button type="button" onClick={() => toggleAll(true)}>Alles ausklappen</button><button type="button" onClick={() => toggleAll(false)}>Alles einklappen</button><small>Die Lernfelder sind beim Einstieg übersichtlich eingeklappt.</small></div>
+    <WrittenTermSearch rootRef={flowRef} />
     <div className="communication-reading-flow" ref={flowRef}>
       <PharmaSection number="01" kicker="Grundlagen" title="Pharmakologie, Pharmakokinetik und Pharmakodynamik"><div className="communication-copy"><div className="communication-grid"><article><b>Pharmakologie</b><p>Lehre von Arzneistoffen und ihren Wechselwirkungen mit dem Organismus.</p></article><article><b>Arzneistoff</b><p>Wirksamer Bestandteil, der Körperfunktionen beeinflusst oder zur Diagnose, Vorbeugung beziehungsweise Behandlung eingesetzt wird.</p></article><article><b>Pharmakokinetik</b><p>Was der Körper mit dem Arzneistoff macht: Freisetzung, Aufnahme, Verteilung, Umwandlung und Ausscheidung.</p></article><article><b>Pharmakodynamik</b><p>Was der Arzneistoff am Körper macht: Zielstruktur, Wirkmechanismus, Dosis-Wirkung sowie erwünschte und unerwünschte Wirkungen.</p></article></div><aside className="communication-exam-tip"><b>Prüfungsformel</b><p><b>Kinetik = Weg und Konzentration.</b> <b>Dynamik = Ziel und Wirkung.</b> Beide bestimmen gemeinsam, wie stark und wie lange ein Arzneistoff wirkt.</p></aside></div></PharmaSection>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useRef, useState } from "react";
+import WrittenTermSearch from "./written-term-search";
 
 function OrganisationSection({ number, kicker, title, children }: { number: string; kicker: string; title: string; children: ReactNode }) {
   return <details className="communication-section organisation-section"><summary><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div><i>⌄</i></summary><div className="communication-section-content">{children}</div></details>;
@@ -35,6 +36,7 @@ export default function OrganisationLesson({ onBack, finale }: { onBack: () => v
     <header className="communication-hero organisation-hero"><div><span className="eyebrow light">Schriftliche Prüfung · Organisation &amp; Einsatztaktik</span><h1>Lage erkennen.<br />Kräfte ordnen. Sicher führen.</h1><p>Von der ersten Lageübersicht bis zur strukturierten Bewältigung von MANV und Ü-MANV – prüfungsnah für den Thüringer Rettungsdienst.</p></div><div><b>15</b><span>Lernfelder</span><small>Rechtsstand 10/2026</small></div></header>
     <aside className="communication-focus organisation-focus"><span>⌖</span><div><b>Prüfungsfokus Thüringen</b><p>Taktische Entscheidungen begründen, Zuständigkeiten trennen und die eigene Maßnahme in die gemeinsame Einsatzstruktur einordnen.</p></div></aside>
     <div className="communication-toolbar" role="group" aria-label="Leseabschnitte steuern"><button type="button" onClick={() => toggleAll(true)}>Alles ausklappen</button><button type="button" onClick={() => toggleAll(false)}>Alles einklappen</button><small>Beim Öffnen sind die Lernfelder zur besseren Übersicht eingeklappt.</small></div>
+    <WrittenTermSearch rootRef={flowRef} />
 
     <div className="communication-reading-flow" ref={flowRef}>
       <OrganisationSection number="01" kicker="System Thüringen" title="Träger, Aufgaben und Hilfsfrist"><div className="communication-copy">

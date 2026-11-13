@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useRef } from "react";
+import WrittenTermSearch from "./written-term-search";
 
 function HygieneSection({ number, kicker, title, children }: { number: string; kicker: string; title: string; children: ReactNode }) {
   return <details className="communication-section qm-section"><summary><span>{number}</span><div><small>{kicker}</small><h2>{title}</h2></div><i>⌄</i></summary><div className="communication-section-content">{children}</div></details>;
@@ -15,6 +16,7 @@ export default function HygieneLesson({ onBack, finale }: { onBack: () => void; 
     <header className="communication-hero qm-hero"><div><span className="eyebrow light">Schriftliche Prüfung · Hygiene &amp; Infektionsschutz</span><h1>Übertragung verstehen.<br />Exposition verhindern.</h1><p>Prüfungsrelevante Begriffe, TRBA 250, Tuberkulose und Postexpositionsmaßnahmen kompakt für den Rettungsdienst.</p></div><div><b>11</b><span>Lernfelder</span><small>Stand 10/2026</small></div></header>
     <aside className="communication-focus"><span>H</span><div><b>Leitgedanke</b><p>Basishygiene gilt unabhängig von einer bekannten Diagnose. Zusätzliche Maßnahmen richten sich nach Übertragungsweg, Tätigkeit und Gefährdungsbeurteilung.</p></div></aside>
     <div className="communication-toolbar" role="group" aria-label="Leseabschnitte steuern"><button type="button" onClick={() => toggleAll(true)}>Alles ausklappen</button><button type="button" onClick={() => toggleAll(false)}>Alles einklappen</button><small>Alle Lernfelder starten übersichtlich eingeklappt.</small></div>
+    <WrittenTermSearch rootRef={flowRef} />
 
     <div className="communication-reading-flow" ref={flowRef}>
       <HygieneSection number="01" kicker="Grundbegriffe" title="Hygiene und ihre vier Bereiche"><div className="communication-copy">
