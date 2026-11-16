@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 export function OfflineBootstrap() {
+  const [updateReady, setUpdateReady] = useState(false);
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     const isLocalhost = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
@@ -12,9 +13,33 @@ export function OfflineBootstrap() {
       if ("caches" in window) void caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith("notsan-offline-")).map((key) => caches.delete(key))));
       return;
     }
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    const showUpdate = () => { if (hadController) setUpdateReady(true); };
+    const checkForUpdate = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        void navigator.serviceWorker.getRegistration().then((registration) => registration?.update()).catch(() => undefined);
+      }
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", showUpdate);
+    document.addEventListener("visibilitychange", checkForUpdate);
+    window.addEventListener("online", checkForUpdate);
+    const interval = window.setInterval(checkForUpdate, 15 * 60 * 1000);
     void navigator.serviceWorker.register("/sw.js").then((registration) => registration.update()).catch(() => undefined);
+    return () => {
+      navigator.serviceWorker.removeEventListener("controllerchange", showUpdate);
+      document.removeEventListener("visibilitychange", checkForUpdate);
+      window.removeEventListener("online", checkForUpdate);
+      window.clearInterval(interval);
+    };
   }, []);
-  return null;
+  if (!updateReady) return null;
+  return <aside className="app-update-notice" role="status" aria-live="polite">
+    <div><strong>Neue Version verfügbar</strong><span>Aktualisiere die App, damit du alle neuen Inhalte und Korrekturen siehst.</span></div>
+    <div className="app-update-actions">
+      <button type="button" onClick={() => window.location.reload()}>Jetzt aktualisieren</button>
+      <button type="button" className="secondary" onClick={() => setUpdateReady(false)}>Später</button>
+    </div>
+  </aside>;
 }
 
 export default function OfflineStatusCard() {

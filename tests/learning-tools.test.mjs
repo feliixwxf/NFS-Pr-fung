@@ -182,6 +182,10 @@ test("barotrauma explains the complete pressure injury mechanism in teachable st
 test("offline worker caches the app shell and visited same-origin assets", () => {
   assert.match(layout, /OfflineBootstrap/);
   assert.match(offlineSupport, /getRegistrations/);
+  assert.match(offlineSupport, /Neue Version verfügbar/);
+  assert.match(offlineSupport, /controllerchange/);
+  assert.match(offlineSupport, /visibilitychange/);
+  assert.match(offlineSupport, /window\.location\.reload\(\)/);
   assert.match(serviceWorker, /CACHE_APP_SHELL/);
   assert.match(serviceWorker, /request\.mode === "navigate"/);
   assert.match(serviceWorker, /caches\.match\("\/"\)/);
