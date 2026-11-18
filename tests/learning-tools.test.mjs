@@ -13,6 +13,7 @@ const serviceWorker = await readFile(new URL("../public/sw.js", import.meta.url)
 const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
 const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
 const offlineSupport = await readFile(new URL("../app/offline-support.tsx", import.meta.url), "utf8");
+const appVersionRoute = await readFile(new URL("../app/api/app-version/route.ts", import.meta.url), "utf8");
 const viewportSupport = await readFile(new URL("../app/device-viewport-support.tsx", import.meta.url), "utf8");
 const textHighlighter = await readFile(new URL("../app/text-highlighter.tsx", import.meta.url), "utf8");
 const textHighlightStore = await readFile(new URL("../app/lib/textHighlights.ts", import.meta.url), "utf8");
@@ -217,8 +218,15 @@ test("offline worker caches the app shell and visited same-origin assets", () =>
   assert.match(offlineSupport, /Neue Version verfügbar/);
   assert.match(offlineSupport, /controllerchange/);
   assert.match(offlineSupport, /visibilitychange/);
-  assert.match(offlineSupport, /window\.location\.reload\(\)/);
+  assert.match(offlineSupport, /APP_VERSION_KEY/);
+  assert.match(offlineSupport, /fetch\(`\/api\/app-version/);
+  assert.match(offlineSupport, /installedVersion !== remoteVersion/);
+  assert.match(offlineSupport, /Jetzt aktualisieren/);
+  assert.match(offlineSupport, /window\.location\.replace/);
+  assert.match(appVersionRoute, /VERCEL_GIT_COMMIT_SHA/);
+  assert.match(appVersionRoute, /Cache-Control.*no-store/);
   assert.match(serviceWorker, /CACHE_APP_SHELL/);
+  assert.match(serviceWorker, /notsan-offline-v6/);
   assert.match(serviceWorker, /request\.mode === "navigate"/);
   assert.match(serviceWorker, /caches\.match\("\/"\)/);
   assert.match(serviceWorker, /\["script", "style", "font", "image"\]/);

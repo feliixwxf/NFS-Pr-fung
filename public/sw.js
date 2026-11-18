@@ -1,4 +1,4 @@
-const CACHE_NAME = "notsan-offline-v5";
+const CACHE_NAME = "notsan-offline-v6";
 const APP_SHELL = ["/manifest.webmanifest", "/favicon.svg", "/app-icon-192.png", "/app-icon-512.png", "/fonts/atkinson-hyperlegible/atkinson-hyperlegible-400.woff2", "/fonts/atkinson-hyperlegible/atkinson-hyperlegible-700.woff2"];
 
 async function cacheShell() {
