@@ -18,6 +18,7 @@ import { bronchoQuestions } from "./bronchoobstruktion-data";
 import { krampfanfallQuestions } from "./krampfanfall-data";
 import { pharmakologieQuestions } from "./pharmakologie-data";
 import { verdauungQuestions } from "./verdauung-data";
+import { notifyPersonalFeatureChanged } from "./lib/personalFeatureSync";
 
 type ExamOption = { text: string; correct?: boolean };
 type ExamQuestion = {
@@ -169,6 +170,7 @@ export default function WrittenStateExam({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     if (!selectedId || !attempt) return;
     localStorage.setItem(`${STORAGE_PREFIX}:${selectedId}`, JSON.stringify(attempt));
+    notifyPersonalFeatureChanged();
   }, [selectedId, attempt]);
 
   const attemptStartedAt = attempt?.startedAt;

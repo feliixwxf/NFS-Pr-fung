@@ -18,6 +18,8 @@ const textHighlighter = await readFile(new URL("../app/text-highlighter.tsx", im
 const textHighlightStore = await readFile(new URL("../app/lib/textHighlights.ts", import.meta.url), "utf8");
 const textHighlightMigration = await readFile(new URL("../supabase/migrations/202611060001_text_highlights.sql", import.meta.url), "utf8");
 const cloudProgress = await readFile(new URL("../app/lib/cloudProgress.ts", import.meta.url), "utf8");
+const personalFeatureSync = await readFile(new URL("../app/lib/personalFeatureSync.ts", import.meta.url), "utf8");
+const learningQol = await readFile(new URL("../app/lib/learningQol.ts", import.meta.url), "utf8");
 const mcSessionMigration = await readFile(new URL("../supabase/migrations/202611110001_learning_mc_sessions.sql", import.meta.url), "utf8");
 
 test("oral topic routes keep named and legacy links addressable", () => {
@@ -63,6 +65,24 @@ test("ongoing multiple-choice rounds sync privately across signed-in devices", (
   assert.match(cloudProgress, /from\("learning_mc_sessions"\)/);
   assert.match(mcSessionMigration, /primary key \(user_id, session_key\)/);
   assert.match(mcSessionMigration, /auth\.uid\(\).*user_id/);
+});
+
+test("personal learning features follow the signed-in account across devices", () => {
+  assert.match(personalFeatureSync, /personal-features-v1/);
+  assert.match(personalFeatureSync, /notsan-question-bookmarks-v1/);
+  assert.match(personalFeatureSync, /notsan-topic-activity-v1/);
+  assert.match(personalFeatureSync, /notsan-chapter-sections-v2:/);
+  assert.match(personalFeatureSync, /notsan-chapter-progress-v1:/);
+  assert.match(personalFeatureSync, /notsan-written-exam-v2:/);
+  assert.match(personalFeatureSync, /loadMultipleChoiceSession/);
+  assert.match(personalFeatureSync, /saveMultipleChoiceSession/);
+  assert.match(personalFeatureSync, /OWNER_KEY/);
+  assert.match(page, /hydratePersonalFeatures\(accountUserId\)/);
+  assert.match(page, /savePersonalFeatures\(accountUserId\)/);
+  assert.match(page, /markPersonalFeaturesDirty\(accountUserId\)/);
+  assert.match(page, /notifyPersonalFeatureChanged\(\)/);
+  assert.match(writtenExam, /notifyPersonalFeatureChanged\(\)/);
+  assert.match(learningQol, /notifyPersonalFeatureChanged\(\)/);
 });
 
 test("oral lesson chunks prefetch before a chapter is opened", () => {

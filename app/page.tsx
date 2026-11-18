@@ -71,6 +71,7 @@ import { oralTopicReferenceLabel } from "./lib/oralTopicReferences";
 import { toggleMultipleChoiceSelection } from "./lib/multipleChoiceSelection";
 import { SourceFigure, VfaFigure } from "./oral-lesson-ui";
 import { deleteMultipleChoiceSession, getActiveLearningUserId, loadMultipleChoiceSession, saveMultipleChoiceSession } from "./lib/cloudProgress";
+import { hydratePersonalFeatures, markPersonalFeaturesDirty, notifyPersonalFeatureChanged, PERSONAL_FEATURES_CHANGED_EVENT, savePersonalFeatures } from "./lib/personalFeatureSync";
 
 const AiExamTutor = lazy(() => import("./ai-exam-tutor"));
 const LearningPlan = lazy(() => import("./learning-plan"));
@@ -300,6 +301,7 @@ export default function Home() {
   const [passwordSetupKind, setPasswordSetupKind] = useState<"invite" | "recovery" | null>(null);
   const [passwordResetBusy, setPasswordResetBusy] = useState(false);
   const [passwordResetMessage, setPasswordResetMessage] = useState("");
+  const [personalFeatureVersion, setPersonalFeatureVersion] = useState(0);
   const contentLocationRef = useRef("start:none:none");
 
   const scrollToPageTop = () => {
@@ -364,6 +366,41 @@ export default function Home() {
       window.history.scrollRestoration = previousScrollRestoration;
     };
   }, []);
+
+  useEffect(() => {
+    if (!accountUserId) return;
+    let active = true;
+    let hydrated = false;
+    let pendingChange = false;
+    let saveTimer = 0;
+    const save = () => {
+      window.clearTimeout(saveTimer);
+      saveTimer = window.setTimeout(() => { void savePersonalFeatures(accountUserId).catch(() => undefined); }, 500);
+    };
+    const onFeatureChange = () => {
+      if (!hydrated) { pendingChange = true; return; }
+      markPersonalFeaturesDirty(accountUserId);
+      save();
+    };
+    const onOnline = () => save();
+    window.addEventListener(PERSONAL_FEATURES_CHANGED_EVENT, onFeatureChange);
+    window.addEventListener("online", onOnline);
+    void hydratePersonalFeatures(accountUserId).then((changed) => {
+      if (!active) return;
+      hydrated = true;
+      if (changed) setPersonalFeatureVersion((current) => current + 1);
+      if (pendingChange && !changed) {
+        markPersonalFeaturesDirty(accountUserId);
+        save();
+      }
+    }).catch(() => { hydrated = true; });
+    return () => {
+      active = false;
+      window.clearTimeout(saveTimer);
+      window.removeEventListener(PERSONAL_FEATURES_CHANGED_EVENT, onFeatureChange);
+      window.removeEventListener("online", onOnline);
+    };
+  }, [accountUserId]);
 
   useEffect(() => {
     const isRecovery = window.location.hash.includes("type=recovery") || new URLSearchParams(window.location.search).get("password-reset") === "1";
@@ -608,7 +645,7 @@ export default function Home() {
             </div>
           </div>
         </header>
-        <Suspense fallback={<AppLoadingScreen compact />}>
+        <Suspense key={personalFeatureVersion} fallback={<AppLoadingScreen compact />}>
         {view === "start" && <Dashboard setView={changeView} questionProgress={questionProgress} />}
         {view === "plan" && <LearningPlan progress={questionProgress} completedTopics={completedTopics} topics={learningPlanTopics} questionLabels={learningPlanQuestionLabels} userId={accountUserId} onTrain={(topic) => openTraining(topic as TrainingTopic)} onRead={(topic) => { if (topic.writtenPath) { window.history.pushState({}, "", topic.writtenPath); setSelectedTopic(null); setView("written"); return; } if (topic.oralIndex === undefined) return; setView("oral"); setSelectedTopic(topic.oralIndex); window.history.pushState({}, "", `/muendlich/${topicSlugByIndex[topic.oralIndex] || `thema-${topic.oralIndex + 1}`}`); }} onDueReview={openDueReview} onCases={() => changeView("cases")} />}
         {view === "cases" && <CaseGenerator topics={caseGeneratorTopics} />}
@@ -1018,6 +1055,7 @@ function TopicReader(props: TopicReaderProps) {
     const persist = () => {
       const state = Object.fromEntries(sections.map((item) => [item.id, item instanceof HTMLDetailsElement ? item.open : !item.classList.contains("qol-collapsed")]));
       localStorage.setItem(storageKey, JSON.stringify(state));
+      notifyPersonalFeatureChanged();
     };
     const nonDetailsCleanups: Array<() => void> = [];
     sections.forEach((section) => {
@@ -1061,6 +1099,7 @@ function TopicReader(props: TopicReaderProps) {
     setLearnedSections((current) => {
       const next = { ...current, [id]: !current[id] };
       localStorage.setItem(progressStorageKey, JSON.stringify(next));
+      notifyPersonalFeatureChanged();
       return next;
     });
   };
@@ -1079,6 +1118,7 @@ function TopicReader(props: TopicReaderProps) {
       }
     });
     localStorage.setItem(storageKey, JSON.stringify(Object.fromEntries(sections.map((section) => [section.id, open]))));
+    notifyPersonalFeatureChanged();
   };
   const printChapter = async () => {
     const root = rootRef.current;

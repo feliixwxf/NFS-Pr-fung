@@ -1,3 +1,5 @@
+import { notifyPersonalFeatureChanged } from "./personalFeatureSync";
+
 export const BOOKMARKS_KEY = "notsan-question-bookmarks-v1";
 export const TOPIC_ACTIVITY_KEY = "notsan-topic-activity-v1";
 
@@ -17,6 +19,7 @@ export function readBookmarks(): string[] {
 
 export function writeBookmarks(bookmarks: readonly string[]) {
   localStorage.setItem(BOOKMARKS_KEY, JSON.stringify([...new Set(bookmarks)]));
+  notifyPersonalFeatureChanged();
 }
 
 export function readTopicActivity(): TopicActivity {
@@ -31,6 +34,7 @@ export function markTopicOpened(topicNumber: number, now = new Date()) {
   const activity = readTopicActivity();
   const next = { ...activity, [topicNumber]: { openedAt: now.toISOString() } };
   localStorage.setItem(TOPIC_ACTIVITY_KEY, JSON.stringify(next));
+  notifyPersonalFeatureChanged();
   return next;
 }
 
