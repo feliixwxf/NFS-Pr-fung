@@ -11,6 +11,8 @@ const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 const writtenSearch = readFileSync(new URL("../app/written-term-search.tsx", import.meta.url), "utf8");
 const communicationLesson = readFileSync(new URL("../app/kommunikation-lesson.tsx", import.meta.url), "utf8");
 const communicationData = readFileSync(new URL("../app/kommunikation-data.ts", import.meta.url), "utf8");
+const terminologyLesson = readFileSync(new URL("../app/terminologie-lesson.tsx", import.meta.url), "utf8");
+const terminologyData = readFileSync(new URL("../app/terminologie-data.ts", import.meta.url), "utf8");
 
 test("polytrauma distinguishes immediate and delayed splenic rupture", () => {
   assert.match(polytrauma, /Einzeitige Milzruptur/);
@@ -79,4 +81,14 @@ test("communication covers the complete school learning-goal expansion", () => {
   assert.match(communicationLesson, /Deeskalation, Stress und direktive Kommunikation/);
   assert.match(communicationData, /komm-card-38/);
   assert.match(communicationData, /komm-q-60/);
+});
+
+test("terminology includes exam-focused emergency medical English", () => {
+  assert.match(terminologyLesson, /Englische Fachsprache im Rettungsdienst/);
+  assert.match(terminologyLesson, /Are you short of breath/);
+  assert.match(terminologyLesson, /Do you take blood thinners/);
+  assert.match(terminologyLesson, /ATMIST auf Englisch/);
+  assert.match(terminologyLesson, /Can you tell me what you understood/);
+  assert.match(terminologyData, /term-card-53/);
+  assert.match(terminologyData, /term-q-40/);
 });

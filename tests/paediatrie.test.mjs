@@ -12,7 +12,7 @@ const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
 
 test("written diagnostics contains the school-based paediatric learning section", () => {
   assert.match(diagnostik, /number="26" kicker="Pädiatrie"/);
-  for (const term of ["Neugeborenes", "Säugling", "Kleinkind", "Schulkind", "Jugendlicher", "AF\/min", "AZV", "HF\/min"]) assert.match(diagnostik, new RegExp(term));
+  for (const term of ["Neugeborenes", "Säugling", "Kleinkind", "Schulkind", "Jugendlicher", "AF/min", "AZV", "HF/min"]) assert.match(diagnostik, new RegExp(term));
   assert.match(diagnostik, /Bradykardie beim akut kranken Kind ist kritisch/);
   assert.match(diagnostik, /Vier-Augen-Kontrolle/);
   assert.match(diagnostik, /Fünf Initialbeatmungen sofort/);
