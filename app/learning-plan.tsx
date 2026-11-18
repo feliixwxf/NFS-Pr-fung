@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { dueQuestionIds, type QuestionProgress } from "./lib/questionProgress";
+import { loadMultipleChoiceSession, saveMultipleChoiceSession } from "./lib/cloudProgress";
 import OfflineStatusCard from "./offline-support";
 
 export type LearningPlanTopic = {
@@ -15,9 +16,10 @@ export type LearningPlanTopic = {
 
 export type LearningPlanQuestion = { prompt: string; topicTitle: string };
 
-type PlanSettings = { examDate: string; dailyMinutes: number };
+type PlanSettings = { examDate: string; dailyMinutes: number; updatedAt: string };
 
-const DEFAULT_SETTINGS: PlanSettings = { examDate: "", dailyMinutes: 30 };
+const DEFAULT_SETTINGS: PlanSettings = { examDate: "", dailyMinutes: 30, updatedAt: "" };
+const CLOUD_SETTINGS_KEY = "learning-plan-settings-v1";
 
 function readSettings(storageKey: string): PlanSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
@@ -26,8 +28,16 @@ function readSettings(storageKey: string): PlanSettings {
     return {
       examDate: typeof saved.examDate === "string" ? saved.examDate : "",
       dailyMinutes: [15, 30, 45, 60].includes(saved.dailyMinutes) ? saved.dailyMinutes : 30,
+      updatedAt: typeof saved.updatedAt === "string" ? saved.updatedAt : "",
     };
   } catch { return DEFAULT_SETTINGS; }
+}
+
+function parseSettings(value: unknown): PlanSettings | null {
+  if (!value || typeof value !== "object") return null;
+  const saved = value as Partial<PlanSettings>;
+  if (typeof saved.examDate !== "string" || ![15, 30, 45, 60].includes(Number(saved.dailyMinutes))) return null;
+  return { examDate: saved.examDate, dailyMinutes: Number(saved.dailyMinutes), updatedAt: typeof saved.updatedAt === "string" ? saved.updatedAt : "" };
 }
 
 function daysUntil(date: string) {
@@ -86,10 +96,35 @@ export default function LearningPlan({
   const [loadedStorageKey, setLoadedStorageKey] = useState("");
   const [planDay, setPlanDay] = useState(() => localDayKey());
 
-  // Der Speicherschlüssel ändert sich beim Wechsel zwischen lokalem Profil und Lernkonto.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setSettings(readSettings(storageKey)); setLoadedStorageKey(storageKey); }, [storageKey]);
-  useEffect(() => { if (loadedStorageKey === storageKey) localStorage.setItem(storageKey, JSON.stringify(settings)); }, [loadedStorageKey, settings, storageKey]);
+  // Lokale Daten starten sofort. Im Lernkonto gewinnt danach der zeitlich neuere Stand
+  // zwischen diesem Gerät und der privaten Cloud-Zeile.
+  useEffect(() => {
+    let cancelled = false;
+    const local = readSettings(storageKey);
+    const load = async () => {
+      let next = local;
+      if (userId) {
+        try {
+          const remote = await loadMultipleChoiceSession(userId, CLOUD_SETTINGS_KEY);
+          const remoteSettings = parseSettings(remote?.payload);
+          if (remoteSettings && remoteSettings.updatedAt > local.updatedAt) next = remoteSettings;
+          else if (local.updatedAt) await saveMultipleChoiceSession(userId, CLOUD_SETTINGS_KEY, local, local.updatedAt);
+        } catch { /* Offline bleibt der lokale Stand erhalten und wird später erneut gespeichert. */ }
+      }
+      if (!cancelled) { setSettings(next); setLoadedStorageKey(storageKey); }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [storageKey, userId]);
+  useEffect(() => {
+    if (loadedStorageKey !== storageKey) return;
+    localStorage.setItem(storageKey, JSON.stringify(settings));
+    if (userId && settings.updatedAt) void saveMultipleChoiceSession(userId, CLOUD_SETTINGS_KEY, settings, settings.updatedAt).catch(() => undefined);
+  }, [loadedStorageKey, settings, storageKey, userId]);
+
+  const updateSettings = (change: Partial<Pick<PlanSettings, "examDate" | "dailyMinutes">>) => {
+    setSettings((current) => ({ ...current, ...change, updatedAt: new Date().toISOString() }));
+  };
 
   useEffect(() => {
     let timer = 0;
@@ -143,7 +178,7 @@ export default function LearningPlan({
 
   return <section className="page-section learning-plan-page">
     <div className="section-heading"><div><span className="eyebrow">Persönlicher Lernplan</span><h1>Heute gezielt lernen.</h1><p>Der Plan verbindet fällige Wiederholungen, deine bisherigen Fehler und neue Kapitel. Er passt sich nach jeder beantworteten Frage automatisch an.</p></div><div className="source-badge"><b>{minutes}</b><span>Minuten heute</span></div></div>
-    <section className="learning-plan-settings" aria-label="Lernplan einstellen"><label><span>Prüfungsdatum</span><input type="date" value={settings.examDate} min={new Date().toISOString().slice(0, 10)} onChange={(event) => setSettings((current) => ({ ...current, examDate: event.target.value }))} /><small>{settings.examDate ? "✓ Datum dauerhaft auf diesem Gerät gespeichert" : "Datum einmal auswählen – es bleibt gespeichert"}</small></label><label><span>Zeit pro Tag</span><select value={settings.dailyMinutes} onChange={(event) => setSettings((current) => ({ ...current, dailyMinutes: Number(event.target.value) }))}>{[15, 30, 45, 60].map((value) => <option key={value} value={value}>{value} Minuten</option>)}</select><small>Der Tagesplan endet um 00:00 Uhr und wird dann automatisch neu aufgebaut.</small></label><div className="learning-plan-countdown"><small>Bis zur Prüfung</small><b>{examDays === null ? "Datum wählen" : examDays < 0 ? "Termin vorbei" : examDays === 0 ? "Heute" : `${examDays} Tage`}</b></div></section>
+    <section className="learning-plan-settings" aria-label="Lernplan einstellen"><label><span>Prüfungsdatum</span><input type="date" value={settings.examDate} min={new Date().toISOString().slice(0, 10)} onChange={(event) => updateSettings({ examDate: event.target.value })} /><small>{settings.examDate ? userId ? "✓ Im Lernkonto gespeichert und geräteübergreifend synchronisiert" : "✓ Dauerhaft auf diesem Gerät gespeichert" : "Datum einmal auswählen – es bleibt gespeichert"}</small></label><label><span>Zeit pro Tag</span><select value={settings.dailyMinutes} onChange={(event) => updateSettings({ dailyMinutes: Number(event.target.value) })}>{[15, 30, 45, 60].map((value) => <option key={value} value={value}>{value} Minuten</option>)}</select><small>Der Tagesplan endet um 00:00 Uhr und wird dann automatisch neu aufgebaut.</small></label><div className="learning-plan-countdown"><small>Bis zur Prüfung</small><b>{examDays === null ? "Datum wählen" : examDays < 0 ? "Termin vorbei" : examDays === 0 ? "Heute" : `${examDays} Tage`}</b></div></section>
     {plannedDueIds.length > 0 && <section className="learning-plan-due-overview" aria-label="Fällige Fragen"><header><div><small>Direkte Wiederholung</small><h2>Deine heutigen Fragen</h2></div><b>{plannedDueIds.filter((id) => dayKeyFromTimestamp(progress[id]?.updatedAt) === planDay).length} / {plannedDueIds.length} erledigt</b></header><div>{plannedDueIds.map((id) => { const item = questionLabels[id]; const done = dayKeyFromTimestamp(progress[id]?.updatedAt) === planDay; return <article className={done ? "completed" : ""} key={id}><span aria-hidden="true">{done ? "✓" : "?"}</span><div><small>{item?.topicTitle || "Wiederholungsfrage"}</small><p>{item?.prompt || "Fällige Frage direkt öffnen"}</p></div><button type="button" onClick={() => onDueReview(id)}>{done ? "Noch einmal öffnen" : "Direkt zur Frage"} →</button></article>; })}</div></section>}
     <div className="learning-plan-list">{today.map((task, index) => <article key={`${task.label}-${task.title}`}><span className="learning-plan-step">{String(index + 1).padStart(2, "0")}</span><div className="learning-plan-icon" aria-hidden="true">{task.icon}</div><div><small>{task.label}</small><h2>{task.title}</h2><p>{task.text}</p></div><button type="button" onClick={task.run}>{task.action} <span>→</span></button></article>)}</div>
     {!Object.keys(progress).length && <aside className="learning-plan-note"><b>Der Plan lernt mit dir.</b><p>Zu Beginn erhältst du einen ausgewogenen Einstieg. Sobald du Fragen beantwortet hast, rücken falsche und fällige Inhalte automatisch nach oben.</p></aside>}

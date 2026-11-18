@@ -17,7 +17,8 @@ export default function DeviceViewportSupport() {
       root.style.setProperty("--visual-offset-top", `${Math.round(offsetTop)}px`);
       root.style.setProperty("--keyboard-inset", `${Math.round(keyboardInset)}px`);
       root.classList.toggle("keyboard-open", keyboardInset > 120);
-      root.classList.toggle("standalone-app", window.matchMedia("(display-mode: standalone)").matches);
+      const iosStandalone = "standalone" in navigator && (navigator as Navigator & { standalone?: boolean }).standalone === true;
+      root.classList.toggle("standalone-app", window.matchMedia("(display-mode: standalone)").matches || iosStandalone);
     };
 
     const keepFieldVisible = (event: FocusEvent) => {

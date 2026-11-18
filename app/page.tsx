@@ -18,6 +18,7 @@ import { organisationFlashcards, organisationQuestions } from "./organisation-da
 import { qmFlashcards, qmQuestions } from "./qm-data";
 import { terminologyFlashcards, terminologyQuestions } from "./terminologie-data";
 import { medicalEnglishFlashcards, medicalEnglishQuestions } from "./medical-english-data";
+import { verdauungFlashcards, verdauungQuestions } from "./verdauung-data";
 import { diagnostikFlashcards, diagnostikQuestions } from "./diagnostik-data";
 import { hygieneFlashcards, hygieneQuestions } from "./hygiene-data";
 import { pharmakologieFlashcards, pharmakologieQuestions } from "./pharmakologie-data";
@@ -79,6 +80,7 @@ const OrganisationLesson = lazy(() => import("./organisation-lesson"));
 const QmLesson = lazy(() => import("./qm-lesson"));
 const TerminologyLesson = lazy(() => import("./terminologie-lesson"));
 const MedicalEnglishLesson = lazy(() => import("./medical-english-lesson"));
+const VerdauungLesson = lazy(() => import("./verdauung-lesson"));
 const DiagnostikLesson = lazy(() => import("./diagnostik-lesson"));
 const HygieneLesson = lazy(() => import("./hygiene-lesson"));
 const PharmakologieLesson = lazy(() => import("./pharmakologie-lesson"));
@@ -675,7 +677,7 @@ return <section className="page-section topic-library-page"><div className="sect
 }
 
 function WrittenLibrary({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
-  const chapterFromPath = () => typeof window === "undefined" ? null : window.location.pathname.startsWith("/schriftlich/probeexamen") ? "Probeexamen" : window.location.pathname === "/schriftlich/kommunikation" ? "Kommunikation" : window.location.pathname === "/schriftlich/rechtskunde" ? "Rechtskunde" : window.location.pathname === "/schriftlich/organisation" ? "Organisation & Einsatztaktik" : window.location.pathname === "/schriftlich/qualitaetsmanagement" ? "Qualitätsmanagement" : window.location.pathname === "/schriftlich/terminologie" ? "Terminologie" : window.location.pathname === "/schriftlich/medical-english" ? "Medical English" : window.location.pathname === "/schriftlich/diagnostik" ? "Medizinische Diagnostik" : window.location.pathname === "/schriftlich/hygiene" ? "Hygiene & Infektionsschutz" : window.location.pathname === "/schriftlich/pharmakologie" ? "Pharmakologie" : null;
+  const chapterFromPath = () => typeof window === "undefined" ? null : window.location.pathname.startsWith("/schriftlich/probeexamen") ? "Probeexamen" : window.location.pathname === "/schriftlich/kommunikation" ? "Kommunikation" : window.location.pathname === "/schriftlich/rechtskunde" ? "Rechtskunde" : window.location.pathname === "/schriftlich/organisation" ? "Organisation & Einsatztaktik" : window.location.pathname === "/schriftlich/qualitaetsmanagement" ? "Qualitätsmanagement" : window.location.pathname === "/schriftlich/terminologie" ? "Terminologie" : window.location.pathname === "/schriftlich/medical-english" ? "Medical English" : window.location.pathname === "/schriftlich/verdauung" ? "Verdauung & Krankheitslehre" : window.location.pathname === "/schriftlich/diagnostik" ? "Medizinische Diagnostik" : window.location.pathname === "/schriftlich/hygiene" ? "Hygiene & Infektionsschutz" : window.location.pathname === "/schriftlich/pharmakologie" ? "Pharmakologie" : null;
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
   const chapters = [
     { number: "01", icon: "§", title: "Rechtskunde", text: "Rechtsgrundlagen, NotSanG, ThürRettG, ThürPsychKG, Patientenrechte, Strafrecht und Einsatzpraxis.", ready: true, meta: `${rechtskundeFlashcards.length} Karteikarten · ${rechtskundeQuestions.length} MC-Fragen` },
@@ -687,6 +689,7 @@ function WrittenLibrary({ onProgressChange }: { onProgressChange: (progress: Que
     { number: "07", icon: "✦", title: "Hygiene & Infektionsschutz", text: "Infektionsketten, Übertragungswege, TRBA 250, Tuberkulose, Desinfektion und Postexpositionsprophylaxe.", ready: true, meta: `${hygieneFlashcards.length} Karteikarten · ${hygieneQuestions.length} MC-Fragen` },
     { number: "08", icon: "Rx", title: "Pharmakologie", text: "Pharmakokinetik, Pharmakodynamik, therapeutische Breite, Resorption, Blutgerinnung und Muskelrelaxanzien.", ready: true, meta: `${pharmakologieFlashcards.length} Karteikarten · ${pharmakologieQuestions.length} MC-Fragen` },
     { number: "09", icon: "EN", title: "Medical English", text: "Erstkontakt, Anamnese, Anweisungen, Befundbegriffe und strukturierte Übergabe auf Englisch.", ready: true, meta: `${medicalEnglishFlashcards.length} Karteikarten · ${medicalEnglishQuestions.length} MC-Fragen` },
+    { number: "10", icon: "GI", title: "Verdauung & Krankheitslehre", text: "Verdauungsweg, Wandaufbau, Leber, Galle, Pankreas, gastrointestinale Blutung und akutes Abdomen.", ready: true, meta: `${verdauungFlashcards.length} Karteikarten · ${verdauungQuestions.length} MC-Fragen` },
   ];
   useEffect(() => {
     if (!selectedChapter) return;
@@ -699,7 +702,7 @@ function WrittenLibrary({ onProgressChange }: { onProgressChange: (progress: Que
     window.addEventListener("popstate", restoreChapter);
     return () => window.removeEventListener("popstate", restoreChapter);
   }, []);
-  const openChapter = (title: string) => { setSelectedChapter(title); window.history.pushState({}, "", title === "Probeexamen" ? "/schriftlich/probeexamen" : title === "Kommunikation" ? "/schriftlich/kommunikation" : title === "Organisation & Einsatztaktik" ? "/schriftlich/organisation" : title === "Qualitätsmanagement" ? "/schriftlich/qualitaetsmanagement" : title === "Terminologie" ? "/schriftlich/terminologie" : title === "Medical English" ? "/schriftlich/medical-english" : title === "Medizinische Diagnostik" ? "/schriftlich/diagnostik" : title === "Hygiene & Infektionsschutz" ? "/schriftlich/hygiene" : title === "Pharmakologie" ? "/schriftlich/pharmakologie" : "/schriftlich/rechtskunde"); };
+  const openChapter = (title: string) => { setSelectedChapter(title); window.history.pushState({}, "", title === "Probeexamen" ? "/schriftlich/probeexamen" : title === "Kommunikation" ? "/schriftlich/kommunikation" : title === "Organisation & Einsatztaktik" ? "/schriftlich/organisation" : title === "Qualitätsmanagement" ? "/schriftlich/qualitaetsmanagement" : title === "Terminologie" ? "/schriftlich/terminologie" : title === "Medical English" ? "/schriftlich/medical-english" : title === "Verdauung & Krankheitslehre" ? "/schriftlich/verdauung" : title === "Medizinische Diagnostik" ? "/schriftlich/diagnostik" : title === "Hygiene & Infektionsschutz" ? "/schriftlich/hygiene" : title === "Pharmakologie" ? "/schriftlich/pharmakologie" : "/schriftlich/rechtskunde"); };
   const closeChapter = () => { setSelectedChapter(null); window.history.pushState({}, "", "/schriftlich"); };
   if (selectedChapter === "Rechtskunde") return <RechtskundeLesson onBack={closeChapter} onProgressChange={onProgressChange} />;
   if (selectedChapter === "Kommunikation") return <KommunikationLesson onBack={closeChapter} finale={<KommunikationStudyFinale onProgressChange={onProgressChange} />} />;
@@ -707,6 +710,7 @@ function WrittenLibrary({ onProgressChange }: { onProgressChange: (progress: Que
   if (selectedChapter === "Qualitätsmanagement") return <QmLesson onBack={closeChapter} finale={<QmStudyFinale onProgressChange={onProgressChange} />} />;
   if (selectedChapter === "Terminologie") return <TerminologyLesson onBack={closeChapter} finale={<TerminologyStudyFinale onProgressChange={onProgressChange} />} />;
   if (selectedChapter === "Medical English") return <MedicalEnglishLesson onBack={closeChapter} finale={<MedicalEnglishStudyFinale onProgressChange={onProgressChange} />} />;
+  if (selectedChapter === "Verdauung & Krankheitslehre") return <VerdauungLesson onBack={closeChapter} finale={<VerdauungStudyFinale onProgressChange={onProgressChange} />} />;
   if (selectedChapter === "Medizinische Diagnostik") return <DiagnostikLesson onBack={closeChapter} finale={<DiagnostikStudyFinale onProgressChange={onProgressChange} />} />;
   if (selectedChapter === "Hygiene & Infektionsschutz") return <HygieneLesson onBack={closeChapter} finale={<HygieneStudyFinale onProgressChange={onProgressChange} />} />;
   if (selectedChapter === "Pharmakologie") return <PharmakologieLesson onBack={closeChapter} finale={<PharmakologieStudyFinale onProgressChange={onProgressChange} />} />;
@@ -1700,6 +1704,11 @@ function MedicalEnglishStudyFinale({ onProgressChange }: { onProgressChange: (pr
   return <section className="study-finale terminology-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Medical English sicher anwenden</h2><p>Die Aufgaben prüfen kurze Einsatzformulierungen, Befundbegriffe, Sprachsicherheit und die strukturierte Übergabe. Mehrere Antworten können richtig sein.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>MC</span><div><small>{medicalEnglishQuestions.length} Prüfungsfragen</small><h3>Multiple-Choice-Training</h3><p>Englische Einsatzkommunikation in prüfungsnahen Situationen anwenden.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>{medicalEnglishFlashcards.length}</span><div><small>Rettungsdienstliche Schlüsselbegriffe</small><h3>Karteikarten-Prüfung</h3><p>Fragen, Anweisungen, Befunde und Übergabestruktur frei formulieren.</p><b>Karteikarten auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <MultipleChoiceQuiz questionBank={medicalEnglishQuestions} condition="Medical English" onProgressChange={onProgressChange} /> : <FlashcardTraining sourceCards={medicalEnglishFlashcards} condition="Medical English" onProgressChange={onProgressChange} />}</>}</section>;
 }
 
+function VerdauungStudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
+  const [mode, setMode] = useState<"quiz" | "flashcards" | null>(null);
+  return <section className="study-finale terminology-finale"><div className="study-finale-heading"><span className="eyebrow">Kapitel abgeschlossen</span><h2>Verdauung und Krankheitslehre anwenden</h2><p>Die Aufgaben verbinden Anatomie, Organfunktionen, Blutungszeichen und präklinische Red Flags. Mehrere Antworten können richtig sein.</p></div>{mode === null ? <div className="study-mode-grid"><button onClick={() => setMode("quiz")}><span>MC</span><div><small>{verdauungQuestions.length} Prüfungsfragen</small><h3>Multiple-Choice-Training</h3><p>Krankheitsmechanismen und präklinische Entscheidungen prüfen.</p><b>Training auswählen →</b></div></button><button onClick={() => setMode("flashcards")}><span>{verdauungFlashcards.length}</span><div><small>Anatomie und Krankheitslehre</small><h3>Karteikarten-Prüfung</h3><p>Verdauungsweg, Funktionen und Red Flags frei herleiten.</p><b>Karteikarten auswählen →</b></div></button></div> : <><button className="change-study-mode" onClick={() => setMode(null)}>← Andere Trainingsform wählen</button>{mode === "quiz" ? <MultipleChoiceQuiz questionBank={verdauungQuestions} condition="Verdauung & Krankheitslehre" onProgressChange={onProgressChange} /> : <FlashcardTraining sourceCards={verdauungFlashcards} condition="Verdauung & Krankheitslehre" onProgressChange={onProgressChange} />}</>}</section>;
+}
+
 function DiagnostikStudyFinale({ onProgressChange }: { onProgressChange: (progress: QuestionProgress) => void }) {
   const [mode, setMode] = useState<"quiz" | "flashcards" | "paediatrics" | null>(null);
   const paediatricQuestions = diagnostikQuestions.filter((question) => /pädiatr/i.test(question.source));
@@ -2255,6 +2264,7 @@ function WrittenExamFolders({ onSelect }: { onSelect: (topic: TrainingTopic) => 
     { icon: "✦", title: "Hygiene & Infektionsschutz", text: "Infektionsketten, TRBA 250, Tuberkulose, Desinfektion und Postexpositionsmaßnahmen.", ready: true, topic: "hygiene" as TrainingTopic, count: hygieneQuestions.length },
     { icon: "Rx", title: "Pharmakologie", text: "Pharmakokinetik, Pharmakodynamik, Gerinnung und Muskelrelaxanzien.", ready: true, topic: "pharmakologie" as TrainingTopic, count: pharmakologieQuestions.length },
     { icon: "EN", title: "Medical English", text: "Erstkontakt, Anamnese, Anweisungen, Befundbegriffe und Übergabe auf Englisch.", ready: true, topic: "medical-english" as TrainingTopic, count: medicalEnglishQuestions.length },
+    { icon: "GI", title: "Verdauung & Krankheitslehre", text: "Anatomie, Organfunktionen, gastrointestinale Blutung, Pankreatitis und akutes Abdomen.", ready: true, topic: "verdauung" as unknown as TrainingTopic, count: verdauungQuestions.length },
   ];
   return <div className="written-folder-grid">{folders.map((folder) => folder.ready ? <button key={folder.title} onClick={() => onSelect(folder.topic!)}><span>{folder.icon}</span><div><small>Schriftliches Kapitel</small><h2>{folder.title}</h2><p>{folder.text}</p><b>{folder.count} Multiple-Choice-Fragen · starten →</b></div></button> : <article key={folder.title}><span>{folder.icon}</span><div><small>Schriftlicher Ordner</small><h2>{folder.title}</h2><p>{folder.text}</p><b>0 Fragen · bereit für dein Material</b></div></article>)}</div>;
 }
@@ -2311,6 +2321,7 @@ const oralTrainingChapters: Array<{ topic: TrainingTopic; number: string; title:
 ];
 
 const trainingQuestionBanks: Partial<Record<TrainingTopic, MultipleChoiceQuestion[]>> = {
+  ["verdauung" as unknown as TrainingTopic]: verdauungQuestions,
   schock: schockQuestions,
   elektrounfall: elektrounfallQuestions,
   kommunikation: kommunikationQuestions,
@@ -2348,6 +2359,7 @@ const writtenLearningPlanTopics = [
   { topic: "hygiene", number: "S07", title: "Hygiene und Infektionsschutz", questions: hygieneQuestions, writtenPath: "/schriftlich/hygiene" },
   { topic: "pharmakologie", number: "S08", title: "Pharmakologie", questions: pharmakologieQuestions, writtenPath: "/schriftlich/pharmakologie" },
   { topic: "medical-english", number: "S09", title: "Medical English", questions: medicalEnglishQuestions, writtenPath: "/schriftlich/medical-english" },
+  { topic: "verdauung" as unknown as TrainingTopic, number: "S10", title: "Verdauung & Krankheitslehre", questions: verdauungQuestions, writtenPath: "/schriftlich/verdauung" },
 ].map(({ questions, ...topic }) => ({ ...topic, questionIds: questions.map((question) => question.id) }));
 
 const learningPlanTopics = [...oralTrainingChapters.map((chapter) => ({
@@ -2465,6 +2477,7 @@ const conditionNames: Partial<Record<TrainingTopic, string>> = { organisation: "
 conditionNames.qualitaetsmanagement = "Qualitätsmanagement";
 conditionNames.terminologie = "Terminologie";
 conditionNames["medical-english"] = "Medical English";
+(conditionNames as Record<string, string>)["verdauung"] = "Verdauung & Krankheitslehre";
 conditionNames.diagnostik = "Medizinische Diagnostik";
 conditionNames.hygiene = "Hygiene & Infektionsschutz";
 conditionNames.pharmakologie = "Pharmakologie";
@@ -2481,7 +2494,7 @@ const completeBank = trainingQuestionBanks[selectedTopic] ?? [];
   /* Alte, durch die zusammengeführte schriftliche Themenlogik ersetzte Ansicht.
   return <section className={`quiz-page mc-training-page ${trainingProgress ? "is-active" : ""}`}><button className="back-button" onClick={() => { setTrainingProgress(null); if (reviewMode) onReviewBack(); else setSelectedTopic(null); }}>← {reviewMode ? "Zurück zum Fortschritt" : "Anderes Kapitel wählen"}</button>{trainingProgress ? <div className="active-training-heading"><div><span className="eyebrow">MC-Training · {selectedTopic === "rechtskunde" ? "Schriftlich" : "Mündlich"}</span><h1>{condition}</h1></div><b>Frage {trainingProgress.current} von {trainingProgress.total}</b></div> : <div className="section-heading"><div><span className="eyebrow">MC-Training · {selectedTopic === "rechtskunde" ? "Schriftlich" : "Mündlich"} · {condition}</span><h1>{reviewLabel}</h1><p>{reviewMode ? "Diese Auswahl enthält ausschließlich die Fragen, die deinem gewählten Wiederholungsstand entsprechen." : "Mehrere plausible Aussagen erfordern Verständnis und genaues Abwägen. Die Schwierigkeit steigt bis zum Staatsexamensniveau."}</p></div><div className="source-badge"><b>{questionBank.length}</b><span>Fragen</span></div></div>}{questionBank.length || trainingProgress ? <MultipleChoiceQuiz standalone questionBank={questionBank} condition={condition} onProgressChange={onProgressChange} onTrainingStateChange={setTrainingProgress} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine passenden Fragen mehr offen</h2><p>Durch deine letzten Antworten hat sich dieser Wiederholungsstapel geleert.</p></div></div>}{!trainingProgress && <div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf 33 %, 67 % und 100 %. Eine falsche Antwort setzt nur die betreffende Frage auf 0 % zurück.</p></div>}</section>;
   */
-  const isWrittenTopic = selectedTopic === "rechtskunde" || selectedTopic === "kommunikation" || selectedTopic === "organisation" || selectedTopic === "qualitaetsmanagement" || selectedTopic === "terminologie" || selectedTopic === "medical-english" || selectedTopic === "diagnostik" || selectedTopic === "hygiene" || selectedTopic === "pharmakologie";
+  const isWrittenTopic = selectedTopic === "rechtskunde" || selectedTopic === "kommunikation" || selectedTopic === "organisation" || selectedTopic === "qualitaetsmanagement" || selectedTopic === "terminologie" || selectedTopic === "medical-english" || selectedTopic === ("verdauung" as unknown as TrainingTopic) || selectedTopic === "diagnostik" || selectedTopic === "hygiene" || selectedTopic === "pharmakologie";
   return <section className={`quiz-page mc-training-page ${trainingProgress ? "is-active" : ""}`}><button className="back-button" onClick={() => { setTrainingProgress(null); if (reviewMode) onReviewBack(); else setSelectedTopic(null); }}>← {reviewMode ? "Zurück zum Fortschritt" : "Anderes Kapitel wählen"}</button>{trainingProgress ? <div className="active-training-heading"><div><span className="eyebrow">MC-Training · {isWrittenTopic ? "Schriftlich" : "Mündlich"}</span><h1>{condition}</h1></div><b>Frage {trainingProgress.current} von {trainingProgress.total}</b></div> : <div className="section-heading"><div><span className="eyebrow">MC-Training · {isWrittenTopic ? "Schriftlich" : "Mündlich"} · {condition}</span><h1>{reviewLabel}</h1><p>{reviewMode ? "Diese Auswahl enthält ausschließlich die Fragen, die deinem gewählten Wiederholungsstand entsprechen." : "Mehrere plausible Aussagen erfordern Verständnis und genaues Abwägen. Die Schwierigkeit steigt bis zum Staatsexamensniveau."}</p></div><div className="source-badge"><b>{questionBank.length}</b><span>Fragen</span></div></div>}{questionBank.length || trainingProgress ? <MultipleChoiceQuiz standalone questionBank={questionBank} condition={condition} onProgressChange={onProgressChange} onTrainingStateChange={setTrainingProgress} /> : <div className="written-training-empty"><span>✓</span><div><small>Wiederholung erledigt</small><h2>Keine passenden Fragen mehr offen</h2><p>Durch deine letzten Antworten hat sich dieser Wiederholungsstapel geleert.</p></div></div>}{!trainingProgress && <div className="mc-training-rule"><span>3×</span><p><b>Dreistufiger Lernstand</b>Richtig beantwortete Fragen steigen auf {formatProgressPercent(33)}, {formatProgressPercent(67)} und {formatProgressPercent(100)}. Eine falsche Antwort setzt nur die betreffende Frage auf {formatProgressPercent(0)} zurück.</p></div>}</section>;
 }
 
@@ -2507,6 +2520,7 @@ function ProgressView({ progress, onTrain, onStart }: { progress: QuestionProgre
   chapters.push({ topic: "qualitaetsmanagement", title: "Qualitätsmanagement", category: "Schriftlich · Qualitätsmanagement", questions: qmQuestions });
   chapters.push({ topic: "terminologie", title: "Terminologie", category: "Schriftlich · Terminologie", questions: terminologyQuestions });
   chapters.push({ topic: "medical-english", title: "Medical English", category: "Schriftlich · Medical English", questions: medicalEnglishQuestions });
+  chapters.push({ topic: "verdauung" as unknown as TrainingTopic, title: "Verdauung & Krankheitslehre", category: "Schriftlich · Krankheitslehre", questions: verdauungQuestions });
   chapters.push({ topic: "diagnostik", title: "Medizinische Diagnostik", category: "Schriftlich · Medizinische Diagnostik", questions: diagnostikQuestions });
   chapters.push({ topic: "hygiene", title: "Hygiene & Infektionsschutz", category: "Schriftlich · Hygiene", questions: hygieneQuestions });
   chapters.push({ topic: "pharmakologie", title: "Pharmakologie", category: "Schriftlich · Pharmakologie", questions: pharmakologieQuestions });

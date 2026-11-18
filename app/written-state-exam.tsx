@@ -17,6 +17,7 @@ import { herzrhythmusstoerungenQuestions } from "./herzrhythmusstoerungen-data";
 import { bronchoQuestions } from "./bronchoobstruktion-data";
 import { krampfanfallQuestions } from "./krampfanfall-data";
 import { pharmakologieQuestions } from "./pharmakologie-data";
+import { verdauungQuestions } from "./verdauung-data";
 
 type ExamOption = { text: string; correct?: boolean };
 type ExamQuestion = {
@@ -64,7 +65,7 @@ const EXAMS: ExamDefinition[] = [
     title: "Diagnostik und Therapie",
     subtitle: "Befunde einordnen, bei Therapie mitwirken und lebensrettende Maßnahmen sicher priorisieren.",
     topics: ["Diagnostik", "Pharmakologie", "Reanimation", "EKG", "Atmung", "Neurologie"],
-    banks: [diagnostikQuestions, pharmakologieQuestions, myokardinfarktQuestions, herzrhythmusstoerungenQuestions, bronchoQuestions, krampfanfallQuestions, anaphylaxieQuestions],
+    banks: [diagnostikQuestions, pharmakologieQuestions, verdauungQuestions, myokardinfarktQuestions, herzrhythmusstoerungenQuestions, bronchoQuestions, krampfanfallQuestions, anaphylaxieQuestions],
   },
   {
     id: "tag-3",

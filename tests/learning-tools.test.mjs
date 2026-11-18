@@ -37,13 +37,17 @@ test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(plan, /localDayKey\(\)/);
   assert.match(plan, /dailyScore\(`\$\{dailySeed\}:\$\{topic\.topic\}`\)/);
   assert.match(plan, /localStorage\.setItem\(storageKey, JSON\.stringify\(settings\)\)/);
+  assert.match(plan, /CLOUD_SETTINGS_KEY\s*=\s*"learning-plan-settings-v1"/);
+  assert.match(plan, /loadMultipleChoiceSession\(userId, CLOUD_SETTINGS_KEY\)/);
+  assert.match(plan, /saveMultipleChoiceSession\(userId, CLOUD_SETTINGS_KEY/);
+  assert.match(plan, /geräteübergreifend synchronisiert/);
   assert.match(plan, /Der Tagesplan endet um 00:00 Uhr und wird dann automatisch neu aufgebaut/);
   assert.match(plan, /millisecondsUntilNextLocalDay/);
   assert.match(plan, /nextDay\.setHours\(24, 0, 0, 50\)/);
   assert.match(page, /notsan-mc-session-v1/);
   assert.match(page, /readMultipleChoiceSession/);
   assert.match(page, /localStorage\.setItem\(sessionStorageKey, JSON\.stringify\(session\)\)/);
-  for (const writtenPath of ["rechtskunde", "organisation", "kommunikation", "qualitaetsmanagement", "terminologie", "diagnostik", "hygiene", "pharmakologie", "medical-english"]) {
+  for (const writtenPath of ["rechtskunde", "organisation", "kommunikation", "qualitaetsmanagement", "terminologie", "diagnostik", "hygiene", "pharmakologie", "medical-english", "verdauung"]) {
     assert.match(page, new RegExp(`/schriftlich/${writtenPath}`));
   }
   assert.match(plan, /writtenPath/);
@@ -202,6 +206,9 @@ test("iPad viewport support handles keyboard, split view, touch and standalone m
   assert.match(styles, /-webkit-text-size-adjust:100%/);
   assert.match(styles, /@media \(hover:none\) and \(pointer:coarse\)/);
   assert.match(styles, /@media \(display-mode:standalone\)/);
+  assert.match(viewportSupport, /navigator.*standalone/s);
+  assert.match(styles, /html\.standalone-app/);
+  assert.match(styles, /safe-area-inset-bottom/);
   assert.match(styles, /min-width:701px\) and \(max-width:900px/);
 });
 

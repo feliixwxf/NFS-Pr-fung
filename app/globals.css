@@ -2091,10 +2091,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
 
 @media (display-mode:standalone){
   html{background:var(--navy);overscroll-behavior-y:none}
-  body{padding-top:env(safe-area-inset-top);padding-right:env(safe-area-inset-right);padding-left:env(safe-area-inset-left);background:var(--cream)}
+  body{padding:0;background:var(--cream);overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
   .topbar{padding-top:env(safe-area-inset-top);height:calc(72px + env(safe-area-inset-top))}
-  .main-content{min-height:calc(var(--app-height,100dvh) - env(safe-area-inset-top))}
+  .main-content{min-height:var(--app-height,100dvh);padding-bottom:env(safe-area-inset-bottom)}
+  button,[role="button"],summary{touch-action:manipulation}
 }
+
+html.standalone-app{background:var(--navy);overscroll-behavior-y:none}
+html.standalone-app body{padding:0;background:var(--cream);overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+html.standalone-app .topbar{height:calc(72px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
+html.standalone-app .main-content{min-height:var(--app-height,100dvh);padding-bottom:env(safe-area-inset-bottom)}
+html.standalone-app :is(button,[role="button"],summary){touch-action:manipulation}
 
 /* Instabile Bradykardie: PDF-EKGs und direkter Medikamentenvergleich */
 .brady-pdf-ekg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:22px 0}.brady-pdf-ekg-grid>*{min-width:0;margin:0!important}.brady-pdf-ekg-grid img{width:100%;max-height:230px;object-fit:contain}.brady-pdf-ekg-grid>*:last-child img{max-height:360px}.brady-drug-vs{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr);gap:0;align-items:stretch;margin:22px 0}.brady-drug-vs>article{display:grid;align-content:start;gap:12px;min-width:0;padding:24px;border:1px solid #cadbd7;background:#fff;box-shadow:0 12px 30px #1738450b}.brady-drug-vs>article.atropine{border-radius:18px 0 0 18px;border-top:5px solid #3b7c8b}.brady-drug-vs>article.epinephrine{border-radius:0 18px 18px 0;border-top:5px solid #b55b42}.brady-drug-vs header{padding-bottom:14px;border-bottom:1px solid #dce6e3}.brady-drug-vs header small{color:#6f8588;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.brady-drug-vs header h3{margin:5px 0 3px;font-size:24px}.brady-drug-vs header h3 em{font-size:13px;font-style:normal;font-weight:700;color:#6e7f83}.brady-drug-vs header>b{color:#285d64;font-size:12px}.brady-drug-vs>article>div{padding:12px;border-radius:11px;background:#f5f8f7}.brady-drug-vs>article.epinephrine>div{background:#fff7f3}.brady-drug-vs>article>div>b{display:block;margin-bottom:5px;color:#173845;font-size:11px}.brady-drug-vs>article>div>p{margin:0;color:#607277;font-size:10px;line-height:1.55}.brady-vs-badge{display:grid;z-index:1;width:54px;height:54px;place-self:center;place-items:center;border:5px solid #f6f5f1;border-radius:50%;background:#173845;color:#fff;font-size:12px;font-weight:950;box-shadow:0 8px 22px #17384528}

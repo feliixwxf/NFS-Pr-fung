@@ -6,6 +6,7 @@ import { terminologyFlashcards, terminologyQuestions } from "./terminologie-data
 import { diagnostikFlashcards, diagnostikQuestions } from "./diagnostik-data";
 import { hygieneFlashcards, hygieneQuestions } from "./hygiene-data";
 import { pharmakologieFlashcards, pharmakologieQuestions } from "./pharmakologie-data";
+import { verdauungFlashcards, verdauungQuestions } from "./verdauung-data";
 import { hyperventilationFlashcards, hyperventilationQuestions } from "./hyperventilation-data";
 import { geburtFlashcards, geburtQuestions } from "./geburt-data";
 import { abdominaltraumaFlashcards, abdominaltraumaQuestions } from "./abdominaltrauma-data";
@@ -65,6 +66,7 @@ const writtenRoutes: Record<string, string> = {
   "Medizinische Diagnostik": "/schriftlich/diagnostik",
   "Hygiene und Infektionsschutz": "/schriftlich/hygiene",
   "Pharmakologie": "/schriftlich/pharmakologie",
+  "Verdauung & Krankheitslehre": "/schriftlich/verdauung",
 };
 
 const oralRoutes: Record<string, string> = {
@@ -98,6 +100,7 @@ const datasets: Array<[string, readonly FlashcardLike[]]> = [
   ["Medizinische Diagnostik", diagnostikFlashcards],
   ["Hygiene und Infektionsschutz", hygieneFlashcards],
   ["Pharmakologie", pharmakologieFlashcards],
+  ["Verdauung & Krankheitslehre", verdauungFlashcards],
   ["Hyperventilation", hyperventilationFlashcards],
   ["Geburt", geburtFlashcards],
   ["Abdominaltrauma", abdominaltraumaFlashcards],
@@ -147,7 +150,7 @@ export const freeTutorKnowledge: FreeTutorKnowledge[] = datasets.flatMap(([topic
 
 const questionDatasets: Array<[string, readonly ChoiceLike[]]> = [
   ["Rechtskunde", rechtskundeQuestions], ["Kommunikation", kommunikationQuestions], ["Organisation und Einsatztaktik", organisationQuestions],
-  ["Qualitätsmanagement", qmQuestions], ["Terminologie", terminologyQuestions], ["Medizinische Diagnostik", diagnostikQuestions], ["Hygiene und Infektionsschutz", hygieneQuestions], ["Pharmakologie", pharmakologieQuestions],
+  ["Qualitätsmanagement", qmQuestions], ["Terminologie", terminologyQuestions], ["Medizinische Diagnostik", diagnostikQuestions], ["Hygiene und Infektionsschutz", hygieneQuestions], ["Pharmakologie", pharmakologieQuestions], ["Verdauung & Krankheitslehre", verdauungQuestions],
   ["Hyperventilation", hyperventilationQuestions], ["Geburt", geburtQuestions], ["Abdominaltrauma", abdominaltraumaQuestions], ["Thoraxtrauma", thoraxtraumaQuestions],
   ["Gallensteinkolik", gallensteinkolikQuestions], ["Wirbelsäulentrauma", wirbelsaeulentraumaQuestions], ["Extremitätentrauma", extremitaetentraumaQuestions],
   ["Extrauteringravidität", eugQuestions], ["Lungenödem", lungenoedemQuestions], ["Rippenfraktur", rippenfrakturQuestions], ["Verbrennung", verbrennungQuestions],

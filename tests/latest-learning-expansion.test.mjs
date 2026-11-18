@@ -15,6 +15,14 @@ const terminologyLesson = readFileSync(new URL("../app/terminologie-lesson.tsx",
 const terminologyData = readFileSync(new URL("../app/terminologie-data.ts", import.meta.url), "utf8");
 const medicalEnglishLesson = readFileSync(new URL("../app/medical-english-lesson.tsx", import.meta.url), "utf8");
 const medicalEnglishData = readFileSync(new URL("../app/medical-english-data.ts", import.meta.url), "utf8");
+const verdauungLesson = readFileSync(new URL("../app/verdauung-lesson.tsx", import.meta.url), "utf8");
+const verdauungData = readFileSync(new URL("../app/verdauung-data.ts", import.meta.url), "utf8");
+
+test("digestion is a dedicated written learning area", () => {
+  assert.match(page, /\/schriftlich\/verdauung/);
+  assert.match(verdauungLesson, /Verdauung verstehen/);
+  assert.match(verdauungData, /verdauung-q-10/);
+});
 
 test("polytrauma distinguishes immediate and delayed splenic rupture", () => {
   assert.match(polytrauma, /Einzeitige Milzruptur/);
@@ -63,6 +71,7 @@ test("every written learning area exposes searchable jump results", () => {
     "qm-lesson.tsx",
     "terminologie-lesson.tsx",
     "medical-english-lesson.tsx",
+    "verdauung-lesson.tsx",
     "diagnostik-lesson.tsx",
     "hygiene-lesson.tsx",
     "pharmakologie-lesson.tsx",
