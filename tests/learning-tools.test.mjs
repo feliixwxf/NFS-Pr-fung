@@ -74,6 +74,8 @@ test("personal learning features follow the signed-in account across devices", (
   assert.match(personalFeatureSync, /notsan-chapter-sections-v2:/);
   assert.match(personalFeatureSync, /notsan-chapter-progress-v1:/);
   assert.match(personalFeatureSync, /notsan-written-exam-v2:/);
+  assert.match(personalFeatureSync, /notsan-learning-plan-due-v1:/);
+  assert.match(personalFeatureSync, /notsan-last-learning-location-v1/);
   assert.match(personalFeatureSync, /loadMultipleChoiceSession/);
   assert.match(personalFeatureSync, /saveMultipleChoiceSession/);
   assert.match(personalFeatureSync, /OWNER_KEY/);
@@ -83,6 +85,10 @@ test("personal learning features follow the signed-in account across devices", (
   assert.match(page, /notifyPersonalFeatureChanged\(\)/);
   assert.match(writtenExam, /notifyPersonalFeatureChanged\(\)/);
   assert.match(learningQol, /notifyPersonalFeatureChanged\(\)/);
+  assert.match(plan, /notifyPersonalFeatureChanged\(\)/);
+  assert.match(page, /Zuletzt weitergemacht/);
+  assert.match(page, /readLastLearningLocation\(\)/);
+  assert.match(page, /recordLastLearningLocation/);
 });
 
 test("oral lesson chunks prefetch before a chapter is opened", () => {

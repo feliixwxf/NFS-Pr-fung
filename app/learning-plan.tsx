@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { dueQuestionIds, type QuestionProgress } from "./lib/questionProgress";
 import { loadMultipleChoiceSession, saveMultipleChoiceSession } from "./lib/cloudProgress";
+import { notifyPersonalFeatureChanged } from "./lib/personalFeatureSync";
 import OfflineStatusCard from "./offline-support";
 
 export type LearningPlanTopic = {
@@ -156,6 +157,7 @@ export default function LearningPlan({
       const next = [...new Set([...stored, ...dueIds])];
       setPlannedDueIds(next);
       localStorage.setItem(duePlanKey, JSON.stringify(next));
+      notifyPersonalFeatureChanged();
     }, 0);
     return () => window.clearTimeout(timer);
   }, [duePlanKey, dueIds]);

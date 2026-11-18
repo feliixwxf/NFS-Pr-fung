@@ -71,7 +71,7 @@ import { oralTopicReferenceLabel } from "./lib/oralTopicReferences";
 import { toggleMultipleChoiceSelection } from "./lib/multipleChoiceSelection";
 import { SourceFigure, VfaFigure } from "./oral-lesson-ui";
 import { deleteMultipleChoiceSession, getActiveLearningUserId, loadMultipleChoiceSession, saveMultipleChoiceSession } from "./lib/cloudProgress";
-import { hydratePersonalFeatures, markPersonalFeaturesDirty, notifyPersonalFeatureChanged, PERSONAL_FEATURES_CHANGED_EVENT, savePersonalFeatures } from "./lib/personalFeatureSync";
+import { hydratePersonalFeatures, markPersonalFeaturesDirty, notifyPersonalFeatureChanged, PERSONAL_FEATURES_CHANGED_EVENT, readLastLearningLocation, recordLastLearningLocation, savePersonalFeatures } from "./lib/personalFeatureSync";
 
 const AiExamTutor = lazy(() => import("./ai-exam-tutor"));
 const LearningPlan = lazy(() => import("./learning-plan"));
@@ -558,6 +558,19 @@ export default function Home() {
 
   const changeView = (nextView: View) => { scrollToPageTop(); setProfileOpen(false); setMobileMenuOpen(false); setView(nextView); setSelectedTopic(null); const paths: Record<View, string> = { start: "/", plan: "/lernplan", cases: "/falltraining", oral: "/muendlich", written: "/schriftlich", quiz: "/mc", progress: "/fortschritt", medication: "/medikamentenrechnen", "medication-effects": "/medikamentenwirkung", anatomy: "/anatomie" }; window.history.pushState({}, "", paths[nextView]); if (nextView === "quiz") { setTrainingTopic(null); setReviewMode(null); } };
   const openTraining = (topic: TrainingTopic, mode: ReviewMode = null) => { scrollToPageTop(); setTrainingTopic(topic); setReviewMode(mode); setReviewQuestionId(null); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", `/mc/${topic}`); };
+  const resumeLearning = (path: string) => {
+    scrollToPageTop();
+    setProfileOpen(false);
+    setMobileMenuOpen(false);
+    if (path.startsWith("/muendlich/")) {
+      setView("oral");
+      setSelectedTopic(topicIndexBySlug[path.split("/")[2]] ?? null);
+    } else if (path.startsWith("/schriftlich")) {
+      setView("written");
+      setSelectedTopic(null);
+    }
+    window.history.pushState({}, "", path);
+  };
   const openDueReview = (questionId?: string) => { scrollToPageTop(); setTrainingTopic(null); setReviewMode("due"); setReviewQuestionId(questionId || null); setView("quiz"); setSelectedTopic(null); window.history.pushState({}, "", questionId ? `/mc?filter=faellig&frage=${encodeURIComponent(questionId)}` : "/mc?filter=faellig"); };
   const toggleTopicComplete = (topicNumber: number) => {
     setCompletedTopics((current) => {
@@ -646,7 +659,7 @@ export default function Home() {
           </div>
         </header>
         <Suspense key={personalFeatureVersion} fallback={<AppLoadingScreen compact />}>
-        {view === "start" && <Dashboard setView={changeView} questionProgress={questionProgress} />}
+        {view === "start" && <Dashboard setView={changeView} questionProgress={questionProgress} lastLearningLocation={readLastLearningLocation()} onResume={resumeLearning} />}
         {view === "plan" && <LearningPlan progress={questionProgress} completedTopics={completedTopics} topics={learningPlanTopics} questionLabels={learningPlanQuestionLabels} userId={accountUserId} onTrain={(topic) => openTraining(topic as TrainingTopic)} onRead={(topic) => { if (topic.writtenPath) { window.history.pushState({}, "", topic.writtenPath); setSelectedTopic(null); setView("written"); return; } if (topic.oralIndex === undefined) return; setView("oral"); setSelectedTopic(topic.oralIndex); window.history.pushState({}, "", `/muendlich/${topicSlugByIndex[topic.oralIndex] || `thema-${topic.oralIndex + 1}`}`); }} onDueReview={openDueReview} onCases={() => changeView("cases")} />}
         {view === "cases" && <CaseGenerator topics={caseGeneratorTopics} />}
         {view === "oral" && <OralLibrary selectedTopic={selectedTopic} setSelectedTopic={(topic) => { setSelectedTopic(topic); window.history.pushState({}, "", topic === null ? "/muendlich" : `/muendlich/${topicSlugByIndex[topic] || `thema-${topic + 1}`}`); }} onOpenTraining={(topic) => openTraining(topic)} onProgressChange={handleQuestionProgress} completedTopics={completedTopics} onToggleComplete={toggleTopicComplete} />}
@@ -667,7 +680,7 @@ export default function Home() {
   );
 }
 
-function Dashboard({ setView, questionProgress }: { setView: (view: View) => void; questionProgress: QuestionProgress }) {
+function Dashboard({ setView, questionProgress, lastLearningLocation, onResume }: { setView: (view: View) => void; questionProgress: QuestionProgress; lastLearningLocation: ReturnType<typeof readLastLearningLocation>; onResume: (path: string) => void }) {
   const records = Object.values(questionProgress);
   const total = records.length;
   const wrong = records.filter((record) => record.correctCount === 0).length;
@@ -683,7 +696,7 @@ function Dashboard({ setView, questionProgress }: { setView: (view: View) => voi
   const ringStyle = { background: total ? `conic-gradient(#c9574f 0deg ${wrongEnd}deg,#dc9344 ${wrongEnd}deg ${onceEnd}deg,#4f84a5 ${onceEnd}deg ${twiceEnd}deg,#4f8668 ${twiceEnd}deg 360deg)` : "#e8e5df" } as React.CSSProperties;
   return <section className="dashboard"><div className="welcome"><div><span className="eyebrow light">ABSCHLUSSPRÜFUNG NOTFALLSANITÄTER</span><h1>Wissen vertiefen. Sicherheit gewinnen.</h1><p>Die Abschlussprüfung im Blick, den Beruf vor Augen: Wiederhole Fachwissen, entdecke Zusammenhänge und bereite dich Schritt für Schritt auf deinen Abschluss vor.</p><div className="hero-actions"><button className="light-button" onClick={() => setView("oral")}>Vorbereitung starten <span>→</span></button></div></div><div className="hero-drk-badge" aria-label={`${formatProgressPercent(progress)} Bearbeitungsfortschritt`}><div className="drk-cross" aria-hidden="true"><i /><i /></div><div><b>{formatProgressPercent(progress)}</b><span>Bearbeitungsfortschritt</span><small>{metrics.answered} von {metrics.available} Fragen bearbeitet</small></div></div></div>
     <section className="dashboard-grid" aria-labelledby="preparation-title"><div className="block-title"><span className="eyebrow">Deine Bereiche</span><h2 id="preparation-title">Prüfungsvorbereitung</h2></div><div className="action-cards"><button type="button" onClick={() => setView("oral")}><span className="action-icon" aria-hidden="true">◫</span><div><h3>Mündlich</h3><p>Fachwissen strukturiert wiederholen und Zusammenhänge verstehen.</p><b>Themen öffnen →</b></div></button><button type="button" onClick={() => setView("written")}><span className="action-icon dark" aria-hidden="true">✎</span><div><h3>Schriftlich</h3><p>Gezielt auf die schriftliche Abschlussprüfung vorbereiten.</p><b>Vorbereitung öffnen →</b></div></button><button type="button" onClick={() => setView("quiz")}><span className="action-icon green" aria-hidden="true">✓</span><div><h3>MC-Training</h3><p>Prüfungsfragen beantworten und dein Wissen überprüfen.</p><b>Training starten →</b></div></button></div><div className="dashboard-group-label"><span className="eyebrow">Medikamente</span><p>Wirkungen lernen und Dosierungen sicher berechnen.</p></div><div className="stats-grid menu-shortcuts"><button type="button" onClick={() => setView("medication-effects")}><span className="stat-icon blue">✦</span><div><small>Medikamentenwirkung</small><b>Wirkung <em>lernen</em></b></div><span className="menu-shortcut-arrow">→</span></button><button type="button" onClick={() => setView("medication")}><span className="stat-icon green">💉</span><div><small>Medikamentenrechnen</small><b>Dosen <em>berechnen</em></b></div><span className="menu-shortcut-arrow">→</span></button></div></section>
-    <section className="dashboard-smart-tools" aria-labelledby="smart-tools-title"><div><span className="eyebrow">Persönlich trainieren</span><h2 id="smart-tools-title">Dein nächster sinnvoller Schritt</h2></div><div className="dashboard-smart-grid"><button type="button" onClick={() => setView("plan")}><span>☼</span><div><small>Automatisch angepasst</small><h3>Mein Lernplan</h3><p>Fällige Wiederholungen, Fehler und neue Themen passend zu deiner verfügbaren Zeit.</p><b>Heutigen Plan öffnen →</b></div></button><button type="button" onClick={() => setView("cases")}><span>F</span><div><small>Dynamisches Prüfungstraining</small><h3>Fallgenerator</h3><p>Einsatzlage wählen, frei antworten und dein Vorgehen Schritt für Schritt begründen.</p><b>Falltraining starten →</b></div></button></div></section>
+    <section className="dashboard-smart-tools" aria-labelledby="smart-tools-title"><div><span className="eyebrow">Persönlich trainieren</span><h2 id="smart-tools-title">Dein nächster sinnvoller Schritt</h2></div><div className="dashboard-smart-grid">{lastLearningLocation && <button className="resume-learning-card" type="button" onClick={() => onResume(lastLearningLocation.path)}><span>↗</span><div><small>Zuletzt weitergemacht · {lastLearningLocation.detail}</small><h3>{lastLearningLocation.title}</h3><p>Öffne genau den Lernbereich, an dem du zuletzt gearbeitet hast.</p><b>Weiterlernen →</b></div></button>}<button type="button" onClick={() => setView("plan")}><span>☼</span><div><small>Automatisch angepasst</small><h3>Mein Lernplan</h3><p>Fällige Wiederholungen, Fehler und neue Themen passend zu deiner verfügbaren Zeit.</p><b>Heutigen Plan öffnen →</b></div></button><button type="button" onClick={() => setView("cases")}><span>F</span><div><small>Dynamisches Prüfungstraining</small><h3>Fallgenerator</h3><p>Einsatzlage wählen, frei antworten und dein Vorgehen Schritt für Schritt begründen.</p><b>Falltraining starten →</b></div></button></div></section>
     <section className="dashboard-learning-stat" aria-labelledby="learning-stat-title"><div className="dashboard-learning-copy"><span className="eyebrow">Deine Lernstatistik</span><h2 id="learning-stat-title">Auf einen Blick</h2><p>{total ? `${total} Fragen wurden bereits bearbeitet. Der Wiederholungsstand zeigt die aktuelle Stufe, nicht eine Prüfungsgarantie.` : "Sobald du die ersten MC-Fragen beantwortest, erscheint hier die Verteilung deines Lernstands."}</p><button type="button" onClick={() => setView("progress")}>Fortschritt im Detail <span>→</span></button></div><div className="dashboard-learning-chart"><div className="dashboard-learning-ring" style={ringStyle} role="img" aria-label={`${wrong} falsch, ${once} einmal richtig, ${twice} zweimal richtig, ${mastered} dreimal richtig`}><div><b>{total}</b><span>bearbeitet</span></div></div><div className="dashboard-learning-legend"><div><i className="wrong" /><span><b>{wrong}</b> Falsch</span></div><div><i className="once" /><span><b>{once}</b> 1× richtig</span></div><div><i className="twice" /><span><b>{twice}</b> 2× richtig</span></div><div><i className="mastered" /><span><b>{mastered}</b> 3× richtig</span></div></div></div></section>
   </section>;
 }
@@ -732,6 +745,7 @@ function WrittenLibrary({ onProgressChange }: { onProgressChange: (progress: Que
     if (!selectedChapter) return;
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     document.querySelector<HTMLElement>(".main-content")?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    recordLastLearningLocation({ kind: selectedChapter === "Probeexamen" ? "exam" : "written", title: selectedChapter, detail: selectedChapter === "Probeexamen" ? "Schriftliches Probeexamen" : "Schriftliches Kapitel", path: window.location.pathname });
   }, [selectedChapter]);
   useEffect(() => {
     const restoreChapter = () => setSelectedChapter(chapterFromPath());
@@ -739,7 +753,11 @@ function WrittenLibrary({ onProgressChange }: { onProgressChange: (progress: Que
     window.addEventListener("popstate", restoreChapter);
     return () => window.removeEventListener("popstate", restoreChapter);
   }, []);
-  const openChapter = (title: string) => { setSelectedChapter(title); window.history.pushState({}, "", title === "Probeexamen" ? "/schriftlich/probeexamen" : title === "Kommunikation" ? "/schriftlich/kommunikation" : title === "Organisation & Einsatztaktik" ? "/schriftlich/organisation" : title === "Qualitätsmanagement" ? "/schriftlich/qualitaetsmanagement" : title === "Terminologie" ? "/schriftlich/terminologie" : title === "Medical English" ? "/schriftlich/medical-english" : title === "Verdauung & Krankheitslehre" ? "/schriftlich/verdauung" : title === "Medizinische Diagnostik" ? "/schriftlich/diagnostik" : title === "Hygiene & Infektionsschutz" ? "/schriftlich/hygiene" : title === "Pharmakologie" ? "/schriftlich/pharmakologie" : "/schriftlich/rechtskunde"); };
+  const openChapter = (title: string) => {
+    const path = title === "Probeexamen" ? "/schriftlich/probeexamen" : title === "Kommunikation" ? "/schriftlich/kommunikation" : title === "Organisation & Einsatztaktik" ? "/schriftlich/organisation" : title === "Qualitätsmanagement" ? "/schriftlich/qualitaetsmanagement" : title === "Terminologie" ? "/schriftlich/terminologie" : title === "Medical English" ? "/schriftlich/medical-english" : title === "Verdauung & Krankheitslehre" ? "/schriftlich/verdauung" : title === "Medizinische Diagnostik" ? "/schriftlich/diagnostik" : title === "Hygiene & Infektionsschutz" ? "/schriftlich/hygiene" : title === "Pharmakologie" ? "/schriftlich/pharmakologie" : "/schriftlich/rechtskunde";
+    setSelectedChapter(title);
+    window.history.pushState({}, "", path);
+  };
   const closeChapter = () => { setSelectedChapter(null); window.history.pushState({}, "", "/schriftlich"); };
   if (selectedChapter === "Rechtskunde") return <RechtskundeLesson onBack={closeChapter} onProgressChange={onProgressChange} />;
   if (selectedChapter === "Kommunikation") return <KommunikationLesson onBack={closeChapter} finale={<KommunikationStudyFinale onProgressChange={onProgressChange} />} />;
@@ -1033,6 +1051,7 @@ function TopicReader(props: TopicReaderProps) {
 
   useEffect(() => {
     markTopicOpened(props.topicNumber + 1);
+    if (slug) recordLastLearningLocation({ kind: "oral", title: topics[props.topicNumber] || "Mündliches Prüfungsthema", detail: "Mündliches Kapitel", path: `/muendlich/${slug}` });
     const root = rootRef.current;
     if (!root) return;
     const sectionSelector = ".rib-section, .lesson-section, .reader-accordion, .legal-section";
@@ -1093,7 +1112,7 @@ function TopicReader(props: TopicReaderProps) {
       sections.forEach(section => section.removeEventListener("toggle", persist));
       nonDetailsCleanups.forEach(cleanup => cleanup());
     };
-  }, [props.topicNumber, progressStorageKey, storageKey]);
+  }, [props.topicNumber, progressStorageKey, slug, storageKey]);
 
   const toggleSectionLearned = (id: string) => {
     setLearnedSections((current) => {

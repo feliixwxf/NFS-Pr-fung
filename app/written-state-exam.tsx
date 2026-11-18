@@ -18,7 +18,7 @@ import { bronchoQuestions } from "./bronchoobstruktion-data";
 import { krampfanfallQuestions } from "./krampfanfall-data";
 import { pharmakologieQuestions } from "./pharmakologie-data";
 import { verdauungQuestions } from "./verdauung-data";
-import { notifyPersonalFeatureChanged } from "./lib/personalFeatureSync";
+import { notifyPersonalFeatureChanged, recordLastLearningLocation } from "./lib/personalFeatureSync";
 
 type ExamOption = { text: string; correct?: boolean };
 type ExamQuestion = {
@@ -166,6 +166,11 @@ export default function WrittenStateExam({ onBack }: { onBack: () => void }) {
   const questions = useMemo(() => selectedExam && attemptNumber ? buildExamQuestions(selectedExam, attemptNumber) : [], [selectedExam, attemptNumber]);
   const remainingSeconds = attempt ? Math.max(0, EXAM_DURATION_SECONDS - Math.floor((now - attempt.startedAt) / 1000)) : EXAM_DURATION_SECONDS;
   const submitted = Boolean(attempt?.submittedAt);
+
+  useEffect(() => {
+    if (!selectedExam) return;
+    recordLastLearningLocation({ kind: "exam", title: selectedExam.title, detail: selectedExam.day, path: `/schriftlich/probeexamen/${selectedExam.id}` });
+  }, [selectedExam]);
 
   useEffect(() => {
     if (!selectedId || !attempt) return;

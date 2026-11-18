@@ -10,6 +10,16 @@ const TOPIC_ACTIVITY_KEY = "notsan-topic-activity-v1";
 const CHAPTER_SECTION_PREFIX = "notsan-chapter-sections-v2:";
 const CHAPTER_PROGRESS_PREFIX = "notsan-chapter-progress-v1:";
 const WRITTEN_EXAM_PREFIX = "notsan-written-exam-v2:";
+const DAILY_PLAN_PREFIX = "notsan-learning-plan-due-v1:";
+const LAST_LOCATION_KEY = "notsan-last-learning-location-v1";
+
+export type LastLearningLocation = {
+  kind: "oral" | "written" | "exam";
+  title: string;
+  detail: string;
+  path: string;
+  updatedAt: string;
+};
 
 type JsonMap = Record<string, unknown>;
 
@@ -21,6 +31,8 @@ type PersonalFeatureSnapshot = {
   chapterSections: JsonMap;
   chapterProgress: JsonMap;
   writtenExams: JsonMap;
+  dailyPlans: JsonMap;
+  lastLearningLocation: unknown;
 };
 
 function parseValue(raw: string | null, fallback: unknown) {
@@ -47,6 +59,8 @@ function collectSnapshot(updatedAt = localStorage.getItem(META_KEY) || ""): Pers
     chapterSections: collectPrefix(CHAPTER_SECTION_PREFIX),
     chapterProgress: collectPrefix(CHAPTER_PROGRESS_PREFIX),
     writtenExams: collectPrefix(WRITTEN_EXAM_PREFIX),
+    dailyPlans: collectPrefix(DAILY_PLAN_PREFIX),
+    lastLearningLocation: parseValue(localStorage.getItem(LAST_LOCATION_KEY), null),
   };
 }
 
@@ -80,6 +94,9 @@ function applySnapshot(snapshot: PersonalFeatureSnapshot, userId: string) {
   writePrefix(CHAPTER_SECTION_PREFIX, snapshot.chapterSections);
   writePrefix(CHAPTER_PROGRESS_PREFIX, snapshot.chapterProgress);
   writePrefix(WRITTEN_EXAM_PREFIX, snapshot.writtenExams);
+  writePrefix(DAILY_PLAN_PREFIX, snapshot.dailyPlans || {});
+  if (snapshot.lastLearningLocation) localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(snapshot.lastLearningLocation));
+  else localStorage.removeItem(LAST_LOCATION_KEY);
   localStorage.setItem(META_KEY, snapshot.updatedAt);
   localStorage.setItem(OWNER_KEY, userId);
 }
@@ -89,7 +106,9 @@ function hasPersonalData(snapshot: PersonalFeatureSnapshot) {
     || Object.keys(snapshot.topicActivity as JsonMap || {}).length > 0
     || Object.keys(snapshot.chapterSections).length > 0
     || Object.keys(snapshot.chapterProgress).length > 0
-    || Object.keys(snapshot.writtenExams).length > 0;
+    || Object.keys(snapshot.writtenExams).length > 0
+    || Object.keys(snapshot.dailyPlans || {}).length > 0
+    || Boolean(snapshot.lastLearningLocation);
 }
 
 export function notifyPersonalFeatureChanged() {
@@ -101,6 +120,21 @@ export function markPersonalFeaturesDirty(userId: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem(META_KEY, new Date().toISOString());
   localStorage.setItem(OWNER_KEY, userId);
+}
+
+export function readLastLearningLocation(): LastLearningLocation | null {
+  if (typeof window === "undefined") return null;
+  const value = parseValue(localStorage.getItem(LAST_LOCATION_KEY), null);
+  if (!value || typeof value !== "object") return null;
+  const location = value as Partial<LastLearningLocation>;
+  if (!location.path?.startsWith("/") || !location.title || !location.kind || !location.updatedAt) return null;
+  return location as LastLearningLocation;
+}
+
+export function recordLastLearningLocation(location: Omit<LastLearningLocation, "updatedAt">) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify({ ...location, updatedAt: new Date().toISOString() }));
+  notifyPersonalFeatureChanged();
 }
 
 export async function hydratePersonalFeatures(userId: string) {
@@ -116,7 +150,7 @@ export async function hydratePersonalFeatures(userId: string) {
   }
 
   if (!localBelongsToUser) {
-    const empty: PersonalFeatureSnapshot = { version: 1, updatedAt: new Date().toISOString(), bookmarks: [], topicActivity: {}, chapterSections: {}, chapterProgress: {}, writtenExams: {} };
+    const empty: PersonalFeatureSnapshot = { version: 1, updatedAt: new Date().toISOString(), bookmarks: [], topicActivity: {}, chapterSections: {}, chapterProgress: {}, writtenExams: {}, dailyPlans: {}, lastLearningLocation: null };
     applySnapshot(empty, userId);
     await saveMultipleChoiceSession(userId, CLOUD_KEY, empty, empty.updatedAt);
     return true;
