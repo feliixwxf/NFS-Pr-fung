@@ -40,6 +40,8 @@ test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(plan, /CLOUD_SETTINGS_KEY\s*=\s*"learning-plan-settings-v1"/);
   assert.match(plan, /loadMultipleChoiceSession\(userId, CLOUD_SETTINGS_KEY\)/);
   assert.match(plan, /saveMultipleChoiceSession\(userId, CLOUD_SETTINGS_KEY/);
+  assert.match(plan, /remote\?\.updatedAt/);
+  assert.match(plan, /!remoteSettings && local\.examDate/);
   assert.match(plan, /geräteübergreifend synchronisiert/);
   assert.match(plan, /Der Tagesplan endet um 00:00 Uhr und wird dann automatisch neu aufgebaut/);
   assert.match(plan, /millisecondsUntilNextLocalDay/);

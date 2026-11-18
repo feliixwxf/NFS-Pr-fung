@@ -106,9 +106,14 @@ export default function LearningPlan({
       if (userId) {
         try {
           const remote = await loadMultipleChoiceSession(userId, CLOUD_SETTINGS_KEY);
-          const remoteSettings = parseSettings(remote?.payload);
-          if (remoteSettings && remoteSettings.updatedAt > local.updatedAt) next = remoteSettings;
+          const parsedRemote = parseSettings(remote?.payload);
+          const remoteSettings = parsedRemote ? { ...parsedRemote, updatedAt: parsedRemote.updatedAt || remote?.updatedAt || "" } : null;
+          if (remoteSettings && (!local.updatedAt || remoteSettings.updatedAt > local.updatedAt)) next = remoteSettings;
           else if (local.updatedAt) await saveMultipleChoiceSession(userId, CLOUD_SETTINGS_KEY, local, local.updatedAt);
+          else if (!remoteSettings && local.examDate) {
+            next = { ...local, updatedAt: new Date().toISOString() };
+            await saveMultipleChoiceSession(userId, CLOUD_SETTINGS_KEY, next, next.updatedAt);
+          }
         } catch { /* Offline bleibt der lokale Stand erhalten und wird später erneut gespeichert. */ }
       }
       if (!cancelled) { setSettings(next); setLoadedStorageKey(storageKey); }
