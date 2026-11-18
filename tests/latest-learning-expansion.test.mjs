@@ -13,6 +13,8 @@ const communicationLesson = readFileSync(new URL("../app/kommunikation-lesson.ts
 const communicationData = readFileSync(new URL("../app/kommunikation-data.ts", import.meta.url), "utf8");
 const terminologyLesson = readFileSync(new URL("../app/terminologie-lesson.tsx", import.meta.url), "utf8");
 const terminologyData = readFileSync(new URL("../app/terminologie-data.ts", import.meta.url), "utf8");
+const medicalEnglishLesson = readFileSync(new URL("../app/medical-english-lesson.tsx", import.meta.url), "utf8");
+const medicalEnglishData = readFileSync(new URL("../app/medical-english-data.ts", import.meta.url), "utf8");
 
 test("polytrauma distinguishes immediate and delayed splenic rupture", () => {
   assert.match(polytrauma, /Einzeitige Milzruptur/);
@@ -60,6 +62,7 @@ test("every written learning area exposes searchable jump results", () => {
     "organisation-lesson.tsx",
     "qm-lesson.tsx",
     "terminologie-lesson.tsx",
+    "medical-english-lesson.tsx",
     "diagnostik-lesson.tsx",
     "hygiene-lesson.tsx",
     "pharmakologie-lesson.tsx",
@@ -83,12 +86,13 @@ test("communication covers the complete school learning-goal expansion", () => {
   assert.match(communicationData, /komm-q-60/);
 });
 
-test("terminology includes exam-focused emergency medical English", () => {
-  assert.match(terminologyLesson, /Englische Fachsprache im Rettungsdienst/);
-  assert.match(terminologyLesson, /Are you short of breath/);
-  assert.match(terminologyLesson, /Do you take blood thinners/);
-  assert.match(terminologyLesson, /ATMIST auf Englisch/);
-  assert.match(terminologyLesson, /Can you tell me what you understood/);
-  assert.match(terminologyData, /term-card-53/);
-  assert.match(terminologyData, /term-q-40/);
+test("medical English is a dedicated written learning area", () => {
+  assert.doesNotMatch(terminologyLesson, /Englische Fachsprache im Rettungsdienst/);
+  assert.doesNotMatch(terminologyData, /term-card-53/);
+  assert.match(medicalEnglishLesson, /Schriftliche Prüfung · Medical English/);
+  assert.match(medicalEnglishLesson, /Are you short of breath/);
+  assert.match(medicalEnglishLesson, /Do you take blood thinners/);
+  assert.match(medicalEnglishLesson, /Can you tell me what you understood/);
+  assert.match(medicalEnglishData, /english-card-08/);
+  assert.match(medicalEnglishData, /english-q-08/);
 });

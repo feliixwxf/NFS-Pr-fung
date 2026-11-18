@@ -43,7 +43,7 @@ test("personal learning plan derives tasks from due and weak questions", () => {
   assert.match(page, /notsan-mc-session-v1/);
   assert.match(page, /readMultipleChoiceSession/);
   assert.match(page, /localStorage\.setItem\(sessionStorageKey, JSON\.stringify\(session\)\)/);
-  for (const writtenPath of ["rechtskunde", "organisation", "kommunikation", "qualitaetsmanagement", "terminologie", "diagnostik", "hygiene", "pharmakologie"]) {
+  for (const writtenPath of ["rechtskunde", "organisation", "kommunikation", "qualitaetsmanagement", "terminologie", "diagnostik", "hygiene", "pharmakologie", "medical-english"]) {
     assert.match(page, new RegExp(`/schriftlich/${writtenPath}`));
   }
   assert.match(plan, /writtenPath/);

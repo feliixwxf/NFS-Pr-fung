@@ -8,6 +8,7 @@ import { qmQuestions } from "./qm-data";
 import { hygieneQuestions } from "./hygiene-data";
 import { kommunikationQuestions } from "./kommunikation-data";
 import { terminologyQuestions } from "./terminologie-data";
+import { medicalEnglishQuestions } from "./medical-english-data";
 import { schockQuestions } from "./schock-data";
 import { polytraumaQuestions } from "./polytrauma-data";
 import { anaphylaxieQuestions } from "./anaphylaxie-data";
@@ -70,8 +71,8 @@ const EXAMS: ExamDefinition[] = [
     day: "Prüfungstag 3",
     title: "Recht, Qualität und Rahmenbedingungen",
     subtitle: "Berufliches Handeln rechtlich, qualitativ, kommunikativ und ressourcenbewusst begründen.",
-    topics: ["Recht", "Qualitätsmanagement", "Hygiene", "Kommunikation", "Fachsprache"],
-    banks: [rechtskundeQuestions, qmQuestions, hygieneQuestions, kommunikationQuestions, terminologyQuestions],
+    topics: ["Recht", "Qualitätsmanagement", "Hygiene", "Kommunikation", "Fachsprache", "Medical English"],
+    banks: [rechtskundeQuestions, qmQuestions, hygieneQuestions, kommunikationQuestions, terminologyQuestions, medicalEnglishQuestions],
   },
 ];
 
