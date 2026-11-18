@@ -1670,6 +1670,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,su
   .trainer-settings{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 }
 @media(max-width:530px){
+  .medication-heading{grid-template-columns:1fr}
+  .medication-heading h1{font-size:clamp(28px,9vw,36px);overflow-wrap:anywhere}
   .topic-availability-stat{display:grid;width:100%;max-width:270px;padding:13px 16px;border-radius:var(--radius-md)}
   .profile-popover{max-height:calc(100dvh - 72px);overflow-y:auto;overscroll-behavior:contain}
   .profile-stat-grid{grid-template-columns:1fr}

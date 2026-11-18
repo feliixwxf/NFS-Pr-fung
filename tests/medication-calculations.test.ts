@@ -46,10 +46,10 @@ test("applies the displayed decimal rule without a blanket whole-millilitre tole
   assert.equal(isCorrect("3", 13 / 5, 1, "ml"), false);
 });
 
-test("keeps all 66 reference cases and excludes ambiguous rules", async () => {
+test("keeps all 80 reference cases and excludes ambiguous rules", async () => {
   const data = await readFile(new URL("../app/lib/medicationData.ts", import.meta.url), "utf8");
   const ids = [...data.matchAll(/\["(?:esk|morph|hep|mid|glu|ana|adr|cpr|fluid)-\d{2}"/g)];
-  assert.equal(ids.length, 66);
+  assert.equal(ids.length, 80);
   assert.match(data, /exakt 30 kg/);
   assert.match(data, /i\.m\. exakt 40 kg/);
   assert.match(data, /keine Interpolation/);
