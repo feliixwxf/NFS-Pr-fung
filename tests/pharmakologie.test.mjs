@@ -4,7 +4,7 @@ import test from "node:test";
 
 const data = readFileSync(new URL("../app/pharmakologie-data.ts", import.meta.url), "utf8");
 const lesson = readFileSync(new URL("../app/pharmakologie-lesson.tsx", import.meta.url), "utf8");
-const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+const page = readFileSync(new URL("../app/main-app.tsx", import.meta.url), "utf8");
 const tutor = readFileSync(new URL("../app/free-tutor-knowledge.ts", import.meta.url), "utf8");
 const exam = readFileSync(new URL("../app/written-state-exam.tsx", import.meta.url), "utf8");
 

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+const page = readFileSync(new URL("../app/main-app.tsx", import.meta.url), "utf8");
 const core = readFileSync(new URL("../app/core-oral-lessons.tsx", import.meta.url), "utf8");
 const rhythm = readFileSync(new URL("../app/herzrhythmusstoerungen-lesson.tsx", import.meta.url), "utf8");
 

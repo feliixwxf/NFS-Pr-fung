@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+const page = await readFile(new URL("../app/main-app.tsx", import.meta.url), "utf8");
 const plan = await readFile(new URL("../app/learning-plan.tsx", import.meta.url), "utf8");
 const cases = await readFile(new URL("../app/case-generator.tsx", import.meta.url), "utf8");
 const tutor = await readFile(new URL("../app/ai-exam-tutor.tsx", import.meta.url), "utf8");

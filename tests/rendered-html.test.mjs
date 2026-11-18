@@ -36,7 +36,11 @@ test("keeps PWA metadata and the current loading state wired", async () => {
     readFile(new URL("../app/manifest.ts", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /"content-loading-screen"\s*:\s*"loading-screen"/);
+  assert.match(page, /lazy\(\(\) => import\("\.\/main-app"\)\)/);
+  assert.ok(
+    Buffer.byteLength(page, "utf8") < 5_000,
+    "Der initiale Seiteneinstieg muss klein bleiben und die Lernanwendung nachladen.",
+  );
   assert.match(page, /aria-label="Lernbereich wird geladen"/);
   assert.match(layout, /title:\s*"NotSan Prüfung – Sicher ins Staatsexamen"/);
   assert.match(layout, /manifest:\s*"\/manifest\.webmanifest"/);

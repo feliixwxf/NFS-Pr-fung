@@ -6,7 +6,7 @@ const appDirectory = new URL("../app/", import.meta.url);
 const appFiles = await readdir(appDirectory);
 const oralLessonFiles = appFiles.filter((name) => name.endsWith("-lesson.tsx"));
 const oralSources = await Promise.all(
-  ["page.tsx", "core-oral-lessons.tsx", ...oralLessonFiles].map(async (name) => ({
+  ["main-app.tsx", "core-oral-lessons.tsx", ...oralLessonFiles].map(async (name) => ({
     name,
     source: await readFile(new URL(name, appDirectory), "utf8"),
   })),

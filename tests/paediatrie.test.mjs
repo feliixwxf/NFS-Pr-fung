@@ -8,7 +8,7 @@ const kramp = readFileSync(new URL("../app/krampfanfall-kind-lesson.tsx", import
 const krampData = readFileSync(new URL("../app/krampfanfall-kind-data.ts", import.meta.url), "utf8");
 const anaphylaxie = readFileSync(new URL("../app/anaphylaxie-lesson.tsx", import.meta.url), "utf8");
 const anaphylaxieData = readFileSync(new URL("../app/anaphylaxie-data.ts", import.meta.url), "utf8");
-const page = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
+const page = readFileSync(new URL("../app/main-app.tsx", import.meta.url), "utf8");
 
 test("written diagnostics contains the school-based paediatric learning section", () => {
   assert.match(diagnostik, /number="26" kicker="Pädiatrie"/);
