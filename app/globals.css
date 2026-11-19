@@ -2288,6 +2288,131 @@ html.standalone-app :is(button,[role="button"],summary){touch-action:manipulatio
 .decompression-umbrella{display:grid;grid-template-columns:1.15fr .85fr;gap:15px;margin:0 0 26px;padding:20px;border:1px solid #d7c89b;border-radius:18px;background:#fffaf0}.decompression-umbrella small{color:#9c6a24;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.decompression-umbrella h3{margin:4px 0 8px!important;color:#5f491c!important}.decompression-umbrella p{margin:0!important;color:#675e4f!important;font-size:12px!important;line-height:1.6!important}.dcs-types{display:grid;gap:9px}.dcs-types p{padding:12px;border:1px solid #eadcb7;border-radius:12px;background:#fff}.dcs-types b,.dcs-types span{display:block}.dcs-types span{margin-top:4px;font-size:11px;line-height:1.5}
 @media(max-width:720px){.barotrauma-anatomy-figures,.barotrauma-phase-grid{grid-template-columns:1fr}.barotrauma-anatomy-figures .source-figure img{height:auto;max-height:320px}.barotrauma-phase-grid>article.priority{grid-column:auto}.decompression-paths,.decompression-umbrella{grid-template-columns:1fr}.barotrauma-phase-grid>article{padding:17px}.barotrauma-phase-grid header{align-items:flex-start;flex-wrap:wrap}.barotrauma-phase-grid header em{margin-left:52px}}
 
+/* Mobile Feinschliff: Kopfzeile, Lernstatistik und Medikamentenbibliothek */
+.medication-mc-launch-button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:min(100%,360px);
+  min-height:50px;
+  margin:0 auto 26px;
+  padding:0 20px;
+  border:0;
+  border-radius:14px;
+  background:linear-gradient(135deg,#173f46,#28716c);
+  color:#fff;
+  font:inherit;
+  cursor:pointer;
+  box-shadow:0 12px 28px #18363f1c;
+}
+.medication-mc-launch-button span{display:grid;width:25px;height:25px;place-items:center;border-radius:50%;background:#ffffff20;font-size:13px;font-weight:900}
+.medication-mc-launch-button b{font-size:13px;letter-spacing:.01em}
+.medication-mc-launch-button:hover,.medication-mc-launch-button:focus-visible{background:linear-gradient(135deg,#1d5159,#32817a);outline:3px solid #d7ebe7;outline-offset:2px}
+
+@media(max-width:700px){
+  .topbar .header-clock{
+    left:50vw;
+    right:auto;
+    margin:0;
+    transform:translate(-50%,-50%);
+  }
+
+  .dashboard .dashboard-learning-stat{
+    gap:14px;
+    padding:18px 15px;
+  }
+  .dashboard .dashboard-learning-copy{max-width:none}
+  .dashboard .dashboard-learning-copy h2{margin:5px 0 0;font-size:21px}
+  .dashboard .dashboard-learning-copy p{display:none}
+  .dashboard .dashboard-learning-copy button{min-height:40px;margin-top:8px;font-size:11px}
+  .dashboard .dashboard-learning-chart{
+    display:grid;
+    grid-template-columns:88px minmax(0,1fr);
+    gap:12px;
+    width:100%;
+    align-items:center;
+  }
+  .dashboard .dashboard-learning-ring{width:88px;height:88px;flex-basis:88px}
+  .dashboard .dashboard-learning-ring>div{width:59px;height:59px}
+  .dashboard .dashboard-learning-ring b{font-size:19px}
+  .dashboard .dashboard-learning-ring span{font-size:7px}
+  .dashboard .dashboard-learning-legend{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+    width:100%;
+  }
+  .dashboard .dashboard-learning-legend>div{
+    min-width:0;
+    padding:9px;
+    border-radius:10px;
+    background:#f5f8f7;
+    font-size:9px;
+    line-height:1.25;
+    white-space:normal;
+  }
+  .dashboard .dashboard-learning-legend i{flex-basis:8px;width:8px;height:8px}
+  .dashboard .dashboard-learning-legend b{font-size:11px}
+
+  .medication-search input,
+  .medication-mechanism-filter select,
+  .medication-mc-controls select{font-size:16px}
+
+  .medication-effect-card header{
+    display:grid;
+    grid-template-columns:44px minmax(0,1fr) 48px;
+    gap:10px;
+  }
+  .medication-effect-card header>div{min-width:0}
+  .medication-effect-card header h2,
+  .medication-effect-card header h3{overflow-wrap:anywhere}
+  .medication-effect-card header:not(:has(.medication-card-expand)){grid-template-columns:44px minmax(0,1fr)}
+  .medication-card-expand{
+    display:grid;
+    width:48px;
+    height:48px;
+    min-height:48px;
+    padding:0;
+    place-items:center;
+    border-radius:13px;
+  }
+  .medication-card-expand span{font-size:22px}
+  .medication-card-expand b{display:none}
+
+  .medication-card-modal{
+    place-items:stretch center;
+    padding:max(64px,calc(env(safe-area-inset-top) + 50px)) max(8px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+  }
+  .medication-card-modal-panel{
+    width:100%;
+    max-height:calc(100dvh - max(64px,calc(env(safe-area-inset-top) + 50px)) - max(10px,env(safe-area-inset-bottom)));
+    border-radius:18px;
+    scroll-padding-block:70px 36px;
+  }
+  .medication-card-modal-panel>.medication-effect-card{
+    padding:20px 16px calc(34px + env(safe-area-inset-bottom));
+    border-radius:18px;
+  }
+  .medication-card-modal-close{
+    position:fixed;
+    top:max(8px,env(safe-area-inset-top));
+    right:max(10px,env(safe-area-inset-right));
+    width:50px;
+    height:50px;
+    min-height:50px;
+    font-size:29px;
+    box-shadow:0 8px 24px #07151b42;
+  }
+  .medication-dose-prep{scroll-margin-block:76px 34px}
+  .medication-dose-prep-content{padding-bottom:10px}
+}
+
+@media(max-width:350px){
+  .dashboard .dashboard-learning-chart{grid-template-columns:1fr}
+  .dashboard .dashboard-learning-ring{justify-self:center}
+}
+
 /* Mündliche Kapitel als scharfe, gut lesbare A4-Lernunterlage */
 /* Kein Browser-Kopf/-Fußbereich: So erscheinen weder Datum noch URL im PDF. */
 @page{size:A4 portrait;margin:0}

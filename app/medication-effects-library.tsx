@@ -171,10 +171,7 @@ function MedicationMcTrainer() {
     setChecked(false);
   };
 
-  if (!active) return <section className="medication-mc-launch" aria-labelledby="medication-mc-title">
-    <div><span>Interaktives Training</span><h2 id="medication-mc-title">Medikamente als MC üben</h2><p>Wirkung, Wechselwirkung, Nebenwirkung, Kontraindikation und Zubereitung werden direkt aus den vorhandenen Medikamentenkarten geprüft.</p></div>
-    <div><b>{allQuestions.length}</b><small>mögliche Fragen</small><button type="button" onClick={() => startRound()}>MC-Training starten</button></div>
-  </section>;
+  if (!active) return <button type="button" className="medication-mc-launch-button" onClick={() => startRound()}><span aria-hidden="true">✓</span><b>Medikamente üben</b></button>;
 
   return <section className="medication-mc-trainer" aria-labelledby="medication-mc-training-title">
     <header><div><span>Medikamentenwissen</span><h2 id="medication-mc-training-title">MC-Training</h2><p>Eine Antwort ist richtig. Nach jeder Auswahl folgt eine kurze Begründung.</p></div><button type="button" onClick={() => setActive(false)}>Trainer schließen</button></header>
@@ -206,7 +203,12 @@ function MedicationDosePreparation({ name, preparation }: { name: string; prepar
   const diluentWidth = hasSyringe && preparation.kind !== "infusion" ? Math.min((preparation.diluentMl ?? 0) / capacity * 470, 470 - drugWidth) : 0;
   const plungerX = 88 + Math.min(drawnMl / Math.max(capacity, 1) * 470, 470);
   const formLabel = preparation.kind === "nebulizer" ? "Vernebler" : preparation.kind === "spray" ? "Dosierspray" : preparation.kind === "capsule" ? "Zerbeißkapsel" : "Dosierung";
-  return <details className="medication-dose-prep" aria-label={`${name}: Dosierung und Zubereitung`}>
+  return <details className="medication-dose-prep" aria-label={`${name}: Dosierung und Zubereitung`} onToggle={(event) => {
+    const details = event.currentTarget;
+    const panel = details.closest<HTMLElement>(".medication-card-modal-panel");
+    if (!details.open || !panel) return;
+    requestAnimationFrame(() => panel.scrollTo({ top: Math.max(0, details.offsetTop - 76), behavior: "auto" }));
+  }}>
     <summary className="medication-dose-prep-heading"><div><small>{preparation.source}</small><b>Dosierung &amp; Zubereitung</b></div><span>{preparation.dose}</span><i aria-hidden="true">⌄</i></summary>
     <div className="medication-dose-prep-content">
       {hasSyringe ? <div className="medication-dose-syringe" role="img" aria-label={`${name}: ${preparation.dose}; ${preparation.route}`}>
