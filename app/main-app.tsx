@@ -698,19 +698,19 @@ function Dashboard({ setView, questionProgress, lastLearningLocation, onResume }
 function OralLibrary({ selectedTopic, setSelectedTopic, onOpenTraining, onProgressChange, completedTopics, onToggleComplete }: { selectedTopic: number | null; setSelectedTopic: (topic: number | null) => void; onOpenTraining: (topic: TrainingTopic) => void; onProgressChange: (progress: QuestionProgress) => void; completedTopics: number[]; onToggleComplete: (topicNumber: number) => void }) {
   const savedFilters = () => { try { return JSON.parse(sessionStorage.getItem("notsan-oral-filters") || "{}"); } catch { return {}; } };
   const [search, setSearch] = useState<string>(() => savedFilters().search || "");
-  const [availability, setAvailability] = useState<"all" | "ready" | "pending">(() => savedFilters().availability || "all");
+  const [availability, setAvailability] = useState<"all" | "ready" | "pending">("all");
   const [learning, setLearning] = useState<"all" | "new" | "started" | "completed">(() => savedFilters().learning || "all");
   const [groupFilter, setGroupFilter] = useState<string>(() => savedFilters().group || "all");
   const [topicSort, setTopicSort] = useState<"order" | "alpha" | "recent">(() => savedFilters().sort || "order");
   const activity = readTopicActivity();
-  useEffect(() => { sessionStorage.setItem("notsan-oral-filters", JSON.stringify({ search, availability, learning, group: groupFilter, sort: topicSort })); }, [search, availability, learning, groupFilter, topicSort]);
+  useEffect(() => { sessionStorage.setItem("notsan-oral-filters", JSON.stringify({ search, learning, group: groupFilter, sort: topicSort })); }, [search, learning, groupFilter, topicSort]);
   const filteredGroups = topicGroups.filter(group => groupFilter === "all" || group.name === groupFilter).map((group) => ({
     ...group,
     entries: group.topicNumbers.map((number) => ({ title: topics[number - 1], number })).filter((topic) => {
       const matchesSearch = topicSearchScore(topic.title, search) > 0;
       const isReady = READY_TOPIC_NUMBERS.has(topic.number);
       const status = completedTopics.includes(topic.number) ? "completed" : activity[topic.number] ? "started" : "new";
-      return matchesSearch && (availability === "all" || (availability === "ready" ? isReady : !isReady)) && (learning === "all" || isReady && learning === status);
+      return matchesSearch && isReady && availability === "all" && (learning === "all" || learning === status);
     }).sort((a, b) => search.trim() ? topicSearchScore(b.title, search) - topicSearchScore(a.title, search) : topicSort === "alpha" ? a.title.localeCompare(b.title, "de") : topicSort === "recent" ? (Date.parse(activity[b.number]?.openedAt || "0") - Date.parse(activity[a.number]?.openedAt || "0") || a.number - b.number) : a.number - b.number),
   })).filter((group) => group.entries.length > 0);
   const resultCount = filteredGroups.reduce((sum, group) => sum + group.entries.length, 0);
