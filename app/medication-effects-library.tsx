@@ -302,6 +302,6 @@ export default function MedicationEffectsLibrary() {
       </div>
       <aside><b>Merksatz</b><p><strong>Kinetik = Weg durch den Körper.</strong> <strong>Dynamik = Wirkung am Körper.</strong></p></aside>
     </section>
-    {expanded && <div className="medication-card-modal" role="dialog" aria-modal="true" aria-label={`${expanded.name} Großansicht`}><button type="button" className="medication-card-modal-backdrop" onClick={() => setExpanded(null)} aria-label="Großansicht schließen"/><div className="medication-card-modal-panel"><button type="button" className="medication-card-modal-close" onClick={() => setExpanded(null)} aria-label="Großansicht schließen">×</button><MedicationEffectCard item={expanded} /></div></div>}
+    {expanded && <div className="medication-card-modal" role="dialog" aria-modal="true" aria-label={`${expanded.name} Großansicht`}><button type="button" className="medication-card-modal-backdrop" onClick={() => setExpanded(null)} aria-label="Großansicht schließen"/><button type="button" className="medication-card-modal-close" onClick={() => setExpanded(null)} aria-label="Großansicht schließen">×</button><div className="medication-card-modal-panel"><MedicationEffectCard item={expanded} /></div></div>}
   </section>;
 }

@@ -2310,6 +2310,21 @@ html.standalone-app :is(button,[role="button"],summary){touch-action:manipulatio
 .medication-mc-launch-button b{font-size:13px;letter-spacing:.01em}
 .medication-mc-launch-button:hover,.medication-mc-launch-button:focus-visible{background:linear-gradient(135deg,#1d5159,#32817a);outline:3px solid #d7ebe7;outline-offset:2px}
 
+.dashboard .dashboard-learning-stat{
+  grid-template-columns:minmax(0,1fr) minmax(220px,310px) auto;
+  gap:24px;
+  padding:25px 28px;
+}
+.dashboard-learning-summary{display:grid;gap:8px;min-width:0}
+.dashboard-learning-summary>div{display:flex;align-items:center;justify-content:space-between;gap:14px;color:#54686d;font-size:11px;font-weight:750}
+.dashboard-learning-summary>div b{color:#256b5e;font-size:15px}
+.dashboard-learning-summary>i{display:block;height:9px;overflow:hidden;border-radius:999px;background:#e4ece9}
+.dashboard-learning-summary>i span{display:block;height:100%;min-width:0;border-radius:inherit;background:linear-gradient(90deg,#4b8a70,#2c7065)}
+.dashboard-learning-summary small{color:#78878a;font-size:10px}
+.dashboard-learning-details{min-height:44px;padding:0 15px;border:1px solid #c8d9d5;border-radius:11px;background:#f5f9f8;color:#285f5c;font:inherit;font-size:11px;font-weight:850;white-space:nowrap;cursor:pointer}
+.dashboard-learning-details span{margin-left:7px}
+.dashboard-learning-details:hover,.dashboard-learning-details:focus-visible{border-color:#7ba89f;background:#eaf4f1;outline:none}
+
 @media(max-width:700px){
   .topbar .header-clock{
     left:50vw;
@@ -2319,41 +2334,18 @@ html.standalone-app :is(button,[role="button"],summary){touch-action:manipulatio
   }
 
   .dashboard .dashboard-learning-stat{
-    gap:14px;
-    padding:18px 15px;
-  }
-  .dashboard .dashboard-learning-copy{max-width:none}
-  .dashboard .dashboard-learning-copy h2{margin:5px 0 0;font-size:21px}
-  .dashboard .dashboard-learning-copy p{display:none}
-  .dashboard .dashboard-learning-copy button{min-height:40px;margin-top:8px;font-size:11px}
-  .dashboard .dashboard-learning-chart{
-    display:grid;
-    grid-template-columns:88px minmax(0,1fr);
-    gap:12px;
-    width:100%;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:10px 12px;
+    padding:15px;
     align-items:center;
   }
-  .dashboard .dashboard-learning-ring{width:88px;height:88px;flex-basis:88px}
-  .dashboard .dashboard-learning-ring>div{width:59px;height:59px}
-  .dashboard .dashboard-learning-ring b{font-size:19px}
-  .dashboard .dashboard-learning-ring span{font-size:7px}
-  .dashboard .dashboard-learning-legend{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:7px;
-    width:100%;
-  }
-  .dashboard .dashboard-learning-legend>div{
-    min-width:0;
-    padding:9px;
-    border-radius:10px;
-    background:#f5f8f7;
-    font-size:9px;
-    line-height:1.25;
-    white-space:normal;
-  }
-  .dashboard .dashboard-learning-legend i{flex-basis:8px;width:8px;height:8px}
-  .dashboard .dashboard-learning-legend b{font-size:11px}
+  .dashboard .dashboard-learning-copy{max-width:none}
+  .dashboard .dashboard-learning-copy .eyebrow{display:none}
+  .dashboard .dashboard-learning-copy h2{margin:0;font-size:19px}
+  .dashboard .dashboard-learning-copy p{display:none}
+  .dashboard-learning-summary{grid-column:1/-1;gap:6px;padding:10px 12px;border-radius:11px;background:#f5f8f7}
+  .dashboard-learning-details{grid-column:2;grid-row:1;width:auto;min-height:40px;padding:0 11px}
+  .dashboard-learning-details span{margin-left:4px}
 
   .medication-search input,
   .medication-mechanism-filter select,
@@ -2406,11 +2398,6 @@ html.standalone-app :is(button,[role="button"],summary){touch-action:manipulatio
   }
   .medication-dose-prep{scroll-margin-block:76px 34px}
   .medication-dose-prep-content{padding-bottom:10px}
-}
-
-@media(max-width:350px){
-  .dashboard .dashboard-learning-chart{grid-template-columns:1fr}
-  .dashboard .dashboard-learning-ring{justify-self:center}
 }
 
 /* Mündliche Kapitel als scharfe, gut lesbare A4-Lernunterlage */
