@@ -87,7 +87,7 @@ export default function MedicationTrainer({ accountUserId, onSyncError }: { acco
     <div className="mode-switch"><button className={mode==="learn"?"active":""} onClick={()=>{setMode("learn");reset()}}>Lernmodus</button><button className={mode==="exam"?"active":""} onClick={()=>{setMode("exam");reset()}}>Prüfungsmodus</button></div>
     <label>Medikamentengruppe<select value={drug} onChange={e=>{setDrug(e.target.value);reset()}}><option>Alle</option>{ruleGroups.map(x=><option key={x}>{x}</option>)}</select></label>
     <label>Patientengruppe<select value={group} onChange={e=>{setGroup(e.target.value);reset()}}><option>Alle</option><option>Erwachsene</option><option>Kinder</option></select></label>
-    <label>Aufgabentyp<select value={category} onChange={e=>{setCategory(e.target.value);reset()}}><option>Alle</option>{(["Dosisberechnung","mg–ml-Umrechnung","Verdünnung","Wiederholung/Höchstdosis","Infusionsmengen"] as Category[]).map(x=><option key={x}>{x}</option>)}</select></label>
+    <label>Aufgabentyp<select value={category} onChange={e=>{setCategory(e.target.value);reset()}}><option>Alle</option>{(["Dosisberechnung","mg–ml-Umrechnung","Verdünnung","Wiederholung/Höchstdosis","Infusionsmengen","Sauerstoffberechnung"] as Category[]).map(x=><option key={x}>{x}</option>)}</select></label>
     <label>Umfang<select value={length} onChange={e=>{setLength(e.target.value);reset()}}><option value="10">10 Aufgaben</option><option value="20">20 Aufgaben</option><option value="30">30 Aufgaben</option><option value="frei">Frei weiterüben</option></select></label>
     <label className="wrong-toggle"><input type="checkbox" checked={wrongOnly} onChange={e=>{setWrongOnly(e.target.checked);reset()}}/> Nur Fehler wiederholen</label>
    </section>

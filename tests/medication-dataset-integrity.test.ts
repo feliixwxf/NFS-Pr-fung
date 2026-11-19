@@ -6,25 +6,25 @@ const dataUrl = new URL("../app/lib/medicationData.ts", import.meta.url);
 
 test("medication dataset keeps unique, sequential case numbers after merges", async () => {
   const source = await readFile(dataUrl, "utf8");
-  const matches = [...source.matchAll(/\["(?:esk|morph|hep|mid|glu|ana|adr|cpr|fluid)-(\d{2})"/g)];
+  const matches = [...source.matchAll(/\["(?:esk|morph|hep|mid|glu|ana|adr|cpr|fluid|oxy)-(\d{2})"/g)];
   const numbers = matches.map((match) => Number(match[1]));
 
-  assert.equal(numbers.length, 80);
-  assert.deepEqual(numbers, Array.from({ length: 80 }, (_, index) => index + 1));
-  assert.equal(new Set(matches.map((match) => match[0])).size, 80);
+  assert.equal(numbers.length, 92);
+  assert.deepEqual(numbers, Array.from({ length: 92 }, (_, index) => index + 1));
+  assert.equal(new Set(matches.map((match) => match[0])).size, 92);
 });
 
 test("every medication case uses a learning weight ending in zero or five", async () => {
   const source = await readFile(dataUrl, "utf8");
   const rows = [...source.matchAll(/^\["[^"]+","[^"]+",\d+,(\d+),/gm)];
 
-  assert.equal(rows.length, 80);
+  assert.equal(rows.length, 92);
   for (const row of rows) assert.match(row[1], /[05]$/);
 });
 
 test("every rule family remains represented after a merge", async () => {
   const source = await readFile(dataUrl, "utf8");
-  for (const prefix of ["esk", "morph", "hep", "mid", "glu", "ana", "adr", "cpr", "fluid"]) {
+  for (const prefix of ["esk", "morph", "hep", "mid", "glu", "ana", "adr", "cpr", "fluid", "oxy"]) {
     assert.match(source, new RegExp(`\\["${prefix}-\\d{2}"`));
   }
 });

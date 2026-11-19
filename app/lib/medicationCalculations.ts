@@ -1,4 +1,4 @@
-export type Unit = "µg" | "mg" | "g" | "I.E." | "I.E./ml" | "ml" | "ml/h" | "mg/ml" | "l";
+export type Unit = "µg" | "mg" | "g" | "I.E." | "I.E./ml" | "ml" | "ml/h" | "mg/ml" | "l" | "min";
 
 const mass: Record<string, number> = { "µg": .001, mg: 1, g: 1000 };
 const volume: Record<string, number> = { ml: 1, l: 1000 };
@@ -16,6 +16,8 @@ export const diluentVolume = (finalVolume: number, medicationVolume: number) => 
 export const cumulativeDose = (doses: number[]) => doses.reduce((sum, value) => sum + value, 0);
 export const remainingToMaximum = (maximum: number, given: number) => Math.max(0, maximum - given);
 export const volumeAtRate = (rateMlHour: number, minutes: number) => rateMlHour * minutes / 60;
+export const oxygenCylinderVolume = (cylinderLitres: number, pressureBar: number, reserveBar = 0) => cylinderLitres * Math.max(0, pressureBar - reserveBar);
+export const oxygenDuration = (volumeLitres: number, flowLitresMinute: number) => volumeLitres / flowLitresMinute;
 
 export function parseGermanNumber(input: string) {
   const normalized = input.trim().replace(",", ".");

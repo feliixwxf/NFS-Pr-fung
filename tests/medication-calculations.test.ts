@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { concentration, convert, cumulativeDose, diluentVolume, doseByWeight, isCorrect, parseGermanNumber, remainingToMaximum, volumeAtRate, volumeForDose } from "../app/lib/medicationCalculations.ts";
+import { concentration, convert, cumulativeDose, diluentVolume, doseByWeight, isCorrect, oxygenCylinderVolume, oxygenDuration, parseGermanNumber, remainingToMaximum, volumeAtRate, volumeForDose } from "../app/lib/medicationCalculations.ts";
 
 test("converts compatible units and keeps I.E. separate", () => {
   assert.equal(convert(1, "mg", "µg"), 1000);
@@ -25,6 +25,13 @@ test("calculates concentrations, dilution, dose volumes and rates", () => {
   assert.equal(volumeAtRate(800, 30), 400);
 });
 
+test("calculates oxygen volume and duration for 2-litre and 10-litre cylinders", () => {
+  assert.equal(oxygenCylinderVolume(2, 200), 400);
+  assert.equal(oxygenDuration(400, 10), 40);
+  assert.equal(oxygenCylinderVolume(10, 150, 50), 1000);
+  assert.equal(oxygenDuration(1000, 10), 100);
+});
+
 test("accepts decimal comma, rejects invalid values and uses strict rounding tolerance", () => {
   assert.equal(parseGermanNumber("0,15"), .15);
   assert.equal(parseGermanNumber("3.2"), 3.2);
@@ -46,10 +53,10 @@ test("applies the displayed decimal rule without a blanket whole-millilitre tole
   assert.equal(isCorrect("3", 13 / 5, 1, "ml"), false);
 });
 
-test("keeps all 80 reference cases and excludes ambiguous rules", async () => {
+test("keeps all 92 reference cases and excludes ambiguous rules", async () => {
   const data = await readFile(new URL("../app/lib/medicationData.ts", import.meta.url), "utf8");
-  const ids = [...data.matchAll(/\["(?:esk|morph|hep|mid|glu|ana|adr|cpr|fluid)-\d{2}"/g)];
-  assert.equal(ids.length, 80);
+  const ids = [...data.matchAll(/\["(?:esk|morph|hep|mid|glu|ana|adr|cpr|fluid|oxy)-\d{2}"/g)];
+  assert.equal(ids.length, 92);
   assert.match(data, /exakt 30 kg/);
   assert.match(data, /i\.m\. exakt 40 kg/);
   assert.match(data, /keine Interpolation/);
