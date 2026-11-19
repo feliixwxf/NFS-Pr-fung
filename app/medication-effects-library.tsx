@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type MedicationEffect = {
   name: string;
@@ -93,6 +93,111 @@ export const medications: MedicationEffect[] = [
 
 const formatMl = (value: number) => String(value).replace(".", ",");
 
+type MedicationMcArea = "effect" | "interactions" | "sideEffects" | "contraindications" | "preparation";
+type MedicationMcQuestion = { id: string; medication: string; area: MedicationMcArea; prompt: string; options: string[]; correct: string; explanation: string };
+
+const medicationMcAreas: Array<{ value: MedicationMcArea; label: string }> = [
+  { value: "effect", label: "Wirkung" },
+  { value: "interactions", label: "Wechselwirkungen" },
+  { value: "sideEffects", label: "Nebenwirkungen" },
+  { value: "contraindications", label: "Kontraindikationen" },
+  { value: "preparation", label: "Dosierung & Zubereitung" },
+];
+
+const shuffled = <T,>(values: readonly T[]) => {
+  const copy = [...values];
+  for (let index = copy.length - 1; index > 0; index--) {
+    const target = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[target]] = [copy[target], copy[index]];
+  }
+  return copy;
+};
+
+const medicationMcValue = (item: MedicationEffect, area: MedicationMcArea) => {
+  if (area === "preparation") return item.preparation ? `${item.preparation.dose} · ${item.preparation.route}` : "Keine Zubereitung hinterlegt";
+  return item[area];
+};
+
+const medicationMcPrompt = (item: MedicationEffect, area: MedicationMcArea) => {
+  const label = medicationMcAreas.find(entry => entry.value === area)?.label ?? area;
+  return `Welche Aussage zu „${item.name}“ gehört in den Bereich ${label}?`;
+};
+
+const buildMedicationMcQuestions = () => medications.flatMap((item, medicationIndex) => medicationMcAreas.map(({ value: area }) => {
+  const correct = medicationMcValue(item, area);
+  const distractors = shuffled([...new Set(medications.filter(other => other.name !== item.name).map(other => medicationMcValue(other, area)).filter(value => value !== correct))]).slice(0, 3);
+  return {
+    id: `medication-mc-${medicationIndex + 1}-${area}`,
+    medication: item.name,
+    area,
+    prompt: medicationMcPrompt(item, area),
+    options: shuffled([correct, ...distractors]),
+    correct,
+    explanation: `${medicationMcAreas.find(entry => entry.value === area)?.label}: ${correct}`,
+  };
+}));
+
+function MedicationMcTrainer() {
+  const allQuestions = useMemo(buildMedicationMcQuestions, []);
+  const [active, setActive] = useState(false);
+  const [medication, setMedication] = useState("all");
+  const [area, setArea] = useState<MedicationMcArea | "all">("all");
+  const [round, setRound] = useState<MedicationMcQuestion[]>([]);
+  const [index, setIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
+  const [score, setScore] = useState(0);
+
+  const available = allQuestions.filter(question => (medication === "all" || question.medication === medication) && (area === "all" || question.area === area));
+  const startRound = (nextMedication = medication, nextArea = area) => {
+    const pool = allQuestions.filter(question => (nextMedication === "all" || question.medication === nextMedication) && (nextArea === "all" || question.area === nextArea));
+    setRound(shuffled(pool).slice(0, Math.min(10, pool.length)));
+    setIndex(0);
+    setSelected(null);
+    setChecked(false);
+    setScore(0);
+    setActive(true);
+  };
+  const current = round[index];
+  const finished = round.length > 0 && index >= round.length;
+  const answer = () => {
+    if (!selected || !current || checked) return;
+    setChecked(true);
+    if (selected === current.correct) setScore(value => value + 1);
+  };
+  const next = () => {
+    setIndex(value => value + 1);
+    setSelected(null);
+    setChecked(false);
+  };
+
+  if (!active) return <section className="medication-mc-launch" aria-labelledby="medication-mc-title">
+    <div><span>Interaktives Training</span><h2 id="medication-mc-title">Medikamente als MC üben</h2><p>Wirkung, Wechselwirkung, Nebenwirkung, Kontraindikation und Zubereitung werden direkt aus den vorhandenen Medikamentenkarten geprüft.</p></div>
+    <div><b>{allQuestions.length}</b><small>mögliche Fragen</small><button type="button" onClick={() => startRound()}>MC-Training starten</button></div>
+  </section>;
+
+  return <section className="medication-mc-trainer" aria-labelledby="medication-mc-training-title">
+    <header><div><span>Medikamentenwissen</span><h2 id="medication-mc-training-title">MC-Training</h2><p>Eine Antwort ist richtig. Nach jeder Auswahl folgt eine kurze Begründung.</p></div><button type="button" onClick={() => setActive(false)}>Trainer schließen</button></header>
+    <div className="medication-mc-controls">
+      <label>Medikament<select value={medication} onChange={event => { const value = event.target.value; setMedication(value); startRound(value, area); }}><option value="all">Alle Medikamente</option>{medications.map(item => <option key={item.name} value={item.name}>{item.name}</option>)}</select></label>
+      <label>Lernbereich<select value={area} onChange={event => { const value = event.target.value as MedicationMcArea | "all"; setArea(value); startRound(medication, value); }}><option value="all">Alle Bereiche</option>{medicationMcAreas.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+      <button type="button" onClick={() => startRound()}>Neu mischen</button>
+      <span>{available.length} Fragen verfügbar</span>
+    </div>
+    {finished ? <div className="medication-mc-result"><span>Runde beendet</span><h3>{score} von {round.length} richtig</h3><p>Starte eine neue gemischte Runde oder grenze das Training auf ein Medikament beziehungsweise einen Lernbereich ein.</p><button type="button" onClick={() => startRound()}>Neue Runde starten</button></div> : current ? <article className="medication-mc-question">
+      <div className="medication-mc-progress"><span>Frage {index + 1} von {round.length}</span><b>{score} richtig</b></div>
+      <h3>{current.prompt}</h3>
+      <div className="medication-mc-options">{current.options.map(option => {
+        const isCorrect = checked && option === current.correct;
+        const isWrong = checked && option === selected && option !== current.correct;
+        return <button type="button" key={option} disabled={checked} className={`${selected === option ? "selected" : ""} ${isCorrect ? "correct" : ""} ${isWrong ? "wrong" : ""}`} onClick={() => setSelected(option)}><span aria-hidden="true">{isCorrect ? "✓" : isWrong ? "×" : selected === option ? "●" : "○"}</span><b>{option}</b></button>;
+      })}</div>
+      {checked && <div className={`medication-mc-feedback ${selected === current.correct ? "correct" : "wrong"}`}><b>{selected === current.correct ? "Richtig" : "Noch nicht richtig"}</b><p>{current.explanation}</p></div>}
+      <footer>{!checked ? <button type="button" disabled={!selected} onClick={answer}>Antwort prüfen</button> : <button type="button" onClick={next}>{index + 1 === round.length ? "Auswertung öffnen" : "Nächste Frage"}</button>}</footer>
+    </article> : null}
+  </section>;
+}
+
 function MedicationDosePreparation({ name, preparation }: { name: string; preparation: NonNullable<MedicationEffect["preparation"]> }) {
   const hasSyringe = preparation.drugMl !== undefined;
   const capacity = !hasSyringe ? 0 : preparation.drugMl! <= 1 ? 1 : preparation.drugMl! <= 2 ? 2 : preparation.drugMl! <= 5 ? 5 : 10;
@@ -175,6 +280,7 @@ export default function MedicationEffectsLibrary() {
         {(mechanism !== "all" || search) && <button className="medication-filter-reset" type="button" onClick={() => { setSearch(""); setMechanism("all"); }}>Filter zurücksetzen</button>}
       </div>
     </div>
+    <MedicationMcTrainer />
     {sort === "alphabetical" ? <div className="medication-effects-grid">{filtered.map((item) => <MedicationEffectCard key={item.name} item={item} onExpand={setExpanded} />)}</div> : <div className="medication-mechanism-groups">{grouped.map(({ group, items }) => <section key={group} className="medication-mechanism-group"><header><div><span>Wirkweise</span><h2>{group}</h2></div><b>{items.length} {items.length === 1 ? "Medikament" : "Medikamente"}</b></header><div className="medication-effects-grid">{items.map((item) => <MedicationEffectCard key={item.name} item={item} onExpand={setExpanded} />)}</div></section>)}</div>}
     {!filtered.length && <div className="medication-search-empty"><b>Kein Medikament gefunden.</b><span>Prüfe die Schreibweise oder suche nach einem Wirkstoff.</span></div>}
     <section className="cardiac-effect-terms" aria-labelledby="cardiac-effect-terms-title">
